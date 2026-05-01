@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -8,13 +9,17 @@ import {
   View,
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { computeCement, computeVolume } from '../../utils/slabCalculator';
 
 type MixType = 'aa' | 'a' | 'b' | 'c';
 
 export default function Slab() {
+  const insets = useSafeAreaInsets();
   const [area, setArea] = useState('');
 
   const [thickness, setThickness] = useState<string | 'custom' | null>(null);
@@ -87,7 +92,18 @@ export default function Slab() {
       />
       <SafeAreaView style={styles.screen}>
         <View style={styles.container}>
-          <Text style={styles.title}>Slab Calculator</Text>
+          <View
+            style={[
+              styles.header,
+              {
+                marginTop: -insets.top + 8,
+              },
+            ]}
+          >
+            <View style={styles.iconBox}>
+              <Ionicons name="grid-outline" size={28} color="#0F172A" />
+            </View>
+          </View>
 
           <View style={styles.card}>
             <Text style={styles.label}>Area (sqm)</Text>
@@ -203,6 +219,21 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F1F5F9' },
   container: {
     padding: 16,
+  },
+  header: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+  },
+  iconBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 22,
