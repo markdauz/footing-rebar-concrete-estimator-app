@@ -68,7 +68,14 @@ export default function Footing() {
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
         >
-          <Text style={{ color: '#334155', fontSize: 20, marginBottom: 12 }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: '#334155',
+              marginBottom: 16,
+            }}
+          >
             Footing Rebar Calculator
           </Text>
 

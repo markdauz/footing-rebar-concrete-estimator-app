@@ -11,12 +11,13 @@ export default function RootLayout() {
 
         <Stack
           screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: '#0F172A' },
+            headerBackTitle: '',
+            headerBackButtonDisplayMode: 'minimal',
           }}
         >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="tools/slab" />
         </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>
