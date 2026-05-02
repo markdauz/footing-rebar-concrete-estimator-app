@@ -166,7 +166,7 @@ export default function Beam() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
-                  placeholder="Enter mix"
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity
                   onPress={() => {

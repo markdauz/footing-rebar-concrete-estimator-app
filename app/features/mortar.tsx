@@ -188,7 +188,7 @@ export default function Mortar() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
-                  placeholder="Enter mix"
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity
                   onPress={() => {
