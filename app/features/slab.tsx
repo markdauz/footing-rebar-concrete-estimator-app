@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -83,23 +84,19 @@ export default function Slab() {
   };
 
   return (
-    <>
+    <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
       <Stack.Screen
         options={{
           headerShown: true,
           title: 'Slab Calculator',
+          headerTransparent: true,
+          headerTitleStyle: { color: '#0F172A' },
+          headerTintColor: '#0F172A',
         }}
       />
       <SafeAreaView style={styles.screen}>
-        <View style={styles.container}>
-          <View
-            style={[
-              styles.header,
-              {
-                marginTop: -insets.top + 8,
-              },
-            ]}
-          >
+        <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
+          <View style={[styles.header]}>
             <View style={styles.iconBox}>
               <Ionicons name="grid-outline" size={28} color="#0F172A" />
             </View>
@@ -115,7 +112,6 @@ export default function Slab() {
               placeholder="0.00"
             />
 
-            {/* THICKNESS */}
             <Text style={styles.label}>Thickness (m)</Text>
 
             {thickness === 'custom' ? (
@@ -202,7 +198,7 @@ export default function Slab() {
           </View>
         </View>
       </SafeAreaView>
-    </>
+    </LinearGradient>
   );
 }
 
@@ -216,9 +212,10 @@ function Result({ label, value }: any) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F1F5F9' },
+  screen: { flex: 1 },
   container: {
     padding: 16,
+    paddingTop: 16,
   },
   header: {
     alignItems: 'center',
@@ -235,12 +232,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 16,
-  },
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,

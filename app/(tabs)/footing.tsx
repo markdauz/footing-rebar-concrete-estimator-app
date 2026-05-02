@@ -64,9 +64,13 @@ export default function Footing() {
 
   return (
     <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 20,
+          }}
         >
           <Text
             style={{
@@ -74,6 +78,7 @@ export default function Footing() {
               fontWeight: '700',
               color: '#334155',
               marginBottom: 16,
+              textAlign: 'center',
             }}
           >
             Footing Rebar Calculator

@@ -1,61 +1,38 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-
-const { width } = Dimensions.get('window');
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Onboarding() {
   const router = useRouter();
 
   return (
-    <LinearGradient colors={['#7dd3fc', '#38bdf8']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#0ea5e9', '#0369a1']} style={{ flex: 1 }}>
       <View style={styles.container}>
-        {/* App Icon */}
+        <View style={styles.glow} />
+
         <View style={styles.iconWrapper}>
-          <Ionicons name="construct" size={40} color="#0C4A6E" />
+          <Ionicons name="construct" size={42} color="#0369a1" />
         </View>
 
-        {/* Title */}
-        <Text style={styles.title}>Concrete Calculator</Text>
+        <Text style={styles.title}>Build Smarter</Text>
+
         <Text style={styles.subtitle}>
-          Fast, accurate construction estimates in your pocket
+          Accurate material estimates in seconds
         </Text>
 
-        {/* Feature Highlights */}
-        <View style={styles.features}>
-          <Feature icon="cube-outline" text="Slab, Footing & Concrete Tools" />
-          <Feature
-            icon="calculator-outline"
-            text="Accurate Material Estimates"
-          />
-          <Feature icon="flash-outline" text="Instant Calculations" />
-        </View>
+        <Text style={styles.featureInline}>
+          Slab • Footing • Concrete • CHB
+        </Text>
 
-        {/* CTA Button */}
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.replace('/(tabs)/footing')}
         >
-          <Text style={styles.buttonText}>Get Started</Text>
+          <Text style={styles.buttonText}>Start Calculating</Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>
-  );
-}
-
-function Feature({ icon, text }: any) {
-  return (
-    <View style={styles.featureItem}>
-      <Ionicons name={icon} size={20} color="#0C4A6E" />
-      <Text style={styles.featureText}>{text}</Text>
-    </View>
   );
 }
 
@@ -67,75 +44,61 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  glow: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: '#38bdf8',
+    opacity: 0.25,
+    top: '20%',
+  },
+
   iconWrapper: {
-    backgroundColor: '#E0F2FE',
-    padding: 20,
-    borderRadius: 30,
-    marginBottom: 20,
+    backgroundColor: '#ffffff',
+    padding: 22,
+    borderRadius: 28,
+    marginBottom: 30,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
   },
 
   title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#0C4A6E',
-    marginBottom: 8,
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#e0f2fe',
+    marginBottom: 6,
+    letterSpacing: 0.5,
   },
 
   subtitle: {
-    fontSize: 14,
-    color: '#075985',
+    fontSize: 15,
+    color: '#bae6fd',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 18,
   },
 
-  features: {
-    width: '100%',
-    marginBottom: 30,
-  },
-
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E0F2FE',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-
-  featureText: {
-    marginLeft: 10,
-    color: '#0C4A6E',
-    fontSize: 14,
-  },
-
-  dots: {
-    flexDirection: 'row',
-    marginBottom: 30,
-  },
-
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#bae6fd',
-    marginHorizontal: 4,
-  },
-
-  activeDot: {
-    backgroundColor: '#0C4A6E',
-    width: 16,
+  featureInline: {
+    fontSize: 13,
+    color: '#e0f2fe',
+    marginBottom: 50,
+    opacity: 0.85,
   },
 
   button: {
-    backgroundColor: '#0C4A6E',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 25,
+    backgroundColor: '#ffffff',
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 30,
+    elevation: 6,
   },
 
   buttonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: '#0369a1',
+    fontWeight: '700',
     fontSize: 16,
   },
 });

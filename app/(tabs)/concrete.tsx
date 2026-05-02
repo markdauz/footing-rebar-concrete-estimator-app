@@ -34,10 +34,10 @@ export default function Concrete() {
                 key={row}
                 style={[styles.row, index === 3 && { marginBottom: 0 }]}
               >
-                {features.slice(row * 2, row * 2 + 2).map((feature: any) => (
+                {features.slice(row * 2, row * 2 + 2).map((feature: any, i) => (
                   <TouchableOpacity
                     key={feature.name}
-                    style={styles.card}
+                    style={[styles.card, i === 0 && { marginRight: 12 }]}
                     onPress={() => router.push(feature.route)}
                   >
                     <Ionicons
@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#334155',
     marginBottom: 16,
+    textAlign: 'center',
   },
 
   cardText: {
@@ -94,8 +95,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 6,
-
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 8,
