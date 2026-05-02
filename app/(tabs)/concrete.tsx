@@ -42,7 +42,7 @@ export default function Concrete() {
                   >
                     <Ionicons
                       name={feature.icon as any}
-                      size={28}
+                      size={32}
                       color="#334155"
                     />
                     <Text style={styles.cardText}>{feature.name}</Text>
