@@ -26,7 +26,6 @@ export const getTotalPcs = (area: number | '') => {
   return Math.round(Number(area) * 13);
 };
 
-// ✅ Cement
 export const getCement = (
   volume: number,
   area: number | '',

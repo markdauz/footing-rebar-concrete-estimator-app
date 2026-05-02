@@ -56,7 +56,6 @@ export default function Footing() {
     { label: 'Custom', value: 'custom' },
   ];
 
-  // ✅ SAFE thickness handling
   const effectiveThickness = useMemo(() => {
     if (thickness === 'custom') {
       return customThickness ? parseFloat(customThickness) : NaN;
