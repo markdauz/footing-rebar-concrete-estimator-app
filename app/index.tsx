@@ -1,7 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -12,7 +11,11 @@ export default function Onboarding() {
         <View style={styles.glow} />
 
         <View style={styles.iconWrapper}>
-          <Ionicons name="construct" size={42} color="#0369a1" />
+          <Image
+            source={require('../assets/images/icon.png')}
+            style={styles.iconImage}
+            resizeMode="contain"
+          />
         </View>
 
         <Text style={styles.title}>Build Smarter</Text>
@@ -43,6 +46,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  iconImage: {
+    width: 80,
+    height: 80,
+  },
 
   glow: {
     position: 'absolute',
@@ -56,8 +63,8 @@ const styles = StyleSheet.create({
 
   iconWrapper: {
     backgroundColor: '#ffffff',
-    padding: 22,
-    borderRadius: 28,
+    padding: 18,
+    borderRadius: 24,
     marginBottom: 30,
     elevation: 10,
     shadowColor: '#000',
