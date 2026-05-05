@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -98,63 +99,56 @@ export default function Column() {
           headerShown: true,
           title: 'Column Calculator',
           headerTransparent: true,
-          headerTitleStyle: { color: '#0F172A' },
-          headerTintColor: '#0F172A',
         }}
       />
 
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
           contentContainerStyle={{
-            paddingBottom: 20,
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
+            paddingBottom: 40,
           }}
         >
-          {/* Icon */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="apps-outline" size={28} color="#0F172A" />
             </View>
           </View>
 
-          {/* Input Card */}
           <View style={styles.card}>
             <Text style={styles.label}>No. of Sets</Text>
             <TextInput
               value={sets}
               onChangeText={setSets}
-              keyboardType="numeric"
               style={styles.input}
-              placeholder="0"
+              keyboardType="numeric"
             />
 
             <Text style={styles.label}>Width (m)</Text>
             <TextInput
               value={width}
               onChangeText={setWidth}
-              keyboardType="numeric"
               style={styles.input}
-              placeholder="0.00"
+              keyboardType="numeric"
             />
 
             <Text style={styles.label}>Depth (m)</Text>
             <TextInput
               value={depth}
               onChangeText={setDepth}
-              keyboardType="numeric"
               style={styles.input}
-              placeholder="0.00"
+              keyboardType="numeric"
             />
 
             <Text style={styles.label}>Height (m)</Text>
             <TextInput
               value={height}
               onChangeText={setHeight}
-              keyboardType="numeric"
               style={styles.input}
-              placeholder="0.00"
+              keyboardType="numeric"
             />
 
             <Text style={styles.label}>Mixture</Text>
@@ -164,9 +158,8 @@ export default function Column() {
                 <TextInput
                   value={customMix}
                   onChangeText={setCustomMix}
-                  keyboardType="numeric"
                   style={styles.input}
-                  placeholder="Enter value"
+                  keyboardType="numeric"
                 />
                 <TouchableOpacity
                   onPress={() => {
@@ -178,17 +171,28 @@ export default function Column() {
                 </TouchableOpacity>
               </>
             ) : (
-              <View style={{ zIndex: 1000 }}>
+              <View
+                style={{
+                  zIndex: openMix ? 3000 : 1,
+                  ...(Platform.OS === 'android' && {
+                    elevation: openMix ? 3000 : 0,
+                  }),
+                }}
+              >
                 <DropDownPicker
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={setOpenMix}
+                  setOpen={(val) => {
+                    setOpenMix((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      return next;
+                    });
+                  }}
                   setValue={setMix}
-                  placeholder="Select mixture"
+                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
-                  listMode="SCROLLVIEW"
                 />
               </View>
             )}
@@ -198,7 +202,6 @@ export default function Column() {
             </TouchableOpacity>
           </View>
 
-          {/* Results */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
 
@@ -227,12 +230,7 @@ function Result({ label, value }: any) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
+  header: { alignItems: 'center', marginBottom: 32 },
 
   iconBox: {
     width: 60,
@@ -251,11 +249,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  label: {
-    marginTop: 10,
-    marginBottom: 6,
-    color: '#64748B',
-  },
+  label: { marginTop: 10, marginBottom: 6, color: '#64748B' },
 
   input: {
     backgroundColor: '#F8FAFC',
@@ -272,13 +266,10 @@ const styles = StyleSheet.create({
   },
 
   dropdownContainer: {
-    borderColor: '#E2E8F0',
+    borderColor: '#E2E8F0', // no elevation
   },
 
-  backText: {
-    color: '#2563EB',
-    marginTop: 6,
-  },
+  backText: { color: '#2563EB', marginTop: 6 },
 
   reset: {
     marginTop: 16,
@@ -288,15 +279,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  resetText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
+  resetText: { color: '#fff', fontWeight: '600' },
 
   resultCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
+    elevation: 2,
   },
 
   resultTitle: {

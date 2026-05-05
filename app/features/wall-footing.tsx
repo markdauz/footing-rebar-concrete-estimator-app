@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -143,28 +144,25 @@ export default function WallFooting() {
           headerShown: true,
           title: 'Wall Footing',
           headerTransparent: true,
-          headerTitleStyle: { color: '#0F172A' },
-          headerTintColor: '#0F172A',
         }}
       />
 
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
           contentContainerStyle={{
-            paddingBottom: 20,
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
+            paddingBottom: 40,
           }}
         >
-          {/* ICON */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="square-outline" size={28} color="#0F172A" />
             </View>
           </View>
 
-          {/* INPUT */}
           <View style={styles.card}>
             <Text style={styles.label}>No. of Sets</Text>
             <TextInput
@@ -172,35 +170,32 @@ export default function WallFooting() {
               onChangeText={setSets}
               keyboardType="numeric"
               style={styles.input}
-              placeholder="0"
             />
 
             {/* WIDTH */}
             <Text style={styles.label}>Width</Text>
             {width === 'custom' ? (
-              <>
-                <TextInput
-                  value={customWidth}
-                  onChangeText={setCustomWidth}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  placeholder="0.00"
-                />
-                <TouchableOpacity onPress={() => setWidth(null)}>
-                  <Text style={styles.backText}>← Back</Text>
-                </TouchableOpacity>
-              </>
+              <TextInput
+                value={customWidth}
+                onChangeText={setCustomWidth}
+                keyboardType="numeric"
+                style={styles.input}
+              />
             ) : (
-              <View style={{ zIndex: 3000 }}>
+              <View style={dropdownStyle(openWidth)}>
                 <DropDownPicker
                   open={openWidth}
                   value={width}
                   items={widthItems}
-                  setOpen={setOpenWidth}
+                  setOpen={(val) =>
+                    handleOpen(val, setOpenWidth, [
+                      setOpenThickness,
+                      setOpenMix,
+                    ])
+                  }
                   setValue={setWidth}
-                  listMode="SCROLLVIEW"
+                  listMode={getListMode()}
                   style={styles.dropdown}
-                  placeholder="Select mixture"
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
               </View>
@@ -212,36 +207,33 @@ export default function WallFooting() {
               onChangeText={setLength}
               keyboardType="numeric"
               style={styles.input}
-              placeholder="0.00"
             />
 
             {/* THICKNESS */}
             <Text style={styles.label}>Thickness</Text>
             {thickness === 'custom' ? (
-              <>
-                <TextInput
-                  value={customThickness}
-                  onChangeText={setCustomThickness}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  placeholder="0.00"
-                />
-                <TouchableOpacity onPress={() => setThickness(null)}>
-                  <Text style={styles.backText}>← Back</Text>
-                </TouchableOpacity>
-              </>
+              <TextInput
+                value={customThickness}
+                onChangeText={setCustomThickness}
+                keyboardType="numeric"
+                style={styles.input}
+              />
             ) : (
-              <View style={{ zIndex: 2000 }}>
+              <View style={dropdownStyle(openThickness)}>
                 <DropDownPicker
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
+                  setOpen={(val) =>
+                    handleOpen(val, setOpenThickness, [
+                      setOpenWidth,
+                      setOpenMix,
+                    ])
+                  }
                   setValue={setThickness}
-                  placeholder="Select thickness"
+                  listMode={getListMode()}
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
-                  listMode="SCROLLVIEW"
                 />
               </View>
             )}
@@ -249,30 +241,28 @@ export default function WallFooting() {
             {/* MIX */}
             <Text style={styles.label}>Mixture</Text>
             {mix === 'custom' ? (
-              <>
-                <TextInput
-                  value={customMix}
-                  onChangeText={setCustomMix}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  placeholder="Enter value"
-                />
-                <TouchableOpacity onPress={() => setMix(null)}>
-                  <Text style={styles.backText}>← Back</Text>
-                </TouchableOpacity>
-              </>
+              <TextInput
+                value={customMix}
+                onChangeText={setCustomMix}
+                keyboardType="numeric"
+                style={styles.input}
+              />
             ) : (
-              <View style={{ zIndex: 1000 }}>
+              <View style={dropdownStyle(openMix)}>
                 <DropDownPicker
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={setOpenMix}
+                  setOpen={(val) =>
+                    handleOpen(val, setOpenMix, [
+                      setOpenWidth,
+                      setOpenThickness,
+                    ])
+                  }
                   setValue={setMix}
-                  placeholder="Select mixture"
+                  listMode={getListMode()}
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
-                  listMode="SCROLLVIEW"
                 />
               </View>
             )}
@@ -282,7 +272,6 @@ export default function WallFooting() {
             </TouchableOpacity>
           </View>
 
-          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Result label="Volume (1 pc)" value={`${volume.toFixed(3)} m³`} />
             <Result label="Cement" value={`${cement} bags`} />
@@ -295,6 +284,28 @@ export default function WallFooting() {
   );
 }
 
+/* 🔥 shared helpers */
+function getListMode() {
+  return Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW';
+}
+
+function dropdownStyle(open: boolean) {
+  return {
+    zIndex: open ? 3000 : 1,
+    ...(Platform.OS === 'android' && {
+      elevation: open ? 3000 : 0,
+    }),
+  };
+}
+
+function handleOpen(val: any, setter: any, others: any[]) {
+  setter((prev: boolean) => {
+    const next = typeof val === 'function' ? val(prev) : val;
+    if (next) others.forEach((fn) => fn(false));
+    return next;
+  });
+}
+
 function Result({ label, value }: any) {
   return (
     <View style={styles.resultRow}>
@@ -305,12 +316,7 @@ function Result({ label, value }: any) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
+  header: { alignItems: 'center', marginBottom: 32 },
 
   iconBox: {
     width: 60,
@@ -329,11 +335,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  label: {
-    marginTop: 10,
-    marginBottom: 6,
-    color: '#64748B',
-  },
+  label: { marginTop: 10, marginBottom: 6, color: '#64748B' },
 
   input: {
     backgroundColor: '#F8FAFC',
@@ -348,13 +350,9 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     backgroundColor: '#F8FAFC',
   },
-  dropdownContainer: {
-    borderColor: '#E2E8F0',
-  },
 
-  backText: {
-    color: '#2563EB',
-    marginTop: 6,
+  dropdownContainer: {
+    borderColor: '#E2E8F0', // no elevation
   },
 
   reset: {
@@ -365,15 +363,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  resetText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
+  resetText: { color: '#fff', fontWeight: '600' },
 
   resultCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
+    elevation: 2,
   },
 
   resultRow: {

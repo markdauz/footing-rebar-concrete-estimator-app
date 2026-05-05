@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "footing-rebar-concrete-estimator",
-    "slug": "footing-rebar-concrete-estimator",
+    "name": "Building Material Estimate Calculator",
+    "slug": "building-material-estimate-calculator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "footingrebarconcreteestimator",
+    "scheme": "buildingmaterialestimatecalculator",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.markdauz.buildingmaterialestimatecalculator"
     },
     "web": {
       "output": "static",
@@ -43,6 +44,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "71917fac-4518-40a8-ad05-e0d814beba5f"
+      }
     }
   }
 }

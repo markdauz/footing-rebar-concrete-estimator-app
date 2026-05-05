@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -52,7 +53,6 @@ export default function CHB() {
     { label: '4', value: 4 },
   ];
 
-  // ===== EFFECTIVE VALUES =====
   const effectiveThickness =
     thicknessMode === 'custom'
       ? parseFloat(thickness)
@@ -62,7 +62,6 @@ export default function CHB() {
 
   const numericWebs = webs ?? NaN;
 
-  // ===== COMPUTATIONS =====
   const endWeb = useMemo(
     () => getEndWeb(effectiveThickness),
     [effectiveThickness],
@@ -117,23 +116,22 @@ export default function CHB() {
         }}
       />
 
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
           contentContainerStyle={{
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
-            paddingBottom: 20,
+            paddingBottom: 40,
           }}
         >
-          {/* ICON */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="cube" size={28} color="#0F172A" />
             </View>
           </View>
 
-          {/* INPUT CARD */}
           <View style={styles.card}>
             <Text style={styles.label}>CHB Thickness</Text>
 
@@ -156,20 +154,32 @@ export default function CHB() {
                 </TouchableOpacity>
               </>
             ) : (
-              <View style={{ zIndex: 2000 }}>
+              <View
+                style={{
+                  zIndex: openThickness ? 3000 : 1,
+                  ...(Platform.OS === 'android' && {
+                    elevation: openThickness ? 3000 : 0,
+                  }),
+                }}
+              >
                 <DropDownPicker
                   open={openThickness}
                   value={thicknessMode}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
-                  setValue={(cb) => {
-                    const val = cb(thicknessMode);
-                    if (val === 'custom') {
-                      setThickness('');
-                    }
-                    setThicknessMode(val);
+                  setOpen={(val) => {
+                    setOpenThickness((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) setOpenWebs(false);
+                      return next;
+                    });
                   }}
-                  listMode="SCROLLVIEW"
+                  setValue={(cb) => {
+                    const next =
+                      typeof cb === 'function' ? cb(thicknessMode) : cb;
+                    if (next === 'custom') setThickness('');
+                    setThicknessMode(next);
+                  }}
+                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
@@ -177,14 +187,28 @@ export default function CHB() {
             )}
 
             <Text style={styles.label}># of Web</Text>
-            <View style={{ zIndex: 1000 }}>
+
+            <View
+              style={{
+                zIndex: openWebs ? 2000 : 1,
+                ...(Platform.OS === 'android' && {
+                  elevation: openWebs ? 2000 : 0,
+                }),
+              }}
+            >
               <DropDownPicker
                 open={openWebs}
                 value={webs}
                 items={webItems}
-                setOpen={setOpenWebs}
+                setOpen={(val) => {
+                  setOpenWebs((prev) => {
+                    const next = typeof val === 'function' ? val(prev) : val;
+                    if (next) setOpenThickness(false);
+                    return next;
+                  });
+                }}
                 setValue={setWebs}
-                listMode="SCROLLVIEW"
+                listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropdownContainer}
               />
@@ -195,7 +219,6 @@ export default function CHB() {
             </TouchableOpacity>
           </View>
 
-          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
 
@@ -222,12 +245,7 @@ function Result({ label, value }: any) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
+  header: { alignItems: 'center', marginBottom: 32 },
 
   iconBox: {
     width: 60,
@@ -267,7 +285,7 @@ const styles = StyleSheet.create({
   },
 
   dropdownContainer: {
-    borderColor: '#E2E8F0',
+    borderColor: '#E2E8F0', // no elevation
   },
 
   backText: {
@@ -292,6 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
+    elevation: 2,
   },
 
   resultTitle: {

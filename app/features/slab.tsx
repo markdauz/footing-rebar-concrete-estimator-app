@@ -3,6 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -21,6 +23,7 @@ type MixType = 'aa' | 'a' | 'b' | 'c';
 
 export default function Slab() {
   const insets = useSafeAreaInsets();
+
   const [area, setArea] = useState('');
 
   const [thickness, setThickness] = useState<string | 'custom' | null>(null);
@@ -94,9 +97,18 @@ export default function Slab() {
           headerTintColor: '#0F172A',
         }}
       />
-      <SafeAreaView style={styles.screen}>
-        <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
-          <View style={[styles.header]}>
+
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          contentContainerStyle={{
+            paddingTop: insets.top + 10,
+            paddingHorizontal: 16,
+            paddingBottom: 40,
+          }}
+        >
+          <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="grid-outline" size={28} color="#0F172A" />
             </View>
@@ -133,21 +145,34 @@ export default function Slab() {
                 </TouchableOpacity>
               </>
             ) : (
-              <View style={{ zIndex: 2000 }}>
+              <View
+                style={{
+                  zIndex: openThickness ? 3000 : 1,
+                  ...(Platform.OS === 'android' && {
+                    elevation: openThickness ? 3000 : 0,
+                  }),
+                }}
+              >
                 <DropDownPicker
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
+                  setOpen={(val) => {
+                    setOpenThickness((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) setOpenMix(false);
+                      return next;
+                    });
+                  }}
                   setValue={setThickness}
                   placeholder="Select thickness"
+                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
               </View>
             )}
 
-            {/* MIX */}
             <Text style={styles.label}>Mixture</Text>
 
             {mix === 'custom' ? (
@@ -169,14 +194,28 @@ export default function Slab() {
                 </TouchableOpacity>
               </>
             ) : (
-              <View style={{ zIndex: 1000 }}>
+              <View
+                style={{
+                  zIndex: openMix ? 2000 : 1,
+                  ...(Platform.OS === 'android' && {
+                    elevation: openMix ? 2000 : 0,
+                  }),
+                }}
+              >
                 <DropDownPicker
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={setOpenMix}
+                  setOpen={(val) => {
+                    setOpenMix((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) setOpenThickness(false);
+                      return next;
+                    });
+                  }}
                   setValue={setMix}
                   placeholder="Select mixture"
+                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
@@ -196,7 +235,7 @@ export default function Slab() {
             <Result label="Sand" value={`${sand} m³`} />
             <Result label="Gravel" value={`${gravel} m³`} />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -212,16 +251,8 @@ function Result({ label, value }: any) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  container: {
-    padding: 16,
-    paddingTop: 16,
-  },
-  header: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 32,
-  },
+  header: { alignItems: 'center', marginBottom: 32 },
+
   iconBox: {
     width: 60,
     height: 60,
@@ -240,7 +271,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     elevation: 2,
   },
+
   label: { color: '#64748B', marginBottom: 6, marginTop: 10 },
+
   input: {
     backgroundColor: '#F8FAFC',
     borderRadius: 10,
@@ -248,19 +281,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
+
   dropdown: {
     borderRadius: 10,
     borderColor: '#E2E8F0',
     backgroundColor: '#F8FAFC',
   },
+
   dropdownContainer: {
-    borderColor: '#E2E8F0',
+    borderColor: '#E2E8F0', // no elevation
   },
+
   backText: {
     color: '#2563EB',
     marginTop: 6,
     fontSize: 13,
   },
+
   reset: {
     marginTop: 16,
     backgroundColor: '#475569',
@@ -268,23 +305,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
+
   resetText: { color: '#fff', fontWeight: '600' },
+
   resultCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     elevation: 2,
   },
+
   resultTitle: {
     fontWeight: '600',
     marginBottom: 10,
     color: '#0F172A',
   },
+
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
+
   resultLabel: { color: '#64748B' },
   resultValue: { fontWeight: '600', color: '#0F172A' },
 });
