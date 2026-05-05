@@ -265,11 +265,6 @@ export default function Slab() {
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-            <Result
-              label="Volume"
-              value={`${volume.toFixed(3)} m³`}
-              highlight
-            />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
             <Result label="Gravel" value={`${gravel} m³`} />

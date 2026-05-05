@@ -301,11 +301,7 @@ export default function Footing() {
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-            <Result label="Volume (1 pc)" value={`${volume.toFixed(3)} m³`} />
-            <Result
-              label="Total Volume"
-              value={`${totalVolume.toFixed(3)} m³`}
-            />
+            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
             <Result label="Gravel" value={`${gravel} m³`} />
