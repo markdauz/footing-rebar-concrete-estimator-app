@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -25,20 +26,27 @@ import {
 } from '../../utils/mortarCalculator';
 
 type MixType = 'a' | 'b' | 'c' | 'd';
+type MixValue = MixType | 'custom';
+type ThicknessValue = '0.10' | '0.125' | '0.150' | '0.20' | '0.25' | 'custom';
+
+type Item<T> = { label: string; value: T };
+
+const isAndroid = Platform.OS === 'android';
 
 export default function Mortar() {
   const insets = useSafeAreaInsets();
 
   const [area, setArea] = useState('');
-  const [thickness, setThickness] = useState<string | 'custom' | null>(null);
+
+  const [thickness, setThickness] = useState<ThicknessValue | null>(null);
   const [customThickness, setCustomThickness] = useState('');
   const [openThickness, setOpenThickness] = useState(false);
 
-  const [mix, setMix] = useState<MixType | 'custom' | null>(null);
+  const [mix, setMix] = useState<MixValue | null>(null);
   const [customMix, setCustomMix] = useState('');
   const [openMix, setOpenMix] = useState(false);
 
-  const thicknessItems = [
+  const thicknessItems: Item<ThicknessValue>[] = [
     { label: '0.10', value: '0.10' },
     { label: '0.125', value: '0.125' },
     { label: '0.150', value: '0.150' },
@@ -47,7 +55,7 @@ export default function Mortar() {
     { label: 'Custom', value: 'custom' },
   ];
 
-  const mixItems = [
+  const mixItems: Item<MixValue>[] = [
     { label: 'A (1:2)', value: 'a' },
     { label: 'B (1:3)', value: 'b' },
     { label: 'C (1:4)', value: 'c' },
@@ -55,12 +63,12 @@ export default function Mortar() {
     { label: 'Custom', value: 'custom' },
   ];
 
-  const effectiveThickness = useMemo(() => {
-    if (thickness === 'custom') {
-      return customThickness ? parseFloat(customThickness) : NaN;
-    }
-    return thickness ? parseFloat(thickness) : NaN;
-  }, [thickness, customThickness]);
+  const effectiveThickness =
+    thickness === 'custom'
+      ? parseFloat(customThickness)
+      : thickness
+        ? parseFloat(thickness)
+        : NaN;
 
   const numericArea = parseFloat(area);
 
@@ -78,17 +86,12 @@ export default function Mortar() {
     if (!numericArea || !volume) return '0.00';
 
     if (mix === 'custom') {
-      if (!customMix) return '0.00';
-      return getCement(
-        volume,
-        numericArea,
-        'custom',
-        parseFloat(customMix),
-      ).toFixed(2);
+      const val = parseFloat(customMix);
+      if (isNaN(val)) return '0.00';
+      return getCement(volume, numericArea, 'custom', val).toFixed(2);
     }
 
     if (!mix) return '0.00';
-
     return getCement(volume, numericArea, mix, 0).toFixed(2);
   }, [volume, numericArea, mix, customMix]);
 
@@ -105,33 +108,70 @@ export default function Mortar() {
     setCustomMix('');
   };
 
+  function renderModal<T>(
+    visible: boolean,
+    setVisible: (v: boolean) => void,
+    items: Item<T>[],
+    onSelect: (value: T) => void,
+  ) {
+    return (
+      <Modal visible={visible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.handle} />
+
+            <ScrollView>
+              {items.map((item) => (
+                <TouchableOpacity
+                  key={String(item.value)}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    onSelect(item.value);
+                    setVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setVisible(false)}>
+              <Text style={styles.modalCancel}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
   return (
-    <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <Stack.Screen
-        options={{
-          headerShown: true,
-          title: 'Mortar Calculator',
-          headerTransparent: true,
-        }}
+        options={{ headerShown: true, title: '', headerTransparent: true }}
       />
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
-          keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
             paddingBottom: 40,
           }}
         >
+          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="flask-outline" size={28} color="#0F172A" />
+              <Ionicons name="flask-outline" size={26} color="#1e293b" />
             </View>
+            <Text style={styles.title}>Mortar Calculator</Text>
+            <Text style={styles.subtitle}>Mortar estimation</Text>
           </View>
 
+          {/* INPUT CARD */}
           <View style={styles.card}>
+            {/* THICKNESS */}
             <Text style={styles.label}>CHB Thickness</Text>
 
             {thickness === 'custom' ? (
@@ -146,42 +186,52 @@ export default function Mortar() {
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenThickness(true)}
+                >
+                  <Text>{thickness ?? 'Select thickness'}</Text>
+                </TouchableOpacity>
+                {renderModal(
+                  openThickness,
+                  setOpenThickness,
+                  thicknessItems,
+                  setThickness,
+                )}
+              </>
             ) : (
-              <View
-                style={{
-                  zIndex: openThickness ? 3000 : 1,
-                  ...(Platform.OS === 'android' && {
-                    elevation: openThickness ? 3000 : 0,
-                  }),
-                }}
-              >
+              <View style={{ zIndex: 3000 }}>
                 <DropDownPicker
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
-                  setOpen={(val) => {
-                    setOpenThickness((prev) => {
-                      const next = typeof val === 'function' ? val(prev) : val;
-                      if (next) setOpenMix(false);
-                      return next;
-                    });
-                  }}
+                  setOpen={setOpenThickness}
                   setValue={setThickness}
-                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
+                  ArrowDownIconComponent={() => (
+                    <Ionicons name="chevron-down" size={18} color="#475569" />
+                  )}
+                  ArrowUpIconComponent={() => (
+                    <Ionicons name="chevron-up" size={18} color="#475569" />
+                  )}
                 />
               </View>
             )}
 
+            {/* AREA */}
             <Text style={styles.label}>Area (sqm)</Text>
             <TextInput
               value={area}
               onChangeText={setArea}
-              keyboardType="numeric"
               style={styles.input}
+              keyboardType="numeric"
             />
 
+            {/* MIX */}
             <Text style={styles.label}>Mixture</Text>
 
             {mix === 'custom' ? (
@@ -196,30 +246,33 @@ export default function Mortar() {
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenMix(true)}
+                >
+                  <Text>{mix ?? 'Select mix'}</Text>
+                </TouchableOpacity>
+                {renderModal(openMix, setOpenMix, mixItems, setMix)}
+              </>
             ) : (
-              <View
-                style={{
-                  zIndex: openMix ? 2000 : 1,
-                  ...(Platform.OS === 'android' && {
-                    elevation: openMix ? 2000 : 0,
-                  }),
-                }}
-              >
+              <View style={{ zIndex: 2000 }}>
                 <DropDownPicker
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={(val) => {
-                    setOpenMix((prev) => {
-                      const next = typeof val === 'function' ? val(prev) : val;
-                      if (next) setOpenThickness(false);
-                      return next;
-                    });
-                  }}
+                  setOpen={setOpenMix}
                   setValue={setMix}
-                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
+                  ArrowDownIconComponent={() => (
+                    <Ionicons name="chevron-down" size={18} color="#475569" />
+                  )}
+                  ArrowUpIconComponent={() => (
+                    <Ionicons name="chevron-up" size={18} color="#475569" />
+                  )}
                 />
               </View>
             )}
@@ -229,9 +282,9 @@ export default function Mortar() {
             </TouchableOpacity>
           </View>
 
+          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-
             <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
             <Result label="Area" value={`${area || 0} sqm`} />
             <Result label="Total CHB" value={`${totalPcs}`} />
@@ -244,7 +297,7 @@ export default function Mortar() {
   );
 }
 
-function Result({ label, value }: any) {
+function Result({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
@@ -254,67 +307,76 @@ function Result({ label, value }: any) {
 }
 
 const styles = StyleSheet.create({
-  header: { alignItems: 'center', marginBottom: 32 },
+  header: { alignItems: 'center', marginBottom: 24 },
 
   iconBox: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
     elevation: 2,
   },
 
-  label: { marginTop: 10, marginBottom: 6, color: '#64748B' },
+  title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
+  subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
+
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
+    elevation: 3,
+  },
+
+  label: {
+    marginTop: 12,
+    marginBottom: 6,
+    fontWeight: '600',
+    color: '#334155',
+  },
 
   input: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#cbd5e1',
   },
 
   dropdown: {
-    borderRadius: 10,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderColor: '#cbd5e1',
   },
 
   dropdownContainer: {
-    borderColor: '#E2E8F0', // no elevation
+    borderColor: '#cbd5e1',
   },
 
   backText: { color: '#2563EB', marginTop: 6 },
 
   reset: {
-    marginTop: 16,
-    backgroundColor: '#475569',
+    marginTop: 18,
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
+    backgroundColor: '#475569',
   },
 
   resetText: { color: '#fff', fontWeight: '600' },
 
   resultCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    elevation: 2,
+    backgroundColor: '#0f172a',
+    borderRadius: 18,
+    padding: 18,
   },
 
   resultTitle: {
-    fontWeight: '600',
-    marginBottom: 10,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#e2e8f0',
   },
 
   resultRow: {
@@ -323,6 +385,44 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  resultLabel: { color: '#64748B' },
-  resultValue: { fontWeight: '600' },
+  resultLabel: { color: '#94a3b8' },
+  resultValue: { fontWeight: '700', color: '#fff' },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-end',
+  },
+
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    maxHeight: '50%',
+    margin: 12,
+  },
+
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+
+  modalText: { fontSize: 15 },
+
+  modalCancel: {
+    textAlign: 'center',
+    marginTop: 12,
+    color: '#ef4444',
+    fontWeight: '600',
+  },
 });

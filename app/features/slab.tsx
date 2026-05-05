@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -20,6 +21,8 @@ import {
 import { computeCement, computeVolume } from '../../utils/slabCalculator';
 
 type MixType = 'aa' | 'a' | 'b' | 'c';
+
+const isAndroid = Platform.OS === 'android';
 
 export default function Slab() {
   const insets = useSafeAreaInsets();
@@ -86,34 +89,69 @@ export default function Slab() {
     setCustomMix('');
   };
 
+  const renderAndroidModal = (
+    visible: boolean,
+    setVisible: (v: boolean) => void,
+    items: any[],
+    onSelect: (value: any) => void,
+  ) => (
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalCard}>
+          <View style={styles.handle} />
+
+          {items.map((item) => (
+            <TouchableOpacity
+              key={item.value}
+              style={styles.modalItem}
+              onPress={() => {
+                onSelect(item.value);
+                setVisible(false);
+              }}
+            >
+              <Text style={styles.modalText}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+
+          <TouchableOpacity onPress={() => setVisible(false)}>
+            <Text style={styles.modalCancel}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
-    <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <Stack.Screen
         options={{
           headerShown: true,
-          title: 'Slab Calculator',
+          title: '',
           headerTransparent: true,
-          headerTitleStyle: { color: '#0F172A' },
-          headerTintColor: '#0F172A',
         }}
       />
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled
           contentContainerStyle={{
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
             paddingBottom: 40,
           }}
         >
+          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="grid-outline" size={28} color="#0F172A" />
+              <Ionicons name="grid-outline" size={26} color="#1e293b" />
             </View>
+            <Text style={styles.title}>Slab Calculator</Text>
+            <Text style={styles.subtitle}>
+              Concrete volume & material estimator
+            </Text>
           </View>
 
+          {/* INPUT CARD */}
           <View style={styles.card}>
             <Text style={styles.label}>Area (sqm)</Text>
             <TextInput
@@ -124,6 +162,7 @@ export default function Slab() {
               placeholder="0.00"
             />
 
+            {/* THICKNESS */}
             <Text style={styles.label}>Thickness (m)</Text>
 
             {thickness === 'custom' ? (
@@ -144,15 +183,28 @@ export default function Slab() {
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenThickness(true)}
+                >
+                  <Text>
+                    {thickness
+                      ? thicknessItems.find((i) => i.value === thickness)?.label
+                      : 'Select thickness'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openThickness,
+                  setOpenThickness,
+                  thicknessItems,
+                  setThickness,
+                )}
+              </>
             ) : (
-              <View
-                style={{
-                  zIndex: openThickness ? 3000 : 1,
-                  ...(Platform.OS === 'android' && {
-                    elevation: openThickness ? 3000 : 0,
-                  }),
-                }}
-              >
+              <View style={{ zIndex: 1000 }}>
                 <DropDownPicker
                   open={openThickness}
                   value={thickness}
@@ -166,13 +218,14 @@ export default function Slab() {
                   }}
                   setValue={setThickness}
                   placeholder="Select thickness"
-                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
               </View>
             )}
 
+            {/* MIX */}
             <Text style={styles.label}>Mixture</Text>
 
             {mix === 'custom' ? (
@@ -193,15 +246,23 @@ export default function Slab() {
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenMix(true)}
+                >
+                  <Text>
+                    {mix
+                      ? mixItems.find((i) => i.value === mix)?.label
+                      : 'Select mixture'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(openMix, setOpenMix, mixItems, setMix)}
+              </>
             ) : (
-              <View
-                style={{
-                  zIndex: openMix ? 2000 : 1,
-                  ...(Platform.OS === 'android' && {
-                    elevation: openMix ? 2000 : 0,
-                  }),
-                }}
-              >
+              <View style={{ zIndex: 900 }}>
                 <DropDownPicker
                   open={openMix}
                   value={mix}
@@ -215,7 +276,7 @@ export default function Slab() {
                   }}
                   setValue={setMix}
                   placeholder="Select mixture"
-                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
@@ -227,10 +288,15 @@ export default function Slab() {
             </TouchableOpacity>
           </View>
 
+          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
 
-            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
+            <Result
+              label="Volume"
+              value={`${volume.toFixed(3)} m³`}
+              highlight
+            />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
             <Result label="Gravel" value={`${gravel} m³`} />
@@ -241,55 +307,81 @@ export default function Slab() {
   );
 }
 
-function Result({ label, value }: any) {
+function Result({ label, value, highlight }: any) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
-      <Text style={styles.resultValue}>{value}</Text>
+      <Text style={[styles.resultValue, highlight && { fontSize: 18 }]}>
+        {value}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { alignItems: 'center', marginBottom: 32 },
+  header: { alignItems: 'center', marginBottom: 24 },
 
   iconBox: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 2,
+  },
+
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 10,
+  },
+
+  subtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 4,
   },
 
   card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
+    elevation: 3,
   },
 
-  label: { color: '#64748B', marginBottom: 6, marginTop: 10 },
+  label: {
+    color: '#334155',
+    marginBottom: 6,
+    marginTop: 14,
+    fontSize: 13,
+    fontWeight: '600',
+  },
 
   input: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#cbd5e1',
+  },
+
+  androidInput: {
+    justifyContent: 'center',
   },
 
   dropdown: {
-    borderRadius: 10,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
+    minHeight: 50,
   },
 
   dropdownContainer: {
-    borderColor: '#E2E8F0', // no elevation
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
   },
 
   backText: {
@@ -299,26 +391,32 @@ const styles = StyleSheet.create({
   },
 
   reset: {
-    marginTop: 16,
-    backgroundColor: '#475569',
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
+    backgroundColor: '#f8fafc',
   },
 
-  resetText: { color: '#fff', fontWeight: '600' },
+  resetText: {
+    color: '#475569',
+    fontWeight: '600',
+  },
 
   resultCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    elevation: 2,
+    backgroundColor: '#0f172a',
+    borderRadius: 18,
+    padding: 18,
+    elevation: 3,
   },
 
   resultTitle: {
-    fontWeight: '600',
-    marginBottom: 10,
-    color: '#0F172A',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#e2e8f0',
   },
 
   resultRow: {
@@ -327,6 +425,56 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  resultLabel: { color: '#64748B' },
-  resultValue: { fontWeight: '600', color: '#0F172A' },
+  resultLabel: {
+    color: '#94a3b8',
+  },
+
+  resultValue: {
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-end',
+  },
+
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    maxHeight: '50%',
+    marginHorizontal: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+
+  modalText: {
+    fontSize: 15,
+    color: '#0f172a',
+  },
+
+  modalCancel: {
+    textAlign: 'center',
+    marginTop: 12,
+    color: '#ef4444',
+    fontWeight: '600',
+  },
 });

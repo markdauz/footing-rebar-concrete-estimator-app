@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -25,27 +26,34 @@ import {
 } from '../../utils/wallFootingCalculator';
 
 type MixType = 'aa' | 'a' | 'b' | 'c';
+type MixValue = MixType | 'custom';
+
+type WidthValue = '0.30' | '0.35' | '0.40' | '0.50' | '0.60' | 'custom';
+type ThicknessValue = '0.10' | '0.15' | '0.20' | '0.25' | '0.30' | 'custom';
+
+type Item<T> = { label: string; value: T };
+
+const isAndroid = Platform.OS === 'android';
 
 export default function WallFooting() {
   const insets = useSafeAreaInsets();
 
   const [sets, setSets] = useState('');
+  const [length, setLength] = useState('');
 
-  const [width, setWidth] = useState<string | 'custom' | null>(null);
+  const [width, setWidth] = useState<WidthValue | null>(null);
   const [customWidth, setCustomWidth] = useState('');
   const [openWidth, setOpenWidth] = useState(false);
 
-  const [length, setLength] = useState('');
-
-  const [thickness, setThickness] = useState<string | 'custom' | null>(null);
+  const [thickness, setThickness] = useState<ThicknessValue | null>(null);
   const [customThickness, setCustomThickness] = useState('');
   const [openThickness, setOpenThickness] = useState(false);
 
-  const [mix, setMix] = useState<MixType | 'custom' | null>(null);
+  const [mix, setMix] = useState<MixValue | null>(null);
   const [customMix, setCustomMix] = useState('');
   const [openMix, setOpenMix] = useState(false);
 
-  const widthItems = [
+  const widthItems: Item<WidthValue>[] = [
     { label: '0.30', value: '0.30' },
     { label: '0.35', value: '0.35' },
     { label: '0.40', value: '0.40' },
@@ -54,7 +62,7 @@ export default function WallFooting() {
     { label: 'Custom', value: 'custom' },
   ];
 
-  const thicknessItems = [
+  const thicknessItems: Item<ThicknessValue>[] = [
     { label: '0.10', value: '0.10' },
     { label: '0.15', value: '0.15' },
     { label: '0.20', value: '0.20' },
@@ -63,7 +71,7 @@ export default function WallFooting() {
     { label: 'Custom', value: 'custom' },
   ];
 
-  const mixItems = [
+  const mixItems: Item<MixValue>[] = [
     { label: 'AA (1:1½:3)', value: 'aa' },
     { label: 'A (1:2:4)', value: 'a' },
     { label: 'B (1:2½:5)', value: 'b' },
@@ -88,9 +96,6 @@ export default function WallFooting() {
   const numericLength = parseFloat(length);
   const numericSets = parseFloat(sets);
 
-  const effectiveMix =
-    mix === 'custom' ? (customMix ? parseFloat(customMix) : '') : mix || '';
-
   const volume = useMemo(() => {
     if (
       isNaN(effectiveWidth) ||
@@ -104,7 +109,7 @@ export default function WallFooting() {
       numericLength,
       effectiveThickness,
     );
-  }, [effectiveWidth, numericLength, effectiveThickness]);
+  }, [effectiveWidth, effectiveThickness, numericLength]);
 
   const totalVolume = useMemo(() => {
     if (!volume || isNaN(numericSets)) return 0;
@@ -112,45 +117,104 @@ export default function WallFooting() {
   }, [volume, numericSets]);
 
   const cement = useMemo(() => {
-    if (!totalVolume || !effectiveMix) return '0.00';
-    return computeWallFootingCement(totalVolume, effectiveMix);
-  }, [totalVolume, effectiveMix]);
+    if (!totalVolume) return '0.00';
+
+    if (mix === 'custom') {
+      const val = parseFloat(customMix);
+      if (isNaN(val)) return '0.00';
+      return computeWallFootingCement(totalVolume, val);
+    }
+
+    if (!mix) return '0.00';
+
+    return computeWallFootingCement(totalVolume, mix);
+  }, [totalVolume, mix, customMix]);
 
   const sand = useMemo(() => {
-    if (!totalVolume || !effectiveMix) return '0.00';
-    return computeWallFootingSand(totalVolume, effectiveMix);
-  }, [totalVolume, effectiveMix]);
+    if (!totalVolume) return '0.00';
+
+    if (mix === 'custom') {
+      const val = parseFloat(customMix);
+      if (isNaN(val)) return '0.00';
+      return computeWallFootingSand(totalVolume, val);
+    }
+
+    if (!mix) return '0.00';
+
+    return computeWallFootingSand(totalVolume, mix);
+  }, [totalVolume, mix, customMix]);
 
   const gravel = useMemo(() => {
-    if (!totalVolume || !effectiveMix) return '0.00';
-    return computeWallFootingGravel(totalVolume, effectiveMix);
-  }, [totalVolume, effectiveMix]);
+    if (!totalVolume) return '0.00';
+
+    if (mix === 'custom') {
+      const val = parseFloat(customMix);
+      if (isNaN(val)) return '0.00';
+      return computeWallFootingGravel(totalVolume, val);
+    }
+
+    if (!mix) return '0.00';
+
+    return computeWallFootingGravel(totalVolume, mix);
+  }, [totalVolume, mix, customMix]);
 
   const reset = () => {
     setSets('');
+    setLength('');
     setWidth(null);
     setCustomWidth('');
-    setLength('');
     setThickness(null);
     setCustomThickness('');
     setMix(null);
     setCustomMix('');
   };
 
+  function renderAndroidModal<T>(
+    visible: boolean,
+    setVisible: (v: boolean) => void,
+    items: Item<T>[],
+    onSelect: (value: T) => void,
+  ) {
+    return (
+      <Modal visible={visible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.handle} />
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
+              {items.map((item) => (
+                <TouchableOpacity
+                  key={String(item.value)}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    onSelect(item.value);
+                    setVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <TouchableOpacity onPress={() => setVisible(false)}>
+              <Text style={styles.modalCancel}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
   return (
-    <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <Stack.Screen
-        options={{
-          headerShown: true,
-          title: 'Wall Footing',
-          headerTransparent: true,
-        }}
+        options={{ headerShown: true, title: '', headerTransparent: true }}
       />
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled
           contentContainerStyle={{
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
@@ -159,8 +223,10 @@ export default function WallFooting() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="square-outline" size={28} color="#0F172A" />
+              <Ionicons name="square-outline" size={26} color="#1e293b" />
             </View>
+            <Text style={styles.title}>Wall Footing</Text>
+            <Text style={styles.subtitle}>Concrete footing estimator</Text>
           </View>
 
           <View style={styles.card}>
@@ -168,99 +234,142 @@ export default function WallFooting() {
             <TextInput
               value={sets}
               onChangeText={setSets}
-              keyboardType="numeric"
               style={styles.input}
+              keyboardType="numeric"
             />
 
-            {/* WIDTH */}
-            <Text style={styles.label}>Width</Text>
-            {width === 'custom' ? (
-              <TextInput
-                value={customWidth}
-                onChangeText={setCustomWidth}
-                keyboardType="numeric"
-                style={styles.input}
-              />
+            <Text style={styles.label}>Length (m)</Text>
+            <TextInput
+              value={length}
+              onChangeText={setLength}
+              style={styles.input}
+              keyboardType="numeric"
+            />
+
+            {/* Width */}
+            <Text style={styles.label}>Width (m)</Text>
+            {isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenWidth(true)}
+                >
+                  <Text>{width ?? 'Select width'}</Text>
+                </TouchableOpacity>
+                {renderAndroidModal(
+                  openWidth,
+                  setOpenWidth,
+                  widthItems,
+                  setWidth,
+                )}
+              </>
             ) : (
-              <View style={dropdownStyle(openWidth)}>
-                <DropDownPicker
+              <View style={{ zIndex: 3000 }}>
+                <DropDownPicker<WidthValue>
                   open={openWidth}
                   value={width}
                   items={widthItems}
                   setOpen={(val) =>
-                    handleOpen(val, setOpenWidth, [
-                      setOpenThickness,
-                      setOpenMix,
-                    ])
+                    setOpenWidth((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) {
+                        setOpenThickness(false);
+                        setOpenMix(false);
+                      }
+                      return next;
+                    })
                   }
-                  setValue={setWidth}
-                  listMode={getListMode()}
+                  setValue={(val) =>
+                    setWidth((prev) =>
+                      typeof val === 'function' ? val(prev) : val,
+                    )
+                  }
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
               </View>
             )}
 
-            <Text style={styles.label}>Length</Text>
-            <TextInput
-              value={length}
-              onChangeText={setLength}
-              keyboardType="numeric"
-              style={styles.input}
-            />
-
-            {/* THICKNESS */}
-            <Text style={styles.label}>Thickness</Text>
-            {thickness === 'custom' ? (
-              <TextInput
-                value={customThickness}
-                onChangeText={setCustomThickness}
-                keyboardType="numeric"
-                style={styles.input}
-              />
+            {/* Thickness */}
+            <Text style={styles.label}>Thickness (m)</Text>
+            {isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenThickness(true)}
+                >
+                  <Text>{thickness ?? 'Select thickness'}</Text>
+                </TouchableOpacity>
+                {renderAndroidModal(
+                  openThickness,
+                  setOpenThickness,
+                  thicknessItems,
+                  setThickness,
+                )}
+              </>
             ) : (
-              <View style={dropdownStyle(openThickness)}>
-                <DropDownPicker
+              <View style={{ zIndex: 2000 }}>
+                <DropDownPicker<ThicknessValue>
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
                   setOpen={(val) =>
-                    handleOpen(val, setOpenThickness, [
-                      setOpenWidth,
-                      setOpenMix,
-                    ])
+                    setOpenThickness((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) {
+                        setOpenWidth(false);
+                        setOpenMix(false);
+                      }
+                      return next;
+                    })
                   }
-                  setValue={setThickness}
-                  listMode={getListMode()}
+                  setValue={(val) =>
+                    setThickness((prev) =>
+                      typeof val === 'function' ? val(prev) : val,
+                    )
+                  }
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
               </View>
             )}
 
-            {/* MIX */}
+            {/* Mix */}
             <Text style={styles.label}>Mixture</Text>
-            {mix === 'custom' ? (
-              <TextInput
-                value={customMix}
-                onChangeText={setCustomMix}
-                keyboardType="numeric"
-                style={styles.input}
-              />
+            {isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenMix(true)}
+                >
+                  <Text>{mix ?? 'Select mix'}</Text>
+                </TouchableOpacity>
+                {renderAndroidModal(openMix, setOpenMix, mixItems, setMix)}
+              </>
             ) : (
-              <View style={dropdownStyle(openMix)}>
-                <DropDownPicker
+              <View style={{ zIndex: 1000 }}>
+                <DropDownPicker<MixValue>
                   open={openMix}
                   value={mix}
                   items={mixItems}
                   setOpen={(val) =>
-                    handleOpen(val, setOpenMix, [
-                      setOpenWidth,
-                      setOpenThickness,
-                    ])
+                    setOpenMix((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) {
+                        setOpenWidth(false);
+                        setOpenThickness(false);
+                      }
+                      return next;
+                    })
                   }
-                  setValue={setMix}
-                  listMode={getListMode()}
+                  setValue={(val) =>
+                    setMix((prev) =>
+                      typeof val === 'function' ? val(prev) : val,
+                    )
+                  }
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
@@ -272,8 +381,15 @@ export default function WallFooting() {
             </TouchableOpacity>
           </View>
 
+          {/* RESULTS */}
           <View style={styles.resultCard}>
+            <Text style={styles.resultTitle}>Results</Text>
+
             <Result label="Volume (1 pc)" value={`${volume.toFixed(3)} m³`} />
+            <Result
+              label="Total Volume"
+              value={`${totalVolume.toFixed(3)} m³`}
+            />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
             <Result label="Gravel" value={`${gravel} m³`} />
@@ -284,29 +400,7 @@ export default function WallFooting() {
   );
 }
 
-/* 🔥 shared helpers */
-function getListMode() {
-  return Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW';
-}
-
-function dropdownStyle(open: boolean) {
-  return {
-    zIndex: open ? 3000 : 1,
-    ...(Platform.OS === 'android' && {
-      elevation: open ? 3000 : 0,
-    }),
-  };
-}
-
-function handleOpen(val: any, setter: any, others: any[]) {
-  setter((prev: boolean) => {
-    const next = typeof val === 'function' ? val(prev) : val;
-    if (next) others.forEach((fn) => fn(false));
-    return next;
-  });
-}
-
-function Result({ label, value }: any) {
+function Result({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
@@ -316,60 +410,74 @@ function Result({ label, value }: any) {
 }
 
 const styles = StyleSheet.create({
-  header: { alignItems: 'center', marginBottom: 32 },
-
+  header: { alignItems: 'center', marginBottom: 24 },
   iconBox: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 2,
   },
+  title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
+  subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
 
   card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
+    elevation: 3,
   },
 
-  label: { marginTop: 10, marginBottom: 6, color: '#64748B' },
+  label: {
+    marginTop: 12,
+    marginBottom: 6,
+    fontWeight: '600',
+    color: '#334155',
+  },
 
   input: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#cbd5e1',
   },
 
   dropdown: {
-    borderRadius: 10,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
   },
 
   dropdownContainer: {
-    borderColor: '#E2E8F0', // no elevation
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
   },
 
   reset: {
-    marginTop: 16,
-    backgroundColor: '#475569',
+    marginTop: 18,
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
+    backgroundColor: '#475569',
   },
 
   resetText: { color: '#fff', fontWeight: '600' },
 
   resultCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    elevation: 2,
+    backgroundColor: '#0f172a',
+    borderRadius: 18,
+    padding: 18,
+  },
+
+  resultTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#e2e8f0',
   },
 
   resultRow: {
@@ -378,6 +486,48 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  resultLabel: { color: '#64748B' },
-  resultValue: { fontWeight: '600' },
+  resultLabel: { color: '#94a3b8' },
+
+  resultValue: {
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-end',
+  },
+
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    maxHeight: '50%',
+    margin: 12,
+  },
+
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+
+  modalText: { fontSize: 15 },
+
+  modalCancel: {
+    textAlign: 'center',
+    marginTop: 12,
+    color: '#ef4444',
+  },
 });

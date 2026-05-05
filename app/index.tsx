@@ -6,7 +6,7 @@ export default function Onboarding() {
   const router = useRouter();
 
   return (
-    <LinearGradient colors={['#0ea5e9', '#0369a1']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.glow} />
 
@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   iconImage: {
     width: 80,
     height: 80,
@@ -56,8 +57,8 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: '#38bdf8',
-    opacity: 0.25,
+    backgroundColor: '#94a3b8',
+    opacity: 0.15,
     top: '20%',
   },
 
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     elevation: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
   },
@@ -76,35 +77,35 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: '800',
-    color: '#e0f2fe',
+    color: '#1e293b',
     marginBottom: 6,
     letterSpacing: 0.5,
   },
 
   subtitle: {
     fontSize: 15,
-    color: '#bae6fd',
+    color: '#475569',
     textAlign: 'center',
     marginBottom: 18,
   },
 
   featureInline: {
     fontSize: 13,
-    color: '#e0f2fe',
+    color: '#334155',
     marginBottom: 50,
     opacity: 0.85,
   },
 
   button: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#475569',
     paddingVertical: 16,
     paddingHorizontal: 48,
     borderRadius: 30,
-    elevation: 6,
+    elevation: 4,
   },
 
   buttonText: {
-    color: '#0369a1',
+    color: '#ffffff',
     fontWeight: '700',
     fontSize: 16,
   },

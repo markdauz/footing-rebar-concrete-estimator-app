@@ -2,9 +2,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
-const features = [
+type Route =
+  | '/features/slab'
+  | '/features/footing'
+  | '/features/column'
+  | '/features/beam'
+  | '/features/mortar'
+  | '/features/plaster'
+  | '/features/wall-footing'
+  | '/features/chb';
+
+type Feature = {
+  name: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  route: Route;
+};
+
+const features: Feature[] = [
   { name: 'Slab', icon: 'grid-outline', route: '/features/slab' },
   { name: 'Footing', icon: 'cube-outline', route: '/features/footing' },
   { name: 'Column', icon: 'apps-outline', route: '/features/column' },
@@ -21,33 +40,46 @@ const features = [
 
 export default function Concrete() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Concrete Calculators</Text>
+    <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <View style={styles.iconBox}>
+              <Ionicons name="construct-outline" size={26} color="#1e293b" />
+            </View>
 
+            <Text style={styles.title}>Concrete Tools</Text>
+            <Text style={styles.subtitle}>Select a calculator to begin</Text>
+          </View>
+
+          {/* GRID */}
           <View style={styles.grid}>
-            {[0, 1, 2, 3].map((row, index) => (
-              <View
-                key={row}
-                style={[styles.row, index === 3 && { marginBottom: 0 }]}
-              >
-                {features.slice(row * 2, row * 2 + 2).map((feature: any, i) => (
-                  <TouchableOpacity
-                    key={feature.name}
-                    style={[styles.card, i === 0 && { marginRight: 12 }]}
-                    onPress={() => router.push(feature.route)}
-                  >
-                    <Ionicons
-                      name={feature.icon as any}
-                      size={32}
-                      color="#334155"
-                    />
-                    <Text style={styles.cardText}>{feature.name}</Text>
-                  </TouchableOpacity>
-                ))}
+            {[0, 1, 2, 3].map((rowIndex) => (
+              <View key={rowIndex} style={styles.row}>
+                {features
+                  .slice(rowIndex * 2, rowIndex * 2 + 2)
+                  .map((feature, i) => (
+                    <TouchableOpacity
+                      key={feature.name}
+                      style={[styles.card, i === 0 && { marginRight: 12 }]}
+                      activeOpacity={0.85}
+                      onPress={() => router.push(feature.route)}
+                    >
+                      <View style={styles.cardIconBox}>
+                        <Ionicons
+                          name={feature.icon as any}
+                          size={22}
+                          color="#1e293b"
+                        />
+                      </View>
+
+                      <Text style={styles.cardText}>{feature.name}</Text>
+                    </TouchableOpacity>
+                  ))}
               </View>
             ))}
           </View>
@@ -59,23 +91,36 @@ export default function Concrete() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: 16,
     flex: 1,
+  },
+
+  header: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+
+  iconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
   },
 
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#334155',
-    marginBottom: 16,
-    textAlign: 'center',
+    marginTop: 10,
+    color: '#1e293b',
   },
 
-  cardText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#334155',
-    fontWeight: '500',
+  subtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 4,
   },
 
   grid: {
@@ -85,19 +130,33 @@ const styles = StyleSheet.create({
   row: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 12,
   },
 
   card: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    paddingVertical: 18,
     elevation: 3,
+  },
+
+  cardIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  cardText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#334155',
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

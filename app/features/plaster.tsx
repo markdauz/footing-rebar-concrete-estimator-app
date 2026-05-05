@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -24,20 +25,30 @@ import {
 } from '../../utils/plasterCalculator';
 
 type MixType = 'a' | 'b' | 'c' | 'd';
+type ThicknessType = string | 'custom' | null;
+type MixValue = MixType | 'custom' | null;
+
+type Item<T extends string> = {
+  label: string;
+  value: T;
+};
+
+const isAndroid = Platform.OS === 'android';
 
 export default function Plaster() {
   const insets = useSafeAreaInsets();
 
-  const [area, setArea] = useState('');
-  const [thickness, setThickness] = useState<string | 'custom' | null>(null);
-  const [customThickness, setCustomThickness] = useState('');
-  const [openThickness, setOpenThickness] = useState(false);
+  const [area, setArea] = useState<string>('');
 
-  const [mix, setMix] = useState<MixType | 'custom' | null>(null);
-  const [customMix, setCustomMix] = useState('');
-  const [openMix, setOpenMix] = useState(false);
+  const [thickness, setThickness] = useState<ThicknessType>(null);
+  const [customThickness, setCustomThickness] = useState<string>('');
+  const [openThickness, setOpenThickness] = useState<boolean>(false);
 
-  const thicknessItems = [
+  const [mix, setMix] = useState<MixValue>(null);
+  const [customMix, setCustomMix] = useState<string>('');
+  const [openMix, setOpenMix] = useState<boolean>(false);
+
+  const thicknessItems: Item<string>[] = [
     { label: '0.016', value: '0.016' },
     { label: '0.020', value: '0.020' },
     { label: '0.025', value: '0.025' },
@@ -45,7 +56,7 @@ export default function Plaster() {
     { label: 'Custom', value: 'custom' },
   ];
 
-  const mixItems = [
+  const mixItems: Item<MixType | 'custom'>[] = [
     { label: 'A (1:2)', value: 'a' },
     { label: 'B (1:3)', value: 'b' },
     { label: 'C (1:4)', value: 'c' },
@@ -55,12 +66,12 @@ export default function Plaster() {
 
   const numericArea = parseFloat(area);
 
-  const effectiveThickness = useMemo(() => {
-    if (thickness === 'custom') {
-      return customThickness ? parseFloat(customThickness) : NaN;
-    }
-    return thickness ? parseFloat(thickness) : NaN;
-  }, [thickness, customThickness]);
+  const effectiveThickness =
+    thickness === 'custom'
+      ? parseFloat(customThickness)
+      : thickness
+        ? parseFloat(thickness)
+        : NaN;
 
   const volume = useMemo(() => {
     if (isNaN(numericArea) || isNaN(effectiveThickness)) return 0;
@@ -102,20 +113,49 @@ export default function Plaster() {
     setCustomMix('');
   };
 
+  function renderAndroidModal<T extends string>(
+    visible: boolean,
+    setVisible: (v: boolean) => void,
+    items: Item<T>[],
+    onSelect: (value: T) => void,
+  ) {
+    return (
+      <Modal visible={visible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.handle} />
+
+            {items.map((item) => (
+              <TouchableOpacity
+                key={item.value}
+                style={styles.modalItem}
+                onPress={() => {
+                  onSelect(item.value);
+                  setVisible(false);
+                }}
+              >
+                <Text style={styles.modalText}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity onPress={() => setVisible(false)}>
+              <Text style={styles.modalCancel}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
   return (
-    <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <Stack.Screen
-        options={{
-          headerShown: true,
-          title: 'Plaster Calculator',
-          headerTransparent: true,
-        }}
+        options={{ headerShown: true, title: '', headerTransparent: true }}
       />
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled
           contentContainerStyle={{
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
@@ -124,12 +164,25 @@ export default function Plaster() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="layers-outline" size={28} color="#0F172A" />
+              <Ionicons name="layers-outline" size={26} color="#1e293b" />
             </View>
+            <Text style={styles.title}>Plaster Calculator</Text>
+            <Text style={styles.subtitle}>
+              Surface plaster material estimator
+            </Text>
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.label}>Thickness</Text>
+            <Text style={styles.label}>Area (sqm)</Text>
+            <TextInput
+              value={area}
+              onChangeText={setArea}
+              keyboardType="numeric"
+              style={styles.input}
+              placeholder="0.00"
+            />
+
+            <Text style={styles.label}>Thickness (m)</Text>
 
             {thickness === 'custom' ? (
               <>
@@ -143,15 +196,28 @@ export default function Plaster() {
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenThickness(true)}
+                >
+                  <Text>
+                    {thickness
+                      ? thicknessItems.find((i) => i.value === thickness)?.label
+                      : 'Select thickness'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openThickness,
+                  setOpenThickness,
+                  thicknessItems,
+                  (val) => setThickness(val),
+                )}
+              </>
             ) : (
-              <View
-                style={{
-                  zIndex: openThickness ? 3000 : 1,
-                  ...(Platform.OS === 'android' && {
-                    elevation: openThickness ? 3000 : 0,
-                  }),
-                }}
-              >
+              <View style={{ zIndex: 1000 }}>
                 <DropDownPicker
                   open={openThickness}
                   value={thickness}
@@ -164,20 +230,13 @@ export default function Plaster() {
                     });
                   }}
                   setValue={setThickness}
-                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
+                  placeholder="Select thickness"
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
               </View>
             )}
-
-            <Text style={styles.label}>Area (sqm)</Text>
-            <TextInput
-              value={area}
-              onChangeText={setArea}
-              keyboardType="numeric"
-              style={styles.input}
-            />
 
             <Text style={styles.label}>Mixture</Text>
 
@@ -193,15 +252,25 @@ export default function Plaster() {
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenMix(true)}
+                >
+                  <Text>
+                    {mix
+                      ? mixItems.find((i) => i.value === mix)?.label
+                      : 'Select mixture'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(openMix, setOpenMix, mixItems, (val) =>
+                  setMix(val),
+                )}
+              </>
             ) : (
-              <View
-                style={{
-                  zIndex: openMix ? 2000 : 1,
-                  ...(Platform.OS === 'android' && {
-                    elevation: openMix ? 2000 : 0,
-                  }),
-                }}
-              >
+              <View style={{ zIndex: 900 }}>
                 <DropDownPicker
                   open={openMix}
                   value={mix}
@@ -214,7 +283,8 @@ export default function Plaster() {
                     });
                   }}
                   setValue={setMix}
-                  listMode={Platform.OS === 'android' ? 'MODAL' : 'SCROLLVIEW'}
+                  placeholder="Select mixture"
+                  listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
                 />
@@ -229,7 +299,11 @@ export default function Plaster() {
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
 
-            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
+            <Result
+              label="Volume"
+              value={`${volume.toFixed(3)} m³`}
+              highlight
+            />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
             <Result label="Cement (2 sides)" value={`${twoSidesCement} bags`} />
@@ -241,77 +315,124 @@ export default function Plaster() {
   );
 }
 
-function Result({ label, value }: any) {
+function Result({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
-      <Text style={styles.resultValue}>{value}</Text>
+      <Text style={[styles.resultValue, highlight && { fontSize: 18 }]}>
+        {value}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { alignItems: 'center', marginBottom: 32 },
+  header: { alignItems: 'center', marginBottom: 24 },
 
   iconBox: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 2,
+  },
+
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 10,
+  },
+
+  subtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 4,
   },
 
   card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
+    elevation: 3,
   },
 
-  label: { marginTop: 10, marginBottom: 6, color: '#64748B' },
+  label: {
+    color: '#334155',
+    marginBottom: 6,
+    marginTop: 14,
+    fontSize: 13,
+    fontWeight: '600',
+  },
 
   input: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#cbd5e1',
+  },
+
+  androidInput: {
+    justifyContent: 'center',
   },
 
   dropdown: {
-    borderRadius: 10,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
+    minHeight: 50,
   },
 
   dropdownContainer: {
-    borderColor: '#E2E8F0', // no elevation here
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
   },
 
-  backText: { color: '#2563EB', marginTop: 6 },
+  backText: {
+    color: '#2563EB',
+    marginTop: 6,
+    fontSize: 13,
+  },
 
   reset: {
-    marginTop: 16,
-    backgroundColor: '#475569',
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
+    backgroundColor: '#f8fafc',
   },
 
-  resetText: { color: '#fff', fontWeight: '600' },
+  resetText: {
+    color: '#475569',
+    fontWeight: '600',
+  },
 
   resultCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    elevation: 2,
+    backgroundColor: '#0f172a',
+    borderRadius: 18,
+    padding: 18,
+    elevation: 3,
   },
 
   resultTitle: {
-    fontWeight: '600',
-    marginBottom: 10,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#e2e8f0',
   },
 
   resultRow: {
@@ -320,6 +441,56 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  resultLabel: { color: '#64748B' },
-  resultValue: { fontWeight: '600' },
+  resultLabel: {
+    color: '#94a3b8',
+  },
+
+  resultValue: {
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-end',
+  },
+
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    maxHeight: '50%',
+    marginHorizontal: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+
+  modalText: {
+    fontSize: 15,
+    color: '#0f172a',
+  },
+
+  modalCancel: {
+    textAlign: 'center',
+    marginTop: 12,
+    color: '#ef4444',
+    fontWeight: '600',
+  },
 });

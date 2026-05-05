@@ -1,7 +1,17 @@
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import InputField from '../../components/InputField';
 import ResultCard from '../../components/ResultCard';
@@ -15,6 +25,8 @@ import {
 } from '../../utils/footingRebarCalculator';
 
 export default function Footing() {
+  const insets = useSafeAreaInsets();
+
   const DEFAULT_INPUT = {
     width: '0.8',
     length: '0.8',
@@ -63,27 +75,54 @@ export default function Footing() {
   const handleReset = () => setInput(DEFAULT_INPUT);
 
   return (
-    <LinearGradient colors={['#bae6fd', '#7dd3fc']} style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+    <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           contentContainerStyle={{
+            paddingTop: insets.top + 10,
             paddingHorizontal: 16,
-            paddingTop: 16,
-            paddingBottom: 20,
+            paddingBottom: 40,
           }}
         >
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: '700',
-              color: '#334155',
-              marginBottom: 16,
-              textAlign: 'center',
-            }}
-          >
-            Footing Rebar Calculator
-          </Text>
+          {/* HEADER */}
+          <View style={{ alignItems: 'center', marginBottom: 24 }}>
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 14,
+                backgroundColor: '#fff',
+                alignItems: 'center',
+                justifyContent: 'center',
+                elevation: 2,
+              }}
+            >
+              <Ionicons name="build-outline" size={26} color="#1e293b" />
+            </View>
 
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: '700',
+                marginTop: 10,
+                color: '#1e293b',
+              }}
+            >
+              Footing Rebar Calculator
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 13,
+                color: '#64748b',
+                marginTop: 4,
+              }}
+            >
+              Reinforcement estimation
+            </Text>
+          </View>
+
+          {/* INPUT CARD */}
           <View style={styles.card}>
             <InputField
               label="Width (m)"
@@ -127,21 +166,12 @@ export default function Footing() {
             />
           </View>
 
-          {/* Volume */}
-          <View
-            style={{
-              backgroundColor: '#E0F2FE',
-              padding: 12,
-              borderRadius: 12,
-              marginBottom: 20,
-            }}
-          >
-            <Text style={{ color: '#0369A1' }}>Volume (m³)</Text>
-            <Text style={{ color: '#0C4A6E', fontSize: 18, fontWeight: '600' }}>
-              {volume}
-            </Text>
+          <View style={styles.resultCard}>
+            <Text style={styles.resultTitle}>Volume</Text>
+            <Text style={styles.resultValue}>{volume} m³</Text>
           </View>
 
+          {/* RESULTS */}
           <ResultCard
             title="Option A"
             subtitle="w/o bend (75mm cover)"
@@ -164,17 +194,9 @@ export default function Footing() {
             color="green"
           />
 
-          <TouchableOpacity
-            onPress={handleReset}
-            style={{
-              marginTop: 20,
-              backgroundColor: '#475569',
-              padding: 14,
-              borderRadius: 10,
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: '#fff' }}>Reset</Text>
+          {/* RESET */}
+          <TouchableOpacity style={styles.reset} onPress={handleReset}>
+            <Text style={styles.resetText}>Reset</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -182,15 +204,44 @@ export default function Footing() {
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
     elevation: 3,
   },
-};
+
+  resultCard: {
+    backgroundColor: '#0f172a',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
+  },
+
+  resultTitle: {
+    color: '#94a3b8',
+    fontSize: 13,
+    marginBottom: 6,
+  },
+
+  resultValue: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+
+  reset: {
+    marginTop: 18,
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#475569',
+  },
+
+  resetText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+});
