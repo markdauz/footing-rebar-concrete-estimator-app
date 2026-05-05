@@ -20,8 +20,6 @@ import {
 
 import {
   computeBeamCement,
-  computeBeamGravel,
-  computeBeamSand,
   computeBeamTotalVolume,
   computeBeamVolume,
 } from '../../utils/beamCalculator';
@@ -71,24 +69,27 @@ export default function Beam() {
     if (!totalVolume) return '0.00';
 
     if (mix === 'custom') {
-      const val = parseFloat(customMix);
-      if (isNaN(val)) return '0.00';
-      return (totalVolume * val).toFixed(2);
+      const factor = parseFloat(customMix);
+
+      if (isNaN(factor) || factor <= 0) return '0.00';
+
+      return (totalVolume * factor).toFixed(2);
     }
 
     if (!mix) return '0.00';
+
     return computeBeamCement(totalVolume, mix);
   }, [totalVolume, mix, customMix]);
 
   const sand = useMemo(() => {
-    if (!totalVolume || !mix || mix === 'custom') return '0.00';
-    return computeBeamSand(totalVolume, mix);
-  }, [totalVolume, mix]);
+    if (!totalVolume) return '0.00';
+    return (totalVolume * 0.5).toFixed(2);
+  }, [totalVolume]);
 
   const gravel = useMemo(() => {
-    if (!totalVolume || !mix || mix === 'custom') return '0.00';
-    return computeBeamGravel(totalVolume, mix);
-  }, [totalVolume, mix]);
+    if (!totalVolume) return '0.00';
+    return totalVolume.toFixed(2);
+  }, [totalVolume]);
 
   const reset = () => {
     setSets('');

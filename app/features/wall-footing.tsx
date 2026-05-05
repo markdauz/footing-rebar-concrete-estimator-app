@@ -257,7 +257,19 @@ export default function WallFooting() {
 
             {/* Width */}
             <Text style={styles.label}>Width (m)</Text>
-            {isAndroid ? (
+            {width === 'custom' ? (
+              <>
+                <TextInput
+                  value={customWidth}
+                  onChangeText={setCustomWidth}
+                  style={styles.input}
+                  keyboardType="numeric"
+                />
+                <TouchableOpacity onPress={() => setWidth(null)}>
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
               <>
                 <TouchableOpacity
                   style={styles.input}
@@ -278,6 +290,7 @@ export default function WallFooting() {
                   open={openWidth}
                   value={width}
                   items={widthItems}
+                  placeholder="Select width"
                   setOpen={(val) =>
                     setOpenWidth((prev) => {
                       const next = typeof val === 'function' ? val(prev) : val;
@@ -302,7 +315,19 @@ export default function WallFooting() {
 
             {/* Thickness */}
             <Text style={styles.label}>Thickness (m)</Text>
-            {isAndroid ? (
+            {thickness === 'custom' ? (
+              <>
+                <TextInput
+                  value={customThickness}
+                  onChangeText={setCustomThickness}
+                  style={styles.input}
+                  keyboardType="numeric"
+                />
+                <TouchableOpacity onPress={() => setThickness(null)}>
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
               <>
                 <TouchableOpacity
                   style={styles.input}
@@ -323,6 +348,7 @@ export default function WallFooting() {
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
+                  placeholder="Select thickness"
                   setOpen={(val) =>
                     setOpenThickness((prev) => {
                       const next = typeof val === 'function' ? val(prev) : val;
@@ -347,7 +373,20 @@ export default function WallFooting() {
 
             {/* Mix */}
             <Text style={styles.label}>Mixture</Text>
-            {isAndroid ? (
+            {mix === 'custom' ? (
+              <>
+                <TextInput
+                  value={customMix}
+                  onChangeText={setCustomMix}
+                  style={styles.input}
+                  keyboardType="numeric"
+                  placeholder="Enter factor"
+                />
+                <TouchableOpacity onPress={() => setMix(null)}>
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
               <>
                 <TouchableOpacity
                   style={styles.input}
@@ -363,6 +402,7 @@ export default function WallFooting() {
                   open={openMix}
                   value={mix}
                   items={mixItems}
+                  placeholder="Select mix"
                   setOpen={(val) =>
                     setOpenMix((prev) => {
                       const next = typeof val === 'function' ? val(prev) : val;
@@ -535,4 +575,5 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
   },
+  backText: { color: '#2563EB', marginTop: 6 },
 });
