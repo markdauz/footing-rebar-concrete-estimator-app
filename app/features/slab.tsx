@@ -68,13 +68,10 @@ export default function Slab() {
 
   const cement = useMemo(() => {
     if (!volume) return '0.00';
-
     if (mix === 'custom' && customMix) {
       return (volume * parseFloat(customMix)).toFixed(2);
     }
-
     if (!mix) return '0.00';
-
     return computeCement(volume, mix as MixType);
   }, [volume, mix, customMix]);
 
@@ -96,39 +93,45 @@ export default function Slab() {
     onSelect: (value: any) => void,
   ) => (
     <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalCard}>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
+        onPress={() => setVisible(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.modalCard}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.handle} />
 
-          {items.map((item) => (
-            <TouchableOpacity
-              key={item.value}
-              style={styles.modalItem}
-              onPress={() => {
-                onSelect(item.value);
-                setVisible(false);
-              }}
-            >
-              <Text style={styles.modalText}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
+          <ScrollView>
+            {items.map((item) => (
+              <TouchableOpacity
+                key={item.value}
+                style={styles.modalItem}
+                onPress={() => {
+                  onSelect(item.value);
+                  setVisible(false);
+                }}
+              >
+                <Text style={styles.modalText}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
           <TouchableOpacity onPress={() => setVisible(false)}>
             <Text style={styles.modalCancel}>Cancel</Text>
           </TouchableOpacity>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 
   return (
     <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <Stack.Screen
-        options={{
-          headerShown: true,
-          title: '',
-          headerTransparent: true,
-        }}
+        options={{ headerShown: true, title: '', headerTransparent: true }}
       />
 
       <SafeAreaView style={{ flex: 1 }}>
@@ -140,7 +143,6 @@ export default function Slab() {
             paddingBottom: 40,
           }}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="grid-outline" size={26} color="#1e293b" />
@@ -151,7 +153,6 @@ export default function Slab() {
             </Text>
           </View>
 
-          {/* INPUT CARD */}
           <View style={styles.card}>
             <Text style={styles.label}>Area (sqm)</Text>
             <TextInput
@@ -162,7 +163,6 @@ export default function Slab() {
               placeholder="0.00"
             />
 
-            {/* THICKNESS */}
             <Text style={styles.label}>Thickness (m)</Text>
 
             {thickness === 'custom' ? (
@@ -172,14 +172,8 @@ export default function Slab() {
                   onChangeText={setCustomThickness}
                   keyboardType="numeric"
                   style={styles.input}
-                  placeholder="Enter thickness"
                 />
-                <TouchableOpacity
-                  onPress={() => {
-                    setThickness(null);
-                    setCustomThickness('');
-                  }}
-                >
+                <TouchableOpacity onPress={() => setThickness(null)}>
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
@@ -209,13 +203,7 @@ export default function Slab() {
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
-                  setOpen={(val) => {
-                    setOpenThickness((prev) => {
-                      const next = typeof val === 'function' ? val(prev) : val;
-                      if (next) setOpenMix(false);
-                      return next;
-                    });
-                  }}
+                  setOpen={setOpenThickness}
                   setValue={setThickness}
                   placeholder="Select thickness"
                   listMode="SCROLLVIEW"
@@ -225,7 +213,6 @@ export default function Slab() {
               </View>
             )}
 
-            {/* MIX */}
             <Text style={styles.label}>Mixture</Text>
 
             {mix === 'custom' ? (
@@ -235,14 +222,8 @@ export default function Slab() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
-                  placeholder="Enter value"
                 />
-                <TouchableOpacity
-                  onPress={() => {
-                    setMix(null);
-                    setCustomMix('');
-                  }}
-                >
+                <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
               </>
@@ -267,13 +248,7 @@ export default function Slab() {
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={(val) => {
-                    setOpenMix((prev) => {
-                      const next = typeof val === 'function' ? val(prev) : val;
-                      if (next) setOpenThickness(false);
-                      return next;
-                    });
-                  }}
+                  setOpen={setOpenMix}
                   setValue={setMix}
                   placeholder="Select mixture"
                   listMode="SCROLLVIEW"
@@ -288,10 +263,8 @@ export default function Slab() {
             </TouchableOpacity>
           </View>
 
-          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-
             <Result
               label="Volume"
               value={`${volume.toFixed(3)} m³`}
@@ -392,16 +365,14 @@ const styles = StyleSheet.create({
 
   reset: {
     marginTop: 18,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#475569',
   },
 
   resetText: {
-    color: '#475569',
+    color: '#fff',
     fontWeight: '600',
   },
 
@@ -438,17 +409,15 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
   },
 
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
-    maxHeight: '50%',
-    marginHorizontal: 12,
-    marginBottom: 12,
-    overflow: 'hidden',
+    maxHeight: 350,
   },
 
   handle: {

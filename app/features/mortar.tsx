@@ -28,7 +28,6 @@ import {
 type MixType = 'a' | 'b' | 'c' | 'd';
 type MixValue = MixType | 'custom';
 type ThicknessValue = '0.10' | '0.125' | '0.150' | '0.20' | '0.25' | 'custom';
-
 type Item<T> = { label: string; value: T };
 
 const isAndroid = Platform.OS === 'android';
@@ -116,8 +115,16 @@ export default function Mortar() {
   ) {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
+          onPress={() => setVisible(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalCard}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.handle} />
 
             <ScrollView>
@@ -138,8 +145,8 @@ export default function Mortar() {
             <TouchableOpacity onPress={() => setVisible(false)}>
               <Text style={styles.modalCancel}>Cancel</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     );
   }
@@ -152,7 +159,6 @@ export default function Mortar() {
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
-          nestedScrollEnabled
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingTop: insets.top + 10,
@@ -160,7 +166,6 @@ export default function Mortar() {
             paddingBottom: 40,
           }}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="flask-outline" size={26} color="#1e293b" />
@@ -169,9 +174,7 @@ export default function Mortar() {
             <Text style={styles.subtitle}>Mortar estimation</Text>
           </View>
 
-          {/* INPUT CARD */}
           <View style={styles.card}>
-            {/* THICKNESS */}
             <Text style={styles.label}>CHB Thickness</Text>
 
             {thickness === 'custom' ? (
@@ -212,17 +215,10 @@ export default function Mortar() {
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
-                  ArrowDownIconComponent={() => (
-                    <Ionicons name="chevron-down" size={18} color="#475569" />
-                  )}
-                  ArrowUpIconComponent={() => (
-                    <Ionicons name="chevron-up" size={18} color="#475569" />
-                  )}
                 />
               </View>
             )}
 
-            {/* AREA */}
             <Text style={styles.label}>Area (sqm)</Text>
             <TextInput
               value={area}
@@ -231,7 +227,6 @@ export default function Mortar() {
               keyboardType="numeric"
             />
 
-            {/* MIX */}
             <Text style={styles.label}>Mixture</Text>
 
             {mix === 'custom' ? (
@@ -267,12 +262,6 @@ export default function Mortar() {
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
-                  ArrowDownIconComponent={() => (
-                    <Ionicons name="chevron-down" size={18} color="#475569" />
-                  )}
-                  ArrowUpIconComponent={() => (
-                    <Ionicons name="chevron-up" size={18} color="#475569" />
-                  )}
                 />
               </View>
             )}
@@ -282,7 +271,6 @@ export default function Mortar() {
             </TouchableOpacity>
           </View>
 
-          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
             <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
@@ -308,7 +296,6 @@ function Result({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 24 },
-
   iconBox: {
     width: 56,
     height: 56,
@@ -318,10 +305,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 2,
   },
-
   title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
   subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
-
   card: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -329,14 +314,12 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     elevation: 3,
   },
-
   label: {
     marginTop: 12,
     marginBottom: 6,
     fontWeight: '600',
     color: '#334155',
   },
-
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -344,18 +327,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-
-  dropdown: {
-    borderRadius: 12,
-    borderColor: '#cbd5e1',
-  },
-
-  dropdownContainer: {
-    borderColor: '#cbd5e1',
-  },
-
+  dropdown: { borderRadius: 12, borderColor: '#cbd5e1' },
+  dropdownContainer: { borderColor: '#cbd5e1' },
   backText: { color: '#2563EB', marginTop: 6 },
-
   reset: {
     marginTop: 18,
     padding: 12,
@@ -363,45 +337,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#475569',
   },
-
   resetText: { color: '#fff', fontWeight: '600' },
-
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
   },
-
   resultTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
     color: '#e2e8f0',
   },
-
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
-
   resultLabel: { color: '#94a3b8' },
   resultValue: { fontWeight: '700', color: '#fff' },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
   },
-
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
-    maxHeight: '50%',
-    margin: 12,
+    maxHeight: 350,
   },
-
   handle: {
     width: 40,
     height: 4,
@@ -410,15 +376,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
-
   modalItem: {
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-
   modalText: { fontSize: 15 },
-
   modalCancel: {
     textAlign: 'center',
     marginTop: 12,

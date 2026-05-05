@@ -177,8 +177,16 @@ export default function WallFooting() {
   ) {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
+          onPress={() => setVisible(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalCard}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.handle} />
 
             <ScrollView
@@ -198,11 +206,12 @@ export default function WallFooting() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
+
             <TouchableOpacity onPress={() => setVisible(false)}>
               <Text style={styles.modalCancel}>Cancel</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     );
   }
@@ -497,15 +506,15 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
   },
 
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
-    maxHeight: '50%',
-    margin: 12,
+    maxHeight: 350,
   },
 
   handle: {

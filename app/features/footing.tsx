@@ -117,8 +117,16 @@ export default function Footing() {
   ) {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
+          onPress={() => setVisible(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalCard}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.handle} />
 
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -139,8 +147,8 @@ export default function Footing() {
             <TouchableOpacity onPress={() => setVisible(false)}>
               <Text style={styles.modalCancel}>Cancel</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     );
   }
@@ -153,7 +161,6 @@ export default function Footing() {
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
-          nestedScrollEnabled
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingTop: insets.top + 10,
@@ -161,7 +168,6 @@ export default function Footing() {
             paddingBottom: 40,
           }}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="cube-outline" size={26} color="#1e293b" />
@@ -170,7 +176,6 @@ export default function Footing() {
             <Text style={styles.subtitle}>Concrete footing estimator</Text>
           </View>
 
-          {/* INPUT */}
           <View style={styles.card}>
             <Text style={styles.label}>No. of Sets</Text>
             <TextInput
@@ -216,8 +221,13 @@ export default function Footing() {
                   style={styles.input}
                   onPress={() => setOpenThickness(true)}
                 >
-                  <Text>{thickness ?? 'Select thickness'}</Text>
+                  <Text>
+                    {thickness
+                      ? thicknessItems.find((i) => i.value === thickness)?.label
+                      : 'Select thickness'}
+                  </Text>
                 </TouchableOpacity>
+
                 {renderAndroidModal(
                   openThickness,
                   setOpenThickness,
@@ -227,7 +237,7 @@ export default function Footing() {
               </>
             ) : (
               <View style={{ zIndex: 3000 }}>
-                <DropDownPicker<ThicknessValue>
+                <DropDownPicker
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
@@ -236,12 +246,6 @@ export default function Footing() {
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
-                  ArrowDownIconComponent={() => (
-                    <Ionicons name="chevron-down" size={18} color="#475569" />
-                  )}
-                  ArrowUpIconComponent={() => (
-                    <Ionicons name="chevron-up" size={18} color="#475569" />
-                  )}
                 />
               </View>
             )}
@@ -266,13 +270,18 @@ export default function Footing() {
                   style={styles.input}
                   onPress={() => setOpenMix(true)}
                 >
-                  <Text>{mix ?? 'Select mix'}</Text>
+                  <Text>
+                    {mix
+                      ? mixItems.find((i) => i.value === mix)?.label
+                      : 'Select mixture'}
+                  </Text>
                 </TouchableOpacity>
+
                 {renderAndroidModal(openMix, setOpenMix, mixItems, setMix)}
               </>
             ) : (
               <View style={{ zIndex: 2000 }}>
-                <DropDownPicker<MixValue>
+                <DropDownPicker
                   open={openMix}
                   value={mix}
                   items={mixItems}
@@ -281,12 +290,6 @@ export default function Footing() {
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
-                  ArrowDownIconComponent={() => (
-                    <Ionicons name="chevron-down" size={18} color="#475569" />
-                  )}
-                  ArrowUpIconComponent={() => (
-                    <Ionicons name="chevron-up" size={18} color="#475569" />
-                  )}
                 />
               </View>
             )}
@@ -296,10 +299,8 @@ export default function Footing() {
             </TouchableOpacity>
           </View>
 
-          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-
             <Result label="Volume (1 pc)" value={`${volume.toFixed(3)} m³`} />
             <Result
               label="Total Volume"
@@ -346,7 +347,6 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 18,
     elevation: 3,
-    zIndex: 0,
   },
 
   label: {
@@ -389,7 +389,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
-    zIndex: -1,
   },
 
   resultTitle: {
@@ -411,15 +410,15 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
   },
 
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
-    maxHeight: '50%',
-    margin: 12,
+    maxHeight: 350,
   },
 
   handle: {

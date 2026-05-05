@@ -84,7 +84,6 @@ export default function CHB() {
 
   const volume = useMemo(() => {
     if (isNaN(effectiveThickness) || isNaN(numericWebs)) return 0;
-
     return computeCHBVolume(
       effectiveThickness,
       numericWebs,
@@ -119,28 +118,38 @@ export default function CHB() {
   ) {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
+          onPress={() => setVisible(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalCard}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.handle} />
 
-            {items.map((item) => (
-              <TouchableOpacity
-                key={String(item.value)}
-                style={styles.modalItem}
-                onPress={() => {
-                  onSelect(item.value);
-                  setVisible(false);
-                }}
-              >
-                <Text style={styles.modalText}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {items.map((item) => (
+                <TouchableOpacity
+                  key={String(item.value)}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    onSelect(item.value);
+                    setVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
 
             <TouchableOpacity onPress={() => setVisible(false)}>
               <Text style={styles.modalCancel}>Cancel</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     );
   }
@@ -160,7 +169,6 @@ export default function CHB() {
             paddingBottom: 40,
           }}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="cube" size={26} color="#1e293b" />
@@ -169,7 +177,6 @@ export default function CHB() {
             <Text style={styles.subtitle}>Concrete hollow block estimator</Text>
           </View>
 
-          {/* INPUT */}
           <View style={styles.card}>
             <Text style={styles.label}>CHB Thickness</Text>
 
@@ -180,7 +187,6 @@ export default function CHB() {
                   onChangeText={setThickness}
                   keyboardType="numeric"
                   style={styles.input}
-                  placeholder="0.00"
                 />
                 <TouchableOpacity onPress={() => setThicknessMode(null)}>
                   <Text style={styles.backText}>← Back</Text>
@@ -212,24 +218,12 @@ export default function CHB() {
               </>
             ) : (
               <View style={{ zIndex: 1000 }}>
-                <DropDownPicker<ThicknessValue>
+                <DropDownPicker
                   open={openThickness}
                   value={thicknessMode}
                   items={thicknessItems}
-                  setOpen={(val) => {
-                    setOpenThickness((prev) => {
-                      const next = typeof val === 'function' ? val(prev) : val;
-                      if (next) setOpenWebs(false);
-                      return next;
-                    });
-                  }}
-                  setValue={(val) => {
-                    setThicknessMode((prev) => {
-                      const next = typeof val === 'function' ? val(prev) : val;
-                      if (next === 'custom') setThickness('');
-                      return next;
-                    });
-                  }}
+                  setOpen={setOpenThickness}
+                  setValue={setThicknessMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
@@ -252,22 +246,12 @@ export default function CHB() {
               </>
             ) : (
               <View style={{ zIndex: 900 }}>
-                <DropDownPicker<WebValue>
+                <DropDownPicker
                   open={openWebs}
                   value={webs}
                   items={webItems}
-                  setOpen={(val) => {
-                    setOpenWebs((prev) => {
-                      const next = typeof val === 'function' ? val(prev) : val;
-                      if (next) setOpenThickness(false);
-                      return next;
-                    });
-                  }}
-                  setValue={(val) => {
-                    setWebs((prev) =>
-                      typeof val === 'function' ? val(prev) : val,
-                    );
-                  }}
+                  setOpen={setOpenWebs}
+                  setValue={setWebs}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
@@ -280,7 +264,6 @@ export default function CHB() {
             </TouchableOpacity>
           </View>
 
-          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
             <Result label="End Web" value={String(endWeb || '-')} />
@@ -382,15 +365,14 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
   },
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
-    maxHeight: '50%',
-    marginHorizontal: 12,
-    marginBottom: 12,
+    maxHeight: 350,
   },
   handle: {
     width: 40,
