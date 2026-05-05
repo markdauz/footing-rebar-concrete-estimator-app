@@ -336,14 +336,16 @@ const styles = StyleSheet.create({
   backText: { color: '#2563EB', marginTop: 6, fontSize: 13 },
   reset: {
     marginTop: 18,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#475569',
   },
-  resetText: { color: '#475569', fontWeight: '600' },
+
+  resetText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
