@@ -29,6 +29,7 @@ import {
 
 type ThicknessValue = '0.10' | '0.125' | '0.15' | '0.20' | 'custom';
 type WebValue = 2 | 3 | 4;
+type ClassValue = 12 | 9 | 7.5;
 
 type Item<T> = { label: string; value: T };
 
@@ -42,9 +43,11 @@ export default function CHB() {
   );
   const [thickness, setThickness] = useState('');
   const [webs, setWebs] = useState<WebValue | null>(null);
+  const [cementClass, setCementClass] = useState<ClassValue | null>(null);
 
   const [openThickness, setOpenThickness] = useState(false);
   const [openWebs, setOpenWebs] = useState(false);
+  const [openClass, setOpenClass] = useState(false);
 
   const thicknessItems: Item<ThicknessValue>[] = [
     { label: '0.10', value: '0.10' },
@@ -60,6 +63,12 @@ export default function CHB() {
     { label: '4', value: 4 },
   ];
 
+  const classItems: Item<ClassValue>[] = [
+    { label: 'B (12)', value: 12 },
+    { label: 'C (9)', value: 9 },
+    { label: 'D (7.5)', value: 7.5 },
+  ];
+
   const effectiveThickness =
     thicknessMode === 'custom'
       ? parseFloat(thickness)
@@ -73,10 +82,12 @@ export default function CHB() {
     () => getEndWeb(effectiveThickness),
     [effectiveThickness],
   );
+
   const innerWeb = useMemo(
     () => getInnerWeb(effectiveThickness, numericWebs),
     [effectiveThickness, numericWebs],
   );
+
   const shell = useMemo(
     () => getShell(effectiveThickness),
     [effectiveThickness],
@@ -84,6 +95,7 @@ export default function CHB() {
 
   const volume = useMemo(() => {
     if (isNaN(effectiveThickness) || isNaN(numericWebs)) return 0;
+
     return computeCHBVolume(
       effectiveThickness,
       numericWebs,
@@ -104,10 +116,16 @@ export default function CHB() {
     [volume, volBetween],
   );
 
+  const cement = useMemo(() => {
+    if (!cementClass) return 0;
+    return totalVol * cementClass;
+  }, [totalVol, cementClass]);
+
   const reset = () => {
     setThickness('');
     setThicknessMode(null);
     setWebs(null);
+    setCementClass(null);
   };
 
   function renderAndroidModal<T>(
@@ -173,8 +191,10 @@ export default function CHB() {
             <View style={styles.iconBox}>
               <Ionicons name="cube" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>CHB Calculator</Text>
-            <Text style={styles.subtitle}>Concrete hollow block estimator</Text>
+
+            <Text style={styles.title}>CHB Mortar/SQM</Text>
+
+            <Text style={styles.subtitle}>Volume method</Text>
           </View>
 
           <View style={styles.card}>
@@ -188,6 +208,7 @@ export default function CHB() {
                   keyboardType="numeric"
                   style={styles.input}
                 />
+
                 <TouchableOpacity onPress={() => setThicknessMode(null)}>
                   <Text style={styles.backText}>← Back</Text>
                 </TouchableOpacity>
@@ -259,6 +280,43 @@ export default function CHB() {
               </View>
             )}
 
+            <Text style={styles.label}>Class</Text>
+
+            {isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenClass(true)}
+                >
+                  <Text>
+                    {cementClass
+                      ? classItems.find((i) => i.value === cementClass)?.label
+                      : 'Select class'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openClass,
+                  setOpenClass,
+                  classItems,
+                  setCementClass,
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 800 }}>
+                <DropDownPicker
+                  open={openClass}
+                  value={cementClass}
+                  items={classItems}
+                  setOpen={setOpenClass}
+                  setValue={setCementClass}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                />
+              </View>
+            )}
+
             <TouchableOpacity style={styles.reset} onPress={reset}>
               <Text style={styles.resetText}>Reset</Text>
             </TouchableOpacity>
@@ -266,12 +324,14 @@ export default function CHB() {
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
+
             <Result label="End Web" value={String(endWeb || '-')} />
             <Result label="Inner Web" value={String(innerWeb || '-')} />
             <Result label="Shell" value={String(shell || '-')} />
-            <Result label="Volume" value={volume.toFixed(3)} />
-            <Result label="Vol Between" value={volBetween.toFixed(3)} />
-            <Result label="Total Vol" value={totalVol.toFixed(3)} />
+            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
+            <Result label="Vol Between" value={`${volBetween.toFixed(3)} m³`} />
+            <Result label="Total Vol" value={`${totalVol.toFixed(3)} m³`} />
+            <Result label="Cement" value={`${cement.toFixed(3)} m³`} />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -289,7 +349,11 @@ function Result({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  header: { alignItems: 'center', marginBottom: 24 },
+  header: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+
   iconBox: {
     width: 56,
     height: 56,
@@ -299,8 +363,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 2,
   },
-  title: { fontSize: 20, fontWeight: '700', color: '#0f172a', marginTop: 10 },
-  subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
+
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 10,
+  },
+
+  subtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 4,
+  },
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -308,6 +384,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     elevation: 3,
   },
+
   label: {
     color: '#334155',
     marginTop: 14,
@@ -315,6 +392,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
+
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -322,18 +400,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-  androidInput: { justifyContent: 'center' },
+
+  androidInput: {
+    justifyContent: 'center',
+  },
+
   dropdown: {
     borderRadius: 12,
     borderColor: '#cbd5e1',
     backgroundColor: '#fff',
     minHeight: 50,
   },
+
   dropdownContainer: {
     borderColor: '#cbd5e1',
     borderRadius: 12,
   },
-  backText: { color: '#2563EB', marginTop: 6, fontSize: 13 },
+
+  backText: {
+    color: '#2563EB',
+    marginTop: 6,
+    fontSize: 13,
+  },
+
   reset: {
     marginTop: 18,
     padding: 12,
@@ -346,36 +435,50 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
+
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
   },
+
   resultTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
     color: '#e2e8f0',
   },
+
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
-  resultLabel: { color: '#94a3b8' },
-  resultValue: { fontWeight: '700', color: '#fff', fontSize: 15 },
+
+  resultLabel: {
+    color: '#94a3b8',
+  },
+
+  resultValue: {
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'flex-start',
     paddingHorizontal: 16,
   },
+
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
     maxHeight: 350,
   },
+
   handle: {
     width: 40,
     height: 4,
@@ -384,12 +487,18 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
+
   modalItem: {
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-  modalText: { fontSize: 15, color: '#0f172a' },
+
+  modalText: {
+    fontSize: 15,
+    color: '#0f172a',
+  },
+
   modalCancel: {
     textAlign: 'center',
     marginTop: 12,
