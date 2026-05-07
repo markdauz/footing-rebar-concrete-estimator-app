@@ -17,7 +17,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="tools/slab" />
+          <Stack.Screen name="features/slab" />
         </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -29,10 +29,7 @@ export function computeCHBVolume(
   endWeb: number | '',
   innerWeb: number | '',
   shell: number | '',
-  isCustom: boolean,
 ) {
-  if (!isCustom) return 0; // 🔥 KEY FIX (Excel Q28 check)
-
   if (!thickness || !webs || !endWeb || !shell) return 0;
 
   const base = 0.4;

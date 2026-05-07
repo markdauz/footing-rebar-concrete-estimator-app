@@ -2,12 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
 import {
+  Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -24,21 +27,41 @@ import {
   getVolume,
 } from '../../utils/footingRebarCalculator';
 
+type OptionValue = 'A' | 'B';
+
+type Item<T> = {
+  label: string;
+  value: T;
+};
+
+const isAndroid = Platform.OS === 'android';
+
 export default function Footing() {
   const insets = useSafeAreaInsets();
 
-  const DEFAULT_INPUT = {
-    width: '0.8',
-    length: '0.8',
-    thickness: '0.3',
-    diameter: '12',
-    steelLength: '6',
-    quantity: '1',
-    barsW: '5',
-    barsL: '5',
+  const EMPTY_INPUT = {
+    width: '',
+    length: '',
+    thickness: '',
+    diameter: '',
+    steelLength: '',
+    quantity: '',
+    barsW: '',
+    barsL: '',
   };
 
-  const [input, setInput] = useState(DEFAULT_INPUT);
+  const [input, setInput] = useState(EMPTY_INPUT);
+
+  const [selectedOption, setSelectedOption] = useState<OptionValue | null>(
+    null,
+  );
+
+  const [openOption, setOpenOption] = useState(false);
+
+  const optionItems: Item<OptionValue>[] = [
+    { label: 'Option A', value: 'A' },
+    { label: 'Option B', value: 'B' },
+  ];
 
   const handleChange = (field: string) => (value: string) => {
     if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
@@ -47,6 +70,7 @@ export default function Footing() {
   };
 
   const cutSizeW_A = useMemo(() => getCutSizeA(input.width), [input.width]);
+
   const cutSizeL_A = useMemo(() => getCutSizeA(input.length), [input.length]);
 
   const cutSizeW_B = useMemo(
@@ -70,21 +94,69 @@ export default function Footing() {
   );
 
   const tieWire = useMemo(() => getTieWire(input), [input]);
+
   const volume = useMemo(() => getVolume(input), [input]);
 
-  const handleReset = () => setInput(DEFAULT_INPUT);
+  const handleReset = () => {
+    setInput(EMPTY_INPUT);
+    setSelectedOption(null);
+  };
+
+  function renderAndroidModal<T>(
+    visible: boolean,
+    setVisible: (v: boolean) => void,
+    items: Item<T>[],
+    onSelect: (value: T) => void,
+  ) {
+    return (
+      <Modal visible={visible} transparent animationType="fade">
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
+          onPress={() => setVisible(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalCard}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.handle} />
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {items.map((item) => (
+                <TouchableOpacity
+                  key={String(item.value)}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    onSelect(item.value);
+                    setVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setVisible(false)}>
+              <Text style={styles.modalCancel}>Cancel</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    );
+  }
 
   return (
     <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
             paddingBottom: 40,
           }}
         >
-          {/* HEADER */}
           <View style={{ alignItems: 'center', marginBottom: 24 }}>
             <View
               style={{
@@ -122,79 +194,126 @@ export default function Footing() {
             </Text>
           </View>
 
-          {/* INPUT CARD */}
           <View style={styles.card}>
             <InputField
               label="Width (m)"
               value={input.width}
               onChange={handleChange('width')}
             />
+
             <InputField
               label="Length (m)"
               value={input.length}
               onChange={handleChange('length')}
             />
+
             <InputField
               label="Thickness (m)"
               value={input.thickness}
               onChange={handleChange('thickness')}
             />
+
             <InputField
               label="Bar Diameter"
               value={input.diameter}
               onChange={handleChange('diameter')}
             />
+
             <InputField
               label="Steel Length"
               value={input.steelLength}
               onChange={handleChange('steelLength')}
             />
+
             <InputField
               label="No. of Sets"
               value={input.quantity}
               onChange={handleChange('quantity')}
             />
+
             <InputField
               label="# Bars (W)"
               value={input.barsW}
               onChange={handleChange('barsW')}
             />
+
             <InputField
               label="# Bars (L)"
               value={input.barsL}
               onChange={handleChange('barsL')}
             />
+
+            <Text style={styles.label}>Select Option</Text>
+
+            {isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenOption(true)}
+                >
+                  <Text>
+                    {selectedOption
+                      ? optionItems.find((i) => i.value === selectedOption)
+                          ?.label
+                      : 'Select option'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openOption,
+                  setOpenOption,
+                  optionItems,
+                  setSelectedOption,
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 3000 }}>
+                <DropDownPicker
+                  open={openOption}
+                  value={selectedOption}
+                  items={optionItems}
+                  setOpen={setOpenOption}
+                  setValue={setSelectedOption}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                />
+              </View>
+            )}
           </View>
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Volume</Text>
-            <Text style={styles.resultValue}>{volume} m³</Text>
+
+            <Text style={styles.resultValue}>
+              {volume ? `${volume} m³` : '-'}
+            </Text>
           </View>
 
-          {/* RESULTS */}
-          <ResultCard
-            title="Option A"
-            subtitle="w/o bend (75mm cover)"
-            cutW={cutSizeW_A}
-            cutL={cutSizeL_A}
-            data={optionA}
-            tieWire={tieWire}
-            color="blue"
-          />
+          {selectedOption === 'A' && (
+            <ResultCard
+              title="Option A"
+              subtitle="w/o bend (75mm cover)"
+              cutW={cutSizeW_A}
+              cutL={cutSizeL_A}
+              data={optionA}
+              tieWire={tieWire}
+              color="blue"
+            />
+          )}
 
-          <View style={{ height: 12 }} />
+          {selectedOption === 'B' && (
+            <ResultCard
+              title="Option B"
+              subtitle="w/ bend (75mm cover)"
+              cutW={cutSizeW_B}
+              cutL={cutSizeL_B}
+              data={optionB}
+              tieWire={tieWire}
+              color="green"
+            />
+          )}
 
-          <ResultCard
-            title="Option B"
-            subtitle="w/ bend (75mm cover)"
-            cutW={cutSizeW_B}
-            cutL={cutSizeL_B}
-            data={optionB}
-            tieWire={tieWire}
-            color="green"
-          />
-
-          {/* RESET */}
           <TouchableOpacity style={styles.reset} onPress={handleReset}>
             <Text style={styles.resetText}>Reset</Text>
           </TouchableOpacity>
@@ -211,6 +330,33 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 18,
     elevation: 3,
+  },
+
+  label: {
+    marginTop: 12,
+    marginBottom: 6,
+    fontWeight: '600',
+    color: '#334155',
+  },
+
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+  },
+
+  dropdown: {
+    borderRadius: 12,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
+    minHeight: 50,
+  },
+
+  dropdownContainer: {
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
   },
 
   resultCard: {
@@ -242,6 +388,47 @@ const styles = StyleSheet.create({
 
   resetText: {
     color: '#fff',
+    fontWeight: '600',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
+  },
+
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    maxHeight: 350,
+  },
+
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+
+  modalText: {
+    fontSize: 15,
+    color: '#0f172a',
+  },
+
+  modalCancel: {
+    textAlign: 'center',
+    marginTop: 12,
+    color: '#ef4444',
     fontWeight: '600',
   },
 });

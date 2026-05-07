@@ -102,7 +102,6 @@ export default function CHB() {
       endWeb,
       innerWeb,
       shell,
-      thicknessMode === 'custom',
     );
   }, [effectiveThickness, numericWebs, endWeb, innerWeb, shell, thicknessMode]);
 
