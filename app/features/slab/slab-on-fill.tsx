@@ -58,6 +58,8 @@ export default function SlabOnFill() {
   const [openTempBars, setOpenTempBars] = useState(false);
   const [openSteelLength, setOpenSteelLength] = useState(false);
 
+  const [kgsPerCum, setKgsPerCum] = useState('');
+
   const thicknessItems: Item<string>[] = [
     { label: '0.10', value: '0.10' },
     { label: '0.11', value: '0.11' },
@@ -250,13 +252,25 @@ export default function SlabOnFill() {
     return computePolyethyleneSheet(s, w, l);
   }, [sets, width, length]);
 
+  // const computedKgs = useMemo(() => {
+  //   if (!volume) {
+  //     return 0;
+  //   }
+
+  //   return computeComputedKgs(90, volume);
+  // }, [volume]);
+
   const computedKgs = useMemo(() => {
     if (!volume) {
       return 0;
     }
 
-    return computeComputedKgs(90, volume);
-  }, [volume]);
+    const customValue = parseFloat(kgsPerCum || '0');
+
+    const finalValue = customValue > 0 ? customValue : 90;
+
+    return computeComputedKgs(finalValue, volume);
+  }, [kgsPerCum, volume]);
 
   const tieWire = useMemo(() => {
     if (!computedKgs) {
@@ -287,6 +301,7 @@ export default function SlabOnFill() {
     setMainBars(null);
     setTempBars(null);
     setSteelLength(null);
+    setKgsPerCum('');
   };
 
   function renderAndroidModal<T>(
@@ -374,6 +389,7 @@ export default function SlabOnFill() {
               placeholder={placeholder}
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropdownContainer}
+              dropDownDirection="BOTTOM"
             />
           </View>
         )}
@@ -496,6 +512,16 @@ export default function SlabOnFill() {
               1000,
             )}
 
+            <Text style={styles.label}>kgs/cu.m (input own value)</Text>
+
+            <TextInput
+              value={kgsPerCum}
+              onChangeText={setKgsPerCum}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Optional"
+            />
+
             <TouchableOpacity style={styles.reset} onPress={reset}>
               <Text style={styles.resetText}>Reset</Text>
             </TouchableOpacity>
@@ -569,7 +595,11 @@ export default function SlabOnFill() {
               value={`${polyethyleneSheet}`}
             />
 
-            <Result label="Computed Quantity via Volume Method" value={`90`} />
+            {/* <Result label="Computed Quantity via Volume Method" value={`90`} /> */}
+            <Result
+              label="Computed Quantity via Volume Method"
+              value={kgsPerCum && Number(kgsPerCum) > 0 ? kgsPerCum : '90'}
+            />
 
             <Result
               label={`${steelLength}m Length Kgs`}
