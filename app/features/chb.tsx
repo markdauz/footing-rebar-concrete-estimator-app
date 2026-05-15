@@ -49,6 +49,8 @@ export default function CHB() {
   const [openWebs, setOpenWebs] = useState(false);
   const [openClass, setOpenClass] = useState(false);
 
+  const [wallArea, setWallArea] = useState('');
+
   const thicknessItems: Item<ThicknessValue>[] = [
     { label: '0.10', value: '0.10' },
     { label: '0.125', value: '0.125' },
@@ -120,11 +122,22 @@ export default function CHB() {
     return totalVol * cementClass;
   }, [totalVol, cementClass]);
 
+  const bags = useMemo(() => {
+    const area = parseFloat(wallArea || '0');
+
+    if (!area || !cement) {
+      return 0;
+    }
+
+    return area * cement;
+  }, [wallArea, cement]);
+
   const reset = () => {
     setThickness('');
     setThicknessMode(null);
     setWebs(null);
     setCementClass(null);
+    setWallArea('');
   };
 
   function renderAndroidModal<T>(
@@ -316,6 +329,16 @@ export default function CHB() {
               </View>
             )}
 
+            <Text style={styles.label}>Wall Area (input in m2)</Text>
+
+            <TextInput
+              value={wallArea}
+              onChangeText={setWallArea}
+              keyboardType="numeric"
+              style={styles.input}
+              placeholder="Enter wall area in m²"
+            />
+
             <TouchableOpacity style={styles.reset} onPress={reset}>
               <Text style={styles.resetText}>Reset</Text>
             </TouchableOpacity>
@@ -331,6 +354,7 @@ export default function CHB() {
             <Result label="Vol Between" value={`${volBetween.toFixed(3)} m³`} />
             <Result label="Total Vol" value={`${totalVol.toFixed(3)} m³`} />
             <Result label="Cement" value={`${cement.toFixed(3)} m³`} />
+            <Result label="Bags" value={`${bags.toFixed(3)}`} />
           </View>
         </ScrollView>
       </SafeAreaView>
