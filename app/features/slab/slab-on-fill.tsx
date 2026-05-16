@@ -44,12 +44,30 @@ export default function SlabOnFill() {
   const [length, setLength] = useState('');
   const [sets, setSets] = useState('');
 
-  const [slabThickness, setSlabThickness] = useState<string | null>(null);
-  const [spacingWidth, setSpacingWidth] = useState<string | null>(null);
-  const [spacingLength, setSpacingLength] = useState<string | null>(null);
-  const [mainBars, setMainBars] = useState<string | null>(null);
-  const [tempBars, setTempBars] = useState<string | null>(null);
-  const [steelLength, setSteelLength] = useState<string | null>(null);
+  // const [slabThickness, setSlabThickness] = useState<string | null>(null);
+  // const [spacingWidth, setSpacingWidth] = useState<string | null>(null);
+  // const [spacingLength, setSpacingLength] = useState<string | null>(null);
+  // const [mainBars, setMainBars] = useState<string | null>(null);
+  // const [tempBars, setTempBars] = useState<string | null>(null);
+  // const [steelLength, setSteelLength] = useState<string | null>(null);
+
+  const [slabThicknessMode, setSlabThicknessMode] = useState<string | null>(
+    null,
+  );
+  const [spacingWidthMode, setSpacingWidthMode] = useState<string | null>(null);
+  const [spacingLengthMode, setSpacingLengthMode] = useState<string | null>(
+    null,
+  );
+  const [mainBarsMode, setMainBarsMode] = useState<string | null>(null);
+  const [tempBarsMode, setTempBarsMode] = useState<string | null>(null);
+  const [steelLengthMode, setSteelLengthMode] = useState<string | null>(null);
+
+  const [slabThickness, setSlabThickness] = useState('');
+  const [spacingWidth, setSpacingWidth] = useState('');
+  const [spacingLength, setSpacingLength] = useState('');
+  const [mainBars, setMainBars] = useState('');
+  const [tempBars, setTempBars] = useState('');
+  const [steelLength, setSteelLength] = useState('');
 
   const [openThickness, setOpenThickness] = useState(false);
   const [openSpacingWidth, setOpenSpacingWidth] = useState(false);
@@ -68,6 +86,7 @@ export default function SlabOnFill() {
     { label: '0.15', value: '0.15' },
     { label: '0.175', value: '0.175' },
     { label: '0.20', value: '0.20' },
+    { label: 'Custom', value: 'custom' },
   ];
 
   const spacingItems: Item<string>[] = [
@@ -82,6 +101,7 @@ export default function SlabOnFill() {
     { label: '0.50', value: '0.50' },
     { label: '0.55', value: '0.55' },
     { label: '0.60', value: '0.60' },
+    { label: 'Custom', value: 'custom' },
   ];
 
   const barItems: Item<string>[] = [
@@ -89,6 +109,7 @@ export default function SlabOnFill() {
     { label: '12', value: '12' },
     { label: '16', value: '16' },
     { label: '20', value: '20' },
+    { label: 'Custom', value: 'custom' },
   ];
 
   const steelLengthItems: Item<string>[] = [
@@ -97,12 +118,56 @@ export default function SlabOnFill() {
     { label: '9.00', value: '9.00' },
     { label: '10.50', value: '10.50' },
     { label: '12.00', value: '12.00' },
+    { label: 'Custom', value: 'custom' },
   ];
+
+  //
+  const effectiveThickness =
+    slabThicknessMode === 'custom'
+      ? parseFloat(slabThickness)
+      : slabThicknessMode
+        ? parseFloat(slabThicknessMode)
+        : NaN;
+
+  const effectiveSpacingWidth =
+    spacingWidthMode === 'custom'
+      ? parseFloat(spacingWidth)
+      : spacingWidthMode
+        ? parseFloat(spacingWidthMode)
+        : NaN;
+
+  const effectiveSpacingLength =
+    spacingLengthMode === 'custom'
+      ? parseFloat(spacingLength)
+      : spacingLengthMode
+        ? parseFloat(spacingLengthMode)
+        : NaN;
+
+  const effectiveMainBars =
+    mainBarsMode === 'custom'
+      ? parseFloat(mainBars)
+      : mainBarsMode
+        ? parseFloat(mainBarsMode)
+        : NaN;
+
+  const effectiveTempBars =
+    tempBarsMode === 'custom'
+      ? parseFloat(tempBars)
+      : tempBarsMode
+        ? parseFloat(tempBarsMode)
+        : NaN;
+
+  const effectiveSteelLength =
+    steelLengthMode === 'custom'
+      ? parseFloat(steelLength)
+      : steelLengthMode
+        ? parseFloat(steelLengthMode)
+        : NaN;
 
   const volume = useMemo(() => {
     const w = parseFloat(width);
     const l = parseFloat(length);
-    const t = parseFloat(slabThickness || '0');
+    const t = effectiveThickness;
     const s = parseFloat(sets);
 
     if (!w || !l || !t || !s) {
@@ -110,124 +175,121 @@ export default function SlabOnFill() {
     }
 
     return computeSlabVolume(w, l, t, s);
-  }, [width, length, slabThickness, sets]);
+  }, [width, length, effectiveThickness, sets]);
 
   const mainCutBarPcs = useMemo(() => {
     const l = parseFloat(length);
-    const spacing = parseFloat(spacingLength || '0');
+    const spacing = effectiveSpacingLength;
 
     if (!l || !spacing) {
       return 0;
     }
 
     return computeMainCutBarPcs(l, spacing);
-  }, [length, spacingLength]);
+  }, [length, effectiveSpacingLength]);
 
   const tempCutBarPcs = useMemo(() => {
     const w = parseFloat(width);
-    const spacing = parseFloat(spacingWidth || '0');
+    const spacing = effectiveSpacingWidth;
 
     if (!w || !spacing) {
       return 0;
     }
 
     return computeTempCutBarPcs(w, spacing);
-  }, [width, spacingWidth]);
+  }, [width, effectiveSpacingWidth]);
 
   const mainCutSize = useMemo(() => {
     const w = parseFloat(width);
-    const bar = parseFloat(mainBars || '0');
+    const bar = effectiveMainBars;
 
     if (!w || !bar) {
       return 0;
     }
 
     return computeMainCutSize(w, bar);
-  }, [width, mainBars]);
+  }, [width, effectiveMainBars]);
 
   const tempCutSize = useMemo(() => {
     const l = parseFloat(length);
-    const bar = parseFloat(tempBars || '0');
+    const bar = effectiveTempBars;
 
     if (!l || !bar) {
       return 0;
     }
 
     return computeTempCutSize(l, bar);
-  }, [length, tempBars]);
+  }, [length, effectiveTempBars]);
 
   const mainWastage = useMemo(() => {
-    const steel = parseFloat(steelLength || '0');
+    const steel = effectiveSteelLength;
 
     if (!steel || !mainCutSize) {
       return 0;
     }
 
     return computeWastage(steel, mainCutSize);
-  }, [steelLength, mainCutSize]);
+  }, [effectiveSteelLength, mainCutSize]);
 
   const tempWastage = useMemo(() => {
-    const steel = parseFloat(steelLength || '0');
+    const steel = effectiveSteelLength;
 
     if (!steel || !tempCutSize) {
       return 0;
     }
 
     return computeWastage(steel, tempCutSize);
-  }, [steelLength, tempCutSize]);
+  }, [effectiveSteelLength, tempCutSize]);
 
   const bothExceeded =
-    mainCutSize > Number(steelLength) && tempCutSize > Number(steelLength);
+    mainCutSize > effectiveSteelLength && tempCutSize > effectiveSteelLength;
 
   const mainTotalBars = useMemo(() => {
     const s = parseFloat(sets);
-    const steel = parseFloat(steelLength || '0');
+    const steel = effectiveSteelLength;
 
     if (!mainCutBarPcs || !s || !mainCutSize || !steel) {
       return 0;
     }
 
     return computeTotalBars(mainCutBarPcs, s, mainCutSize, steel, bothExceeded);
-  }, [mainCutBarPcs, sets, mainCutSize, steelLength, bothExceeded]);
+  }, [mainCutBarPcs, sets, mainCutSize, effectiveSteelLength, bothExceeded]);
 
   const tempTotalBars = useMemo(() => {
     const s = parseFloat(sets);
-    const steel = parseFloat(steelLength || '0');
+    const steel = effectiveSteelLength;
 
     if (!tempCutBarPcs || !s || !tempCutSize || !steel) {
       return 0;
     }
 
     return computeTotalBars(tempCutBarPcs, s, tempCutSize, steel, bothExceeded);
-  }, [tempCutBarPcs, sets, tempCutSize, steelLength, bothExceeded]);
+  }, [tempCutBarPcs, sets, tempCutSize, effectiveSteelLength, bothExceeded]);
 
   const mainKgs = useMemo(() => {
-    const bar = Number(mainBars);
-    const steel = parseFloat(steelLength || '0');
+    const bar = effectiveMainBars;
+    const steel = effectiveSteelLength;
 
     if (!mainTotalBars || !bar || !steel) {
       return 0;
     }
 
     return computeSteelKg(mainTotalBars, steel, bar);
-  }, [mainTotalBars, mainBars, steelLength]);
+  }, [mainTotalBars, effectiveMainBars, effectiveSteelLength]);
 
   const tempKgs = useMemo(() => {
-    const bar = Number(tempBars);
-    const steel = parseFloat(steelLength || '0');
+    const bar = effectiveTempBars;
+    const steel = effectiveSteelLength;
 
     if (!tempTotalBars || !bar || !steel) {
       return 0;
     }
 
     return computeSteelKg(tempTotalBars, steel, bar);
-  }, [tempTotalBars, tempBars, steelLength]);
+  }, [tempTotalBars, effectiveTempBars, effectiveSteelLength]);
 
   const steelKgsCum = useMemo(() => {
-    const main = Number(mainKgs);
-    const temp = Number(tempKgs);
-
-    return main + temp;
+    return Number(mainKgs) + Number(tempKgs);
   }, [mainKgs, tempKgs]);
 
   const giWire = useMemo(() => {
@@ -273,24 +335,22 @@ export default function SlabOnFill() {
   }, [computedKgs]);
 
   const computedPcs = useMemo(() => {
-    const bar = parseFloat(mainBars || '0');
-    const steel = parseFloat(steelLength || '0');
+    const bar = effectiveMainBars;
+    const steel = effectiveSteelLength;
 
     if (!computedKgs || !bar || !steel) {
       return 0;
     }
 
     return computePCS(computedKgs, bar, steel);
-  }, [computedKgs, mainBars, steelLength]);
+  }, [computedKgs, effectiveMainBars, effectiveSteelLength]);
 
-  //
   const steelLengths = [6, 7.5, 9, 10.5, 12];
 
-  const computeBarsPerLength = (
-    cutSize: number,
-    selectedSteelLength: number,
-  ) => {
-    if (!cutSize || !selectedSteelLength) return 0;
+  function computeBarsPerLength(cutSize: number, selectedSteelLength: number) {
+    if (!cutSize || !selectedSteelLength) {
+      return 0;
+    }
 
     if (selectedSteelLength / cutSize < 1) {
       return Math.round(
@@ -300,20 +360,22 @@ export default function SlabOnFill() {
     }
 
     return Math.trunc(selectedSteelLength / cutSize);
-  };
+  }
 
-  const computeRemarks = (cutSize: number, selectedSteelLength: number) => {
-    if (!cutSize || !selectedSteelLength) return '-';
+  function computeRemarks(cutSize: number, selectedSteelLength: number) {
+    if (!cutSize || !selectedSteelLength) {
+      return '-';
+    }
 
     return selectedSteelLength / cutSize < 1 ? '> than length' : 'ok';
-  };
+  }
 
-  const computeTotalSteelBars = (
+  function computeTotalSteelBars(
     cutBarPcs: number,
     setsValue: number,
     cutSize: number,
     selectedSteelLength: number,
-  ) => {
+  ) {
     if (!cutBarPcs || !setsValue || !cutSize || !selectedSteelLength) {
       return 0;
     }
@@ -325,27 +387,37 @@ export default function SlabOnFill() {
     }
 
     return setsValue * (cutBarPcs / Math.trunc(selectedSteelLength / cutSize));
-  };
+  }
 
-  const computeLengthWastage = (stockLength: number, cutSize: number) => {
-    if (!stockLength || !cutSize) return 0;
+  function computeLengthWastage(stockLength: number, cutSize: number) {
+    if (!stockLength || !cutSize) {
+      return 0;
+    }
 
     if (stockLength / cutSize < 1) {
-      return (
-        Math.trunc(cutSize / stockLength + 1) * stockLength - cutSize - 0.6
+      return Number(
+        (
+          Math.trunc(cutSize / stockLength + 1) * stockLength -
+          cutSize -
+          0.6
+        ).toFixed(2),
       );
     }
 
-    return stockLength - Math.trunc(stockLength / cutSize) * cutSize;
-  };
+    return Number(
+      (stockLength - Math.trunc(stockLength / cutSize) * cutSize).toFixed(2),
+    );
+  }
 
   const mainBarsOverview = useMemo(() => {
     const cutSize = Number(mainCutSize);
     const cutBarPcs = Number(mainCutBarPcs);
     const s = Number(sets);
-    const steel = Number(steelLength);
+    const steel = effectiveSteelLength;
 
-    if (!cutSize) return null;
+    if (!cutSize) {
+      return null;
+    }
 
     const wastages = steelLengths.map((len) =>
       computeLengthWastage(len, cutSize),
@@ -353,20 +425,26 @@ export default function SlabOnFill() {
 
     return {
       pcsFromLength: computeBarsPerLength(cutSize, steel),
+
       remarks: computeRemarks(cutSize, steel),
+
       totalPcs: computeTotalSteelBars(cutBarPcs, s, cutSize, steel),
+
       wastages,
+
       minimum: Math.min(...wastages),
     };
-  }, [mainCutSize, mainCutBarPcs, sets, steelLength]);
+  }, [mainCutSize, mainCutBarPcs, sets, effectiveSteelLength]);
 
   const tempBarsOverview = useMemo(() => {
     const cutSize = Number(tempCutSize);
     const cutBarPcs = Number(tempCutBarPcs);
     const s = Number(sets);
-    const steel = Number(steelLength);
+    const steel = effectiveSteelLength;
 
-    if (!cutSize) return null;
+    if (!cutSize) {
+      return null;
+    }
 
     const wastages = steelLengths.map((len) =>
       computeLengthWastage(len, cutSize),
@@ -374,24 +452,36 @@ export default function SlabOnFill() {
 
     return {
       pcsFromLength: computeBarsPerLength(cutSize, steel),
+
       remarks: computeRemarks(cutSize, steel),
+
       totalPcs: computeTotalSteelBars(cutBarPcs, s, cutSize, steel),
+
       wastages,
+
       minimum: Math.min(...wastages),
     };
-  }, [tempCutSize, tempCutBarPcs, sets, steelLength]);
-  //
+  }, [tempCutSize, tempCutBarPcs, sets, effectiveSteelLength]);
 
   const reset = () => {
     setWidth('');
     setLength('');
     setSets('');
-    setSlabThickness(null);
-    setSpacingWidth(null);
-    setSpacingLength(null);
-    setMainBars(null);
-    setTempBars(null);
-    setSteelLength(null);
+
+    setSlabThicknessMode(null);
+    setSpacingWidthMode(null);
+    setSpacingLengthMode(null);
+    setMainBarsMode(null);
+    setTempBarsMode(null);
+    setSteelLengthMode(null);
+
+    setSlabThickness('');
+    setSpacingWidth('');
+    setSpacingLength('');
+    setMainBars('');
+    setTempBars('');
+    setSteelLength('');
+
     setKgsPerCum('');
   };
 
@@ -529,18 +619,73 @@ export default function SlabOnFill() {
               keyboardType="numeric"
             />
 
-            {renderDropdown(
-              'Slab Thickness (m)',
-              slabThickness,
-              openThickness,
-              setOpenThickness,
-              setSlabThickness,
-              thicknessItems,
-              'Select thickness',
-              6000,
+            <Text style={styles.label}>Slab Thickness (m)</Text>
+
+            {slabThicknessMode === 'custom' ? (
+              <>
+                <TextInput
+                  value={slabThickness}
+                  onChangeText={setSlabThickness}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                  placeholder="Enter slab thickness"
+                />
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setSlabThicknessMode(null);
+                    setSlabThickness('');
+                  }}
+                >
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenThickness(true)}
+                >
+                  <Text>
+                    {slabThicknessMode
+                      ? thicknessItems.find(
+                          (i) => i.value === slabThicknessMode,
+                        )?.label
+                      : 'Select thickness'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openThickness,
+                  setOpenThickness,
+                  thicknessItems,
+                  (val) => {
+                    if (val === 'custom') {
+                      setSlabThickness('');
+                    }
+
+                    setSlabThicknessMode(val);
+                  },
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 6000 }}>
+                <DropDownPicker
+                  open={openThickness}
+                  value={slabThicknessMode}
+                  items={thicknessItems}
+                  setOpen={setOpenThickness}
+                  setValue={setSlabThicknessMode}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  dropDownDirection="BOTTOM"
+                />
+              </View>
             )}
 
             <Text style={styles.label}># of Sets</Text>
+
             <TextInput
               value={sets}
               onChangeText={setSets}
@@ -548,59 +693,323 @@ export default function SlabOnFill() {
               keyboardType="numeric"
             />
 
-            {renderDropdown(
-              'Spacing @ Width (m)',
-              spacingWidth,
-              openSpacingWidth,
-              setOpenSpacingWidth,
-              setSpacingWidth,
-              spacingItems,
-              'Select spacing',
-              5000,
+            <Text style={styles.label}>Spacing @ Width (m)</Text>
+
+            {spacingWidthMode === 'custom' ? (
+              <>
+                <TextInput
+                  value={spacingWidth}
+                  onChangeText={setSpacingWidth}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                  placeholder="Enter spacing width"
+                />
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setSpacingWidthMode(null);
+                    setSpacingWidth('');
+                  }}
+                >
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenSpacingWidth(true)}
+                >
+                  <Text>
+                    {spacingWidthMode
+                      ? spacingItems.find((i) => i.value === spacingWidthMode)
+                          ?.label
+                      : 'Select spacing'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openSpacingWidth,
+                  setOpenSpacingWidth,
+                  spacingItems,
+                  (val) => {
+                    if (val === 'custom') {
+                      setSpacingWidth('');
+                    }
+
+                    setSpacingWidthMode(val);
+                  },
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 5000 }}>
+                <DropDownPicker
+                  open={openSpacingWidth}
+                  value={spacingWidthMode}
+                  items={spacingItems}
+                  setOpen={setOpenSpacingWidth}
+                  setValue={setSpacingWidthMode}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  dropDownDirection="BOTTOM"
+                />
+              </View>
             )}
 
-            {renderDropdown(
-              'Spacing @ Length (m)',
-              spacingLength,
-              openSpacingLength,
-              setOpenSpacingLength,
-              setSpacingLength,
-              spacingItems,
-              'Select spacing',
-              4000,
+            <Text style={styles.label}>Spacing @ Length (m)</Text>
+
+            {spacingLengthMode === 'custom' ? (
+              <>
+                <TextInput
+                  value={spacingLength}
+                  onChangeText={setSpacingLength}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                  placeholder="Enter spacing length"
+                />
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setSpacingLengthMode(null);
+                    setSpacingLength('');
+                  }}
+                >
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenSpacingLength(true)}
+                >
+                  <Text>
+                    {spacingLengthMode
+                      ? spacingItems.find((i) => i.value === spacingLengthMode)
+                          ?.label
+                      : 'Select spacing'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openSpacingLength,
+                  setOpenSpacingLength,
+                  spacingItems,
+                  (val) => {
+                    if (val === 'custom') {
+                      setSpacingLength('');
+                    }
+
+                    setSpacingLengthMode(val);
+                  },
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 4000 }}>
+                <DropDownPicker
+                  open={openSpacingLength}
+                  value={spacingLengthMode}
+                  items={spacingItems}
+                  setOpen={setOpenSpacingLength}
+                  setValue={setSpacingLengthMode}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  dropDownDirection="BOTTOM"
+                />
+              </View>
             )}
 
-            {renderDropdown(
-              'Bar Diam Ø Main Bars (mm)',
-              mainBars,
-              openMainBars,
-              setOpenMainBars,
-              setMainBars,
-              barItems,
-              'Select main bars',
-              3000,
+            <Text style={styles.label}>Bar Diam Ø Main Bars (mm)</Text>
+
+            {mainBarsMode === 'custom' ? (
+              <>
+                <TextInput
+                  value={mainBars}
+                  onChangeText={setMainBars}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                  placeholder="Enter main bars"
+                />
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setMainBarsMode(null);
+                    setMainBars('');
+                  }}
+                >
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenMainBars(true)}
+                >
+                  <Text>
+                    {mainBarsMode
+                      ? barItems.find((i) => i.value === mainBarsMode)?.label
+                      : 'Select main bars'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openMainBars,
+                  setOpenMainBars,
+                  barItems,
+                  (val) => {
+                    if (val === 'custom') {
+                      setMainBars('');
+                    }
+
+                    setMainBarsMode(val);
+                  },
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 3000 }}>
+                <DropDownPicker
+                  open={openMainBars}
+                  value={mainBarsMode}
+                  items={barItems}
+                  setOpen={setOpenMainBars}
+                  setValue={setMainBarsMode}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  dropDownDirection="BOTTOM"
+                />
+              </View>
             )}
 
-            {renderDropdown(
-              'Bar Diam Ø Temp Bars (mm)',
-              tempBars,
-              openTempBars,
-              setOpenTempBars,
-              setTempBars,
-              barItems,
-              'Select temp bars',
-              2000,
+            <Text style={styles.label}>Bar Diam Ø Temp Bars (mm)</Text>
+
+            {tempBarsMode === 'custom' ? (
+              <>
+                <TextInput
+                  value={tempBars}
+                  onChangeText={setTempBars}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                  placeholder="Enter temp bars"
+                />
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setTempBarsMode(null);
+                    setTempBars('');
+                  }}
+                >
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenTempBars(true)}
+                >
+                  <Text>
+                    {tempBarsMode
+                      ? barItems.find((i) => i.value === tempBarsMode)?.label
+                      : 'Select temp bars'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openTempBars,
+                  setOpenTempBars,
+                  barItems,
+                  (val) => {
+                    if (val === 'custom') {
+                      setTempBars('');
+                    }
+
+                    setTempBarsMode(val);
+                  },
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 2000 }}>
+                <DropDownPicker
+                  open={openTempBars}
+                  value={tempBarsMode}
+                  items={barItems}
+                  setOpen={setOpenTempBars}
+                  setValue={setTempBarsMode}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  dropDownDirection="BOTTOM"
+                />
+              </View>
             )}
 
-            {renderDropdown(
-              'Steel Length',
-              steelLength,
-              openSteelLength,
-              setOpenSteelLength,
-              setSteelLength,
-              steelLengthItems,
-              'Select steel length',
-              1000,
+            <Text style={styles.label}>Steel Length</Text>
+
+            {steelLengthMode === 'custom' ? (
+              <>
+                <TextInput
+                  value={steelLength}
+                  onChangeText={setSteelLength}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                  placeholder="Enter steel length"
+                />
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setSteelLengthMode(null);
+                    setSteelLength('');
+                  }}
+                >
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={[styles.input, styles.androidInput]}
+                  onPress={() => setOpenSteelLength(true)}
+                >
+                  <Text>
+                    {steelLengthMode
+                      ? steelLengthItems.find(
+                          (i) => i.value === steelLengthMode,
+                        )?.label
+                      : 'Select steel length'}
+                  </Text>
+                </TouchableOpacity>
+
+                {renderAndroidModal(
+                  openSteelLength,
+                  setOpenSteelLength,
+                  steelLengthItems,
+                  (val) => {
+                    if (val === 'custom') {
+                      setSteelLength('');
+                    }
+
+                    setSteelLengthMode(val);
+                  },
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 1000 }}>
+                <DropDownPicker
+                  open={openSteelLength}
+                  value={steelLengthMode}
+                  items={steelLengthItems}
+                  setOpen={setOpenSteelLength}
+                  setValue={setSteelLengthMode}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  dropDownDirection="BOTTOM"
+                />
+              </View>
             )}
 
             <Text style={styles.label}>kgs/cu.m (input own value)</Text>
@@ -662,7 +1071,7 @@ export default function SlabOnFill() {
 
             <Result
               label="Total Pcs of Bars (Main) Length"
-              value={steelLength ? `@${steelLength}m` : '-'}
+              value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
             />
 
             <Result label="Total Pcs of Bars (Main) Kgs" value={`${mainKgs}`} />
@@ -674,7 +1083,7 @@ export default function SlabOnFill() {
 
             <Result
               label="Total Pcs of Bars (Temp) Length"
-              value={steelLength ? `@${steelLength}m` : '-'}
+              value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
             />
 
             <Result label="Total Pcs of Bars (Temp) Kgs" value={`${tempKgs}`} />
@@ -971,5 +1380,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 10,
+  },
+  androidInput: {
+    justifyContent: 'center',
+  },
+
+  backText: {
+    color: '#2563EB',
+    marginTop: 6,
+    fontSize: 13,
   },
 });
