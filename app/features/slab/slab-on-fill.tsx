@@ -252,14 +252,6 @@ export default function SlabOnFill() {
     return computePolyethyleneSheet(s, w, l);
   }, [sets, width, length]);
 
-  // const computedKgs = useMemo(() => {
-  //   if (!volume) {
-  //     return 0;
-  //   }
-
-  //   return computeComputedKgs(90, volume);
-  // }, [volume]);
-
   const computedKgs = useMemo(() => {
     if (!volume) {
       return 0;
@@ -290,6 +282,105 @@ export default function SlabOnFill() {
 
     return computePCS(computedKgs, bar, steel);
   }, [computedKgs, mainBars, steelLength]);
+
+  //
+  const steelLengths = [6, 7.5, 9, 10.5, 12];
+
+  const computeBarsPerLength = (
+    cutSize: number,
+    selectedSteelLength: number,
+  ) => {
+    if (!cutSize || !selectedSteelLength) return 0;
+
+    if (selectedSteelLength / cutSize < 1) {
+      return Math.round(
+        (Math.trunc(cutSize / selectedSteelLength + 1) * selectedSteelLength) /
+          selectedSteelLength,
+      );
+    }
+
+    return Math.trunc(selectedSteelLength / cutSize);
+  };
+
+  const computeRemarks = (cutSize: number, selectedSteelLength: number) => {
+    if (!cutSize || !selectedSteelLength) return '-';
+
+    return selectedSteelLength / cutSize < 1 ? '> than length' : 'ok';
+  };
+
+  const computeTotalSteelBars = (
+    cutBarPcs: number,
+    setsValue: number,
+    cutSize: number,
+    selectedSteelLength: number,
+  ) => {
+    if (!cutBarPcs || !setsValue || !cutSize || !selectedSteelLength) {
+      return 0;
+    }
+
+    if (selectedSteelLength / cutSize < 1) {
+      return (
+        cutBarPcs * Math.trunc(cutSize / selectedSteelLength + 1) * setsValue
+      );
+    }
+
+    return setsValue * (cutBarPcs / Math.trunc(selectedSteelLength / cutSize));
+  };
+
+  const computeLengthWastage = (stockLength: number, cutSize: number) => {
+    if (!stockLength || !cutSize) return 0;
+
+    if (stockLength / cutSize < 1) {
+      return (
+        Math.trunc(cutSize / stockLength + 1) * stockLength - cutSize - 0.6
+      );
+    }
+
+    return stockLength - Math.trunc(stockLength / cutSize) * cutSize;
+  };
+
+  const mainBarsOverview = useMemo(() => {
+    const cutSize = Number(mainCutSize);
+    const cutBarPcs = Number(mainCutBarPcs);
+    const s = Number(sets);
+    const steel = Number(steelLength);
+
+    if (!cutSize) return null;
+
+    const wastages = steelLengths.map((len) =>
+      computeLengthWastage(len, cutSize),
+    );
+
+    return {
+      pcsFromLength: computeBarsPerLength(cutSize, steel),
+      remarks: computeRemarks(cutSize, steel),
+      totalPcs: computeTotalSteelBars(cutBarPcs, s, cutSize, steel),
+      wastages,
+      minimum: Math.min(...wastages),
+    };
+  }, [mainCutSize, mainCutBarPcs, sets, steelLength]);
+
+  const tempBarsOverview = useMemo(() => {
+    const cutSize = Number(tempCutSize);
+    const cutBarPcs = Number(tempCutBarPcs);
+    const s = Number(sets);
+    const steel = Number(steelLength);
+
+    if (!cutSize) return null;
+
+    const wastages = steelLengths.map((len) =>
+      computeLengthWastage(len, cutSize),
+    );
+
+    return {
+      pcsFromLength: computeBarsPerLength(cutSize, steel),
+      remarks: computeRemarks(cutSize, steel),
+      totalPcs: computeTotalSteelBars(cutBarPcs, s, cutSize, steel),
+      wastages,
+      minimum: Math.min(...wastages),
+    };
+  }, [tempCutSize, tempCutBarPcs, sets, steelLength]);
+  //
 
   const reset = () => {
     setWidth('');
@@ -609,6 +700,111 @@ export default function SlabOnFill() {
             <Result label="Tie Wire (kgs)" value={`${tieWire}`} />
 
             <Result label="PCS" value={`${computedPcs}`} />
+            <View style={styles.overviewCard}>
+              <Text style={styles.resultTitle}>
+                Overview of Wastage from Different Steel Length
+              </Text>
+
+              {mainBarsOverview && (
+                <View style={styles.overviewSection}>
+                  <Text style={styles.overviewHeading}>
+                    Main Bars + 9d Hook
+                  </Text>
+
+                  <Result
+                    label="# pcs from length/# of bars"
+                    value={`${mainBarsOverview.pcsFromLength}`}
+                  />
+
+                  <Result label="Remarks" value={mainBarsOverview.remarks} />
+
+                  <Result
+                    label="Total pcs of steel bar"
+                    value={mainBarsOverview.totalPcs.toFixed(2)}
+                  />
+
+                  <Result
+                    label="6m Wastage"
+                    value={mainBarsOverview.wastages[0].toFixed(2)}
+                  />
+
+                  <Result
+                    label="7.5m Wastage"
+                    value={mainBarsOverview.wastages[1].toFixed(2)}
+                  />
+
+                  <Result
+                    label="9m Wastage"
+                    value={mainBarsOverview.wastages[2].toFixed(2)}
+                  />
+
+                  <Result
+                    label="10.5m Wastage"
+                    value={mainBarsOverview.wastages[3].toFixed(2)}
+                  />
+
+                  <Result
+                    label="12m Wastage"
+                    value={mainBarsOverview.wastages[4].toFixed(2)}
+                  />
+
+                  <Result
+                    label="Minimum Wastage"
+                    value={mainBarsOverview.minimum.toFixed(2)}
+                  />
+                </View>
+              )}
+
+              {tempBarsOverview && (
+                <View style={styles.overviewSection}>
+                  <Text style={styles.overviewHeading}>
+                    Temp Bars + 9d Hook
+                  </Text>
+
+                  <Result
+                    label="# pcs from length/# of bars"
+                    value={`${tempBarsOverview.pcsFromLength}`}
+                  />
+
+                  <Result label="Remarks" value={tempBarsOverview.remarks} />
+
+                  <Result
+                    label="Total pcs of steel bar"
+                    value={tempBarsOverview.totalPcs.toFixed(2)}
+                  />
+
+                  <Result
+                    label="6m Wastage"
+                    value={tempBarsOverview.wastages[0].toFixed(2)}
+                  />
+
+                  <Result
+                    label="7.5m Wastage"
+                    value={tempBarsOverview.wastages[1].toFixed(2)}
+                  />
+
+                  <Result
+                    label="9m Wastage"
+                    value={tempBarsOverview.wastages[2].toFixed(2)}
+                  />
+
+                  <Result
+                    label="10.5m Wastage"
+                    value={tempBarsOverview.wastages[3].toFixed(2)}
+                  />
+
+                  <Result
+                    label="12m Wastage"
+                    value={tempBarsOverview.wastages[4].toFixed(2)}
+                  />
+
+                  <Result
+                    label="Minimum Wastage"
+                    value={tempBarsOverview.minimum.toFixed(2)}
+                  />
+                </View>
+              )}
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -758,5 +954,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  overviewCard: {
+    marginTop: 18,
+  },
+
+  overviewSection: {
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#334155',
+  },
+
+  overviewHeading: {
+    color: '#e2e8f0',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 10,
   },
 });
