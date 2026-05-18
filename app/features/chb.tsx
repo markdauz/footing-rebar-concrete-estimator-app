@@ -354,8 +354,12 @@ export default function CHB() {
             <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
             <Result label="Vol Between" value={`${volBetween.toFixed(3)} m³`} />
             <Result label="Total Vol" value={`${totalVol.toFixed(4)} m³`} />
-            <Result label="Cement" value={`${cement.toFixed(3)} m³`} />
-            <Result label="Bags" value={`${bags.toFixed(3)}`} />
+            <Result label="Mixture" value={`${cement.toFixed(3)} m³`} />
+            <Result label="Cement Bags" value={`${bags.toFixed(3)}`} />
+            <Result
+              label="Sand"
+              value={`${parseFloat(totalVol.toFixed(4)) * parseFloat(wallArea || '0')} m³`}
+            />
           </View>
         </ScrollView>
       </SafeAreaView>

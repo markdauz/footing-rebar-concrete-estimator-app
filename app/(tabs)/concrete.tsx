@@ -29,12 +29,12 @@ const features: Feature[] = [
   { name: 'Column', icon: 'apps-outline', route: '/features/column' },
   { name: 'Beam', icon: 'remove-outline', route: '/features/beam' },
   {
-    name: 'Mortar/Cement Gravel',
+    name: 'Mortar',
     icon: 'flask-outline',
     route: '/features/mortar',
   },
   {
-    name: 'Plaster/Cement Gravel',
+    name: 'Plaster',
     icon: 'layers-outline',
     route: '/features/plaster',
   },

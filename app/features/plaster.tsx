@@ -169,7 +169,7 @@ export default function Plaster() {
               <Ionicons name="layers-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Plaster Calculator</Text>
-            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
+            <Text style={styles.subtitle}>Cement Sand Estimate</Text>
           </View>
 
           <View style={styles.card}>

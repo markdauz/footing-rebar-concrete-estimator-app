@@ -171,7 +171,7 @@ export default function Mortar() {
               <Ionicons name="flask-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Mortar Calculator</Text>
-            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
+            <Text style={styles.subtitle}>Cement Sand Estimate</Text>
           </View>
 
           <View style={styles.card}>
