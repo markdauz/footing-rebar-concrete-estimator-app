@@ -59,8 +59,8 @@ export default function Footing() {
   const [openOption, setOpenOption] = useState(false);
 
   const optionItems: Item<OptionValue>[] = [
-    { label: 'Option A', value: 'A' },
-    { label: 'Option B', value: 'B' },
+    { label: 'Without Bend', value: 'A' },
+    { label: 'With Bend', value: 'B' },
   ];
 
   const handleChange = (field: string) => (value: string) => {
@@ -190,7 +190,7 @@ export default function Footing() {
                 marginTop: 4,
               }}
             >
-              Reinforcement estimation
+              Steel Bars and Tie Wires
             </Text>
           </View>
 
@@ -292,7 +292,7 @@ export default function Footing() {
 
           {selectedOption === 'A' && (
             <ResultCard
-              title="Option A"
+              title="Without Bend"
               subtitle="w/o bend (75mm cover)"
               cutW={cutSizeW_A}
               cutL={cutSizeL_A}
@@ -304,7 +304,7 @@ export default function Footing() {
 
           {selectedOption === 'B' && (
             <ResultCard
-              title="Option B"
+              title="With Bend"
               subtitle="w/ bend (75mm cover)"
               cutW={cutSizeW_B}
               cutL={cutSizeL_B}

@@ -235,7 +235,7 @@ export default function WallFooting() {
               <Ionicons name="square-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Wall Footing</Text>
-            <Text style={styles.subtitle}>Concrete footing estimator</Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
@@ -245,6 +245,7 @@ export default function WallFooting() {
               onChangeText={setSets}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Length (m)</Text>
@@ -253,6 +254,7 @@ export default function WallFooting() {
               onChangeText={setLength}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             {/* Width */}
@@ -264,6 +266,7 @@ export default function WallFooting() {
                   onChangeText={setCustomWidth}
                   style={styles.input}
                   keyboardType="numeric"
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setWidth(null)}>
                   <Text style={styles.backText}>← Back</Text>
@@ -322,6 +325,7 @@ export default function WallFooting() {
                   onChangeText={setCustomThickness}
                   style={styles.input}
                   keyboardType="numeric"
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setThickness(null)}>
                   <Text style={styles.backText}>← Back</Text>
@@ -380,7 +384,7 @@ export default function WallFooting() {
                   onChangeText={setCustomMix}
                   style={styles.input}
                   keyboardType="numeric"
-                  placeholder="Enter factor"
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>

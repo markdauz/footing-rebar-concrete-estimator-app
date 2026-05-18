@@ -148,9 +148,7 @@ export default function Slab() {
               <Ionicons name="grid-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Slab Calculator</Text>
-            <Text style={styles.subtitle}>
-              Concrete volume & material estimator
-            </Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
@@ -160,7 +158,7 @@ export default function Slab() {
               onChangeText={setArea}
               keyboardType="numeric"
               style={styles.input}
-              placeholder="0.00"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Thickness (m)</Text>
@@ -172,6 +170,7 @@ export default function Slab() {
                   onChangeText={setCustomThickness}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setThickness(null)}>
                   <Text style={styles.backText}>← Back</Text>
@@ -222,6 +221,7 @@ export default function Slab() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>

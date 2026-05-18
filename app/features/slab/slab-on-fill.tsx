@@ -370,6 +370,25 @@ export default function SlabOnFill() {
     return selectedSteelLength / cutSize < 1 ? '> than length' : 'ok';
   }
 
+  // function computeTotalSteelBars(
+  //   cutBarPcs: number,
+  //   setsValue: number,
+  //   cutSize: number,
+  //   selectedSteelLength: number,
+  // ) {
+  //   if (!cutBarPcs || !setsValue || !cutSize || !selectedSteelLength) {
+  //     return 0;
+  //   }
+
+  //   if (selectedSteelLength / cutSize < 1) {
+  //     return (
+  //       cutBarPcs * Math.trunc(cutSize / selectedSteelLength + 1) * setsValue
+  //     );
+  //   }
+
+  //   return setsValue * (cutBarPcs / Math.trunc(selectedSteelLength / cutSize));
+  // }
+
   function computeTotalSteelBars(
     cutBarPcs: number,
     setsValue: number,
@@ -380,13 +399,16 @@ export default function SlabOnFill() {
       return 0;
     }
 
-    if (selectedSteelLength / cutSize < 1) {
-      return (
-        cutBarPcs * Math.trunc(cutSize / selectedSteelLength + 1) * setsValue
-      );
+    const barsPerPiece = Math.trunc(selectedSteelLength / cutSize);
+
+    // if cut size exceeds stock length
+    if (barsPerPiece <= 0) {
+      const joinedBars = Math.trunc(cutSize / selectedSteelLength + 1);
+
+      return Number(((cutBarPcs / joinedBars) * setsValue).toFixed(2));
     }
 
-    return setsValue * (cutBarPcs / Math.trunc(selectedSteelLength / cutSize));
+    return Number(((cutBarPcs / barsPerPiece) * setsValue).toFixed(2));
   }
 
   function computeLengthWastage(stockLength: number, cutSize: number) {
@@ -609,6 +631,7 @@ export default function SlabOnFill() {
               onChangeText={setWidth}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Length (m)</Text>
@@ -617,6 +640,7 @@ export default function SlabOnFill() {
               onChangeText={setLength}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Slab Thickness (m)</Text>
@@ -628,7 +652,7 @@ export default function SlabOnFill() {
                   onChangeText={setSlabThickness}
                   keyboardType="decimal-pad"
                   style={styles.input}
-                  placeholder="Enter slab thickness"
+                  placeholder="Enter value"
                 />
 
                 <TouchableOpacity
@@ -691,6 +715,7 @@ export default function SlabOnFill() {
               onChangeText={setSets}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Spacing @ Width (m)</Text>
@@ -702,7 +727,7 @@ export default function SlabOnFill() {
                   onChangeText={setSpacingWidth}
                   keyboardType="decimal-pad"
                   style={styles.input}
-                  placeholder="Enter spacing width"
+                  placeholder="Enter value"
                 />
 
                 <TouchableOpacity
@@ -766,7 +791,7 @@ export default function SlabOnFill() {
                   onChangeText={setSpacingLength}
                   keyboardType="decimal-pad"
                   style={styles.input}
-                  placeholder="Enter spacing length"
+                  placeholder="Enter value"
                 />
 
                 <TouchableOpacity
@@ -830,7 +855,7 @@ export default function SlabOnFill() {
                   onChangeText={setMainBars}
                   keyboardType="decimal-pad"
                   style={styles.input}
-                  placeholder="Enter main bars"
+                  placeholder="Enter value"
                 />
 
                 <TouchableOpacity
@@ -893,7 +918,7 @@ export default function SlabOnFill() {
                   onChangeText={setTempBars}
                   keyboardType="decimal-pad"
                   style={styles.input}
-                  placeholder="Enter temp bars"
+                  placeholder="Enter value"
                 />
 
                 <TouchableOpacity
@@ -956,7 +981,7 @@ export default function SlabOnFill() {
                   onChangeText={setSteelLength}
                   keyboardType="decimal-pad"
                   style={styles.input}
-                  placeholder="Enter steel length"
+                  placeholder="Enter value"
                 />
 
                 <TouchableOpacity
@@ -1019,7 +1044,7 @@ export default function SlabOnFill() {
               onChangeText={setKgsPerCum}
               style={styles.input}
               keyboardType="numeric"
-              placeholder="Optional"
+              placeholder="Enter value (optional)"
             />
 
             <TouchableOpacity style={styles.reset} onPress={reset}>
@@ -1032,37 +1057,25 @@ export default function SlabOnFill() {
 
             <Result label="Volume" value={`${volume.toFixed(3)} cu.m`} />
 
-            <Result label="Steel kgs/cu.m" value={`${steelKgsCum}`} />
+            {/* <Result label="Steel kgs/cu.m" value={`${steelKgsCum}`} /> */}
 
             <Result
               label="Main Bars + 9d Hook Cut Bar Pcs"
               value={`${mainCutBarPcs}`}
             />
 
-            <Result
-              label="Main Bars + 9d Hook Cut Size"
-              value={`${mainCutSize}`}
-            />
+            <Result label="Main Bars Cut Size" value={`${mainCutSize}`} />
 
-            <Result
-              label="Main Bars + 9d Hook Wastage/Bar"
-              value={`${mainWastage}`}
-            />
+            <Result label="Main Bars Wastage/Bar" value={`${mainWastage}`} />
 
             <Result
               label="Temp Bars + 9d Hook Cut Bar Pcs"
               value={`${tempCutBarPcs}`}
             />
 
-            <Result
-              label="Temp Bars + 9d Hook Cut Size"
-              value={`${tempCutSize}`}
-            />
+            <Result label="Temp Bars Cut Size" value={`${tempCutSize}`} />
 
-            <Result
-              label="Temp Bars + 9d Hook Wastage/Bar"
-              value={`${tempWastage}`}
-            />
+            <Result label="Temp Bars Wastage/Bar" value={`${tempWastage}`} />
 
             <Result
               label="Total Pcs of Bars (Main)"
@@ -1070,11 +1083,11 @@ export default function SlabOnFill() {
             />
 
             <Result
-              label="Total Pcs of Bars (Main) Length"
+              label="Steel Length"
               value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
             />
 
-            <Result label="Total Pcs of Bars (Main) Kgs" value={`${mainKgs}`} />
+            <Result label="Bars (Main) Kgs" value={`${mainKgs}`} />
 
             <Result
               label="Total Pcs of Bars (Temp)"
@@ -1082,11 +1095,11 @@ export default function SlabOnFill() {
             />
 
             <Result
-              label="Total Pcs of Bars (Temp) Length"
+              label="Steel Length"
               value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
             />
 
-            <Result label="Total Pcs of Bars (Temp) Kgs" value={`${tempKgs}`} />
+            <Result label="Bars (Temp) Kgs" value={`${tempKgs}`} />
 
             <Result label="#16 G.I Wire (kg)" value={`${giWire}`} />
 
@@ -1102,13 +1115,22 @@ export default function SlabOnFill() {
             />
 
             <Result
-              label={`${steelLength}m Length Kgs`}
+              // label={`${steelLength}m Length Kgs`}
+              label={`Kgs`}
               value={`${computedKgs}`}
             />
 
             <Result label="Tie Wire (kgs)" value={`${tieWire}`} />
 
+            <Result
+              label="Steel Length"
+              value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
+            />
+
             <Result label="PCS" value={`${computedPcs}`} />
+          </View>
+          {/*  */}
+          <View style={[styles.resultCard, { marginTop: 18 }]}>
             <View style={styles.overviewCard}>
               <Text style={styles.resultTitle}>
                 Overview of Wastage from Different Steel Length

@@ -219,6 +219,7 @@ export default function CHB() {
                   onChangeText={setThickness}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
 
                 <TouchableOpacity onPress={() => setThicknessMode(null)}>
@@ -336,7 +337,7 @@ export default function CHB() {
               onChangeText={setWallArea}
               keyboardType="numeric"
               style={styles.input}
-              placeholder="Enter wall area in m²"
+              placeholder="Enter value"
             />
 
             <TouchableOpacity style={styles.reset} onPress={reset}>
@@ -352,7 +353,7 @@ export default function CHB() {
             <Result label="Shell" value={String(shell || '-')} />
             <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
             <Result label="Vol Between" value={`${volBetween.toFixed(3)} m³`} />
-            <Result label="Total Vol" value={`${totalVol.toFixed(3)} m³`} />
+            <Result label="Total Vol" value={`${totalVol.toFixed(4)} m³`} />
             <Result label="Cement" value={`${cement.toFixed(3)} m³`} />
             <Result label="Bags" value={`${bags.toFixed(3)}`} />
           </View>

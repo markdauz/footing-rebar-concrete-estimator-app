@@ -1,9 +1,14 @@
+import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Onboarding() {
   const router = useRouter();
+
+  const version =
+    Constants.expoConfig?.version ||
+    Constants.manifest2?.extra?.expoClient?.version;
 
   return (
     <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
@@ -34,6 +39,7 @@ export default function Onboarding() {
         >
           <Text style={styles.buttonText}>Start Calculating</Text>
         </TouchableOpacity>
+        <Text style={styles.version}>Version {version}</Text>
       </View>
     </LinearGradient>
   );
@@ -108,5 +114,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 16,
+  },
+  version: {
+    position: 'absolute',
+    bottom: 40,
+    fontSize: 12,
+    color: '#64748b',
+    opacity: 0.8,
   },
 });

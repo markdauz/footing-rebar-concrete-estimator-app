@@ -169,9 +169,7 @@ export default function Plaster() {
               <Ionicons name="layers-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Plaster Calculator</Text>
-            <Text style={styles.subtitle}>
-              Surface plaster material estimator
-            </Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
@@ -181,6 +179,7 @@ export default function Plaster() {
               onChangeText={setArea}
               keyboardType="numeric"
               style={styles.input}
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Thickness (m)</Text>
@@ -192,6 +191,7 @@ export default function Plaster() {
                   onChangeText={setCustomThickness}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setThickness(null)}>
                   <Text style={styles.backText}>← Back</Text>
@@ -236,6 +236,7 @@ export default function Plaster() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>

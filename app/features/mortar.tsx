@@ -171,7 +171,7 @@ export default function Mortar() {
               <Ionicons name="flask-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Mortar Calculator</Text>
-            <Text style={styles.subtitle}>Mortar estimation</Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
@@ -184,6 +184,7 @@ export default function Mortar() {
                   onChangeText={setCustomThickness}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setThickness(null)}>
                   <Text style={styles.backText}>← Back</Text>
@@ -225,6 +226,7 @@ export default function Mortar() {
               onChangeText={setArea}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Mixture</Text>
@@ -236,6 +238,7 @@ export default function Mortar() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>

@@ -28,8 +28,16 @@ const features: Feature[] = [
   { name: 'Footing', icon: 'cube-outline', route: '/features/footing' },
   { name: 'Column', icon: 'apps-outline', route: '/features/column' },
   { name: 'Beam', icon: 'remove-outline', route: '/features/beam' },
-  { name: 'Mortar', icon: 'flask-outline', route: '/features/mortar' },
-  { name: 'Plaster', icon: 'layers-outline', route: '/features/plaster' },
+  {
+    name: 'Mortar/Cement Gravel',
+    icon: 'flask-outline',
+    route: '/features/mortar',
+  },
+  {
+    name: 'Plaster/Cement Gravel',
+    icon: 'layers-outline',
+    route: '/features/plaster',
+  },
   {
     name: 'Wall Footing',
     icon: 'square-outline',
@@ -52,7 +60,7 @@ export default function Concrete() {
               <Ionicons name="construct-outline" size={26} color="#1e293b" />
             </View>
 
-            <Text style={styles.title}>Concrete Tools</Text>
+            <Text style={styles.title}>Concrete Calculator</Text>
             <Text style={styles.subtitle}>Select a calculator to begin</Text>
           </View>
 

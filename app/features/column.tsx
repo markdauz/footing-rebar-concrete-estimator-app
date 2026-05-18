@@ -165,7 +165,7 @@ export default function Column() {
               <Ionicons name="apps-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Column Calculator</Text>
-            <Text style={styles.subtitle}>Concrete column estimator</Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
@@ -175,6 +175,7 @@ export default function Column() {
               onChangeText={setSets}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Width (m)</Text>
@@ -183,6 +184,7 @@ export default function Column() {
               onChangeText={setWidth}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Depth (m)</Text>
@@ -191,6 +193,7 @@ export default function Column() {
               onChangeText={setDepth}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Height (m)</Text>
@@ -199,6 +202,7 @@ export default function Column() {
               onChangeText={setHeight}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Mixture</Text>
@@ -210,6 +214,7 @@ export default function Column() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>

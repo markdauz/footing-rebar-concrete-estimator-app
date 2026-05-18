@@ -54,7 +54,8 @@ export function computeCHBVolume(
 
 export function computeCHBVolBetween(thickness: number | '') {
   if (!thickness) return 0;
-  return thickness * 0.012 * 5;
+  // return thickness * 0.012 * 5;
+  return thickness * 0.02 * 5;
 }
 
 export function computeCHBTotal(vol: number, between: number) {

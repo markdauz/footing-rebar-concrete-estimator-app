@@ -27,7 +27,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="concrete"
         options={{
-          tabBarLabel: 'Concrete Tools',
+          tabBarLabel: 'Concrete Calculator',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="apps-outline" size={size} color={color} />
           ),

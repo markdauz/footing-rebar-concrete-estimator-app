@@ -164,7 +164,7 @@ export default function Beam() {
               <Ionicons name="remove-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Beam Calculator</Text>
-            <Text style={styles.subtitle}>Concrete beam estimator</Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
@@ -174,6 +174,7 @@ export default function Beam() {
               onChangeText={setSets}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Length (m)</Text>
@@ -182,6 +183,7 @@ export default function Beam() {
               onChangeText={setLength}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Width (m)</Text>
@@ -190,6 +192,7 @@ export default function Beam() {
               onChangeText={setWidth}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Depth (m)</Text>
@@ -198,6 +201,7 @@ export default function Beam() {
               onChangeText={setDepth}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Mixture</Text>
@@ -209,6 +213,7 @@ export default function Beam() {
                   onChangeText={setCustomMix}
                   keyboardType="numeric"
                   style={styles.input}
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>

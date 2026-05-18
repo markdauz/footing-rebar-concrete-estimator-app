@@ -173,7 +173,7 @@ export default function Footing() {
               <Ionicons name="cube-outline" size={26} color="#1e293b" />
             </View>
             <Text style={styles.title}>Footing Calculator</Text>
-            <Text style={styles.subtitle}>Concrete footing estimator</Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
@@ -183,6 +183,7 @@ export default function Footing() {
               onChangeText={setSets}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Width (m)</Text>
@@ -191,6 +192,7 @@ export default function Footing() {
               onChangeText={setWidth}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Length (m)</Text>
@@ -199,6 +201,7 @@ export default function Footing() {
               onChangeText={setLength}
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Enter value"
             />
 
             <Text style={styles.label}>Thickness</Text>
@@ -210,6 +213,7 @@ export default function Footing() {
                   onChangeText={setCustomThickness}
                   style={styles.input}
                   keyboardType="numeric"
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setThickness(null)}>
                   <Text style={styles.backText}>← Back</Text>
@@ -259,6 +263,7 @@ export default function Footing() {
                   onChangeText={setCustomMix}
                   style={styles.input}
                   keyboardType="numeric"
+                  placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
                   <Text style={styles.backText}>← Back</Text>
