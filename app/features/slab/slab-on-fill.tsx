@@ -370,25 +370,6 @@ export default function SlabOnFill() {
     return selectedSteelLength / cutSize < 1 ? '> than length' : 'ok';
   }
 
-  // function computeTotalSteelBars(
-  //   cutBarPcs: number,
-  //   setsValue: number,
-  //   cutSize: number,
-  //   selectedSteelLength: number,
-  // ) {
-  //   if (!cutBarPcs || !setsValue || !cutSize || !selectedSteelLength) {
-  //     return 0;
-  //   }
-
-  //   if (selectedSteelLength / cutSize < 1) {
-  //     return (
-  //       cutBarPcs * Math.trunc(cutSize / selectedSteelLength + 1) * setsValue
-  //     );
-  //   }
-
-  //   return setsValue * (cutBarPcs / Math.trunc(selectedSteelLength / cutSize));
-  // }
-
   function computeTotalSteelBars(
     cutBarPcs: number,
     setsValue: number,
@@ -401,7 +382,6 @@ export default function SlabOnFill() {
 
     const barsPerPiece = Math.trunc(selectedSteelLength / cutSize);
 
-    // if cut size exceeds stock length
     if (barsPerPiece <= 0) {
       const joinedBars = Math.trunc(cutSize / selectedSteelLength + 1);
 
@@ -438,7 +418,13 @@ export default function SlabOnFill() {
     const steel = effectiveSteelLength;
 
     if (!cutSize) {
-      return null;
+      return {
+        pcsFromLength: 0,
+        remarks: '-',
+        totalPcs: 0,
+        wastages: [0, 0, 0, 0, 0],
+        minimum: 0,
+      };
     }
 
     const wastages = steelLengths.map((len) =>
@@ -465,7 +451,13 @@ export default function SlabOnFill() {
     const steel = effectiveSteelLength;
 
     if (!cutSize) {
-      return null;
+      return {
+        pcsFromLength: 0,
+        remarks: '-',
+        totalPcs: 0,
+        wastages: [0, 0, 0, 0, 0],
+        minimum: 0,
+      };
     }
 
     const wastages = steelLengths.map((len) =>
@@ -1057,8 +1049,6 @@ export default function SlabOnFill() {
 
             <Result label="Volume" value={`${volume.toFixed(3)} cu.m`} />
 
-            {/* <Result label="Steel kgs/cu.m" value={`${steelKgsCum}`} /> */}
-
             <Result
               label="Main Bars + 9d Hook Cut Bar Pcs"
               value={`${mainCutBarPcs}`}
@@ -1108,17 +1098,12 @@ export default function SlabOnFill() {
               value={`${polyethyleneSheet}`}
             />
 
-            {/* <Result label="Computed Quantity via Volume Method" value={`90`} /> */}
             <Result
               label="Computed Quantity via Volume Method"
               value={kgsPerCum && Number(kgsPerCum) > 0 ? kgsPerCum : '90'}
             />
 
-            <Result
-              // label={`${steelLength}m Length Kgs`}
-              label={`Kgs`}
-              value={`${computedKgs}`}
-            />
+            <Result label={`Kgs`} value={`${computedKgs}`} />
 
             <Result label="Tie Wire (kgs)" value={`${tieWire}`} />
 
@@ -1136,7 +1121,7 @@ export default function SlabOnFill() {
                 Overview of Wastage from Different Steel Length
               </Text>
 
-              {mainBarsOverview && (
+              {
                 <View style={styles.overviewSection}>
                   <Text style={styles.overviewHeading}>
                     Main Bars + 9d Hook
@@ -1184,9 +1169,9 @@ export default function SlabOnFill() {
                     value={mainBarsOverview.minimum.toFixed(2)}
                   />
                 </View>
-              )}
+              }
 
-              {tempBarsOverview && (
+              {
                 <View style={styles.overviewSection}>
                   <Text style={styles.overviewHeading}>
                     Temp Bars + 9d Hook
@@ -1234,7 +1219,7 @@ export default function SlabOnFill() {
                     value={tempBarsOverview.minimum.toFixed(2)}
                   />
                 </View>
-              )}
+              }
             </View>
           </View>
         </ScrollView>
