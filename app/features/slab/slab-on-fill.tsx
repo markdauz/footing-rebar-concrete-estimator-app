@@ -44,13 +44,6 @@ export default function SlabOnFill() {
   const [length, setLength] = useState('');
   const [sets, setSets] = useState('');
 
-  // const [slabThickness, setSlabThickness] = useState<string | null>(null);
-  // const [spacingWidth, setSpacingWidth] = useState<string | null>(null);
-  // const [spacingLength, setSpacingLength] = useState<string | null>(null);
-  // const [mainBars, setMainBars] = useState<string | null>(null);
-  // const [tempBars, setTempBars] = useState<string | null>(null);
-  // const [steelLength, setSteelLength] = useState<string | null>(null);
-
   const [slabThicknessMode, setSlabThicknessMode] = useState<string | null>(
     null,
   );
