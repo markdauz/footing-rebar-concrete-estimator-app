@@ -1500,6 +1500,116 @@ export function getSuspendedSlabComputations({
     Number(tempBarsAlongLongSpan12m || 0),
   );
 
+  //
+  const mainBarsPcs =
+    slabType === ''
+      ? 0
+      : slabType === 'one way'
+        ? Math.round(
+            Number(bentBarsAlongShortSpanTotalPcsSteelBar || 0) +
+              Number(straightBottomBarsShortSpanTotalPcsSteelBar || 0) +
+              Number(topCutBarsAlongShortSpanTotalPcsSteelBar || 0),
+          )
+        : Math.round(
+            Number(bentBarsAlongShortSpanTotalPcsSteelBar || 0) +
+              Number(bentBarsAlongLongSpanTotalPcsSteelBar || 0) +
+              Number(straightBottomBarsShortSpanTotalPcsSteelBar || 0) +
+              Number(straightBottomBarsLongSpanTotalPcsSteelBar || 0) +
+              Number(topCutBarsAlongShortSpanTotalPcsSteelBar || 0) +
+              Number(topCutBarsAlongLongSpanTotalPcsSteelBar || 0),
+          );
+
+  const mainBarsLength = !steelLengthValue
+    ? ''
+    : steelLengthValue === 6
+      ? '@6m'
+      : steelLengthValue === 7.5
+        ? '@7.5m'
+        : steelLengthValue === 9
+          ? '@9m'
+          : steelLengthValue === 10.5
+            ? '@10.5m'
+            : '@12m';
+
+  const mainBarsKgs =
+    !mainBarsPcs || !mainBarsValue
+      ? 0
+      : mainBarsValue === 10
+        ? Math.round(mainBarsPcs * steelLengthValue * 0.617)
+        : mainBarsValue === 12
+          ? Math.round(mainBarsPcs * steelLengthValue * 0.888)
+          : mainBarsValue === 16
+            ? Math.round(mainBarsPcs * steelLengthValue * 1.579)
+            : mainBarsValue === 20
+              ? Math.round(mainBarsPcs * steelLengthValue * 2.466)
+              : 0;
+
+  const tempBarsPcs =
+    slabType === ''
+      ? 0
+      : slabType === 'one way'
+        ? Math.round(Number(tempBarsAlongLongSpanTotalPcsSteelBar || 0))
+        : Math.round(
+            Number(tempBarsAlongShortSpanTotalPcsSteelBar || 0) +
+              Number(tempBarsAlongLongSpanTotalPcsSteelBar || 0),
+          );
+
+  const tempBarsLength = !steelLengthValue
+    ? ''
+    : steelLengthValue === 6
+      ? '@6m'
+      : steelLengthValue === 7.5
+        ? '@7.5m'
+        : steelLengthValue === 9
+          ? '@9m'
+          : steelLengthValue === 10.5
+            ? '@10.5m'
+            : '@12m';
+
+  const tempBarsKgs =
+    !tempBarsPcs || !tempBarsValue
+      ? 0
+      : tempBarsValue === 10
+        ? Math.round(tempBarsPcs * steelLengthValue * 0.617)
+        : tempBarsValue === 12
+          ? Math.round(tempBarsPcs * steelLengthValue * 0.888)
+          : tempBarsValue === 16
+            ? Math.round(tempBarsPcs * steelLengthValue * 1.579)
+            : tempBarsValue === 20
+              ? Math.round(tempBarsPcs * steelLengthValue * 2.466)
+              : 0;
+
+  const totalGIWireKg = !mainBarsPcs
+    ? 0
+    : slabType === 'one way'
+      ? ((((widthValue / spacingLengthValue + 1) *
+          (lengthValue / spacingWidthValue + 1) +
+          Math.round(widthValue / 4 / spacingWidthValue + 1) *
+            2 *
+            Math.round(lengthValue / spacingLengthValue / 2)) *
+          0.3) /
+          53) *
+        setsValue
+      : (((Number(bentBarsAlongShortSpanCutBarPcs) *
+          Number(bentBarsAlongLongSpanCutBarPcs) +
+          Number(straightBottomBarsShortSpanCutBarPcs) *
+            Number(straightBottomBarsLongSpanCutBarPcs) +
+          ((Number(topCutBarsAlongShortSpanCutBarPcs) / 2) *
+            (Number(topCutBarsAlongLongSpanCutBarPcs) / 2) *
+            2 +
+            (Number(tempBarsAlongShortSpanCutBarPcs) / 2) *
+              (Number(tempBarsAlongLongSpanCutBarPcs) / 2) *
+              2)) *
+          0.3) /
+          53) *
+        setsValue;
+
+  const steelKgsPerCum = !tempBarsKgs
+    ? 0
+    : !mainBarsKgs
+      ? 0
+      : Number(mainBarsKgs || 0) + Number(tempBarsKgs || 0);
+
   return {
     widthValue,
     lengthValue,
@@ -1643,5 +1753,16 @@ export function getSuspendedSlabComputations({
     tempBarsAlongLongSpan105m,
     tempBarsAlongLongSpan12m,
     tempBarsAlongLongSpanMinimumWastage,
+
+    mainBarsPcs,
+    mainBarsLength,
+    mainBarsKgs,
+
+    tempBarsPcs,
+    tempBarsLength,
+    tempBarsKgs,
+
+    totalGIWireKg,
+    steelKgsPerCum,
   };
 }
