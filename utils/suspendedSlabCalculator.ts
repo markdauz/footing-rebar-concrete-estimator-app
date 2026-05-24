@@ -965,6 +965,541 @@ export function getSuspendedSlabComputations({
     Number(straightBottomBarsLongSpan12m || 0),
   );
 
+  const topCutBarsAlongShortSpanPcsFromLengthBars =
+    !topCutBarsAlongShortSpanCutSize || !steelLengthValue
+      ? ''
+      : steelLengthValue / Number(topCutBarsAlongShortSpanCutSize) < 1
+        ? Math.round(
+            (Math.trunc(
+              Number(topCutBarsAlongShortSpanCutSize) / steelLengthValue + 1,
+            ) *
+              steelLengthValue) /
+              steelLengthValue,
+          )
+        : Math.trunc(
+            steelLengthValue / Number(topCutBarsAlongShortSpanCutSize),
+          );
+
+  const topCutBarsAlongShortSpanRemarks =
+    !steelLengthValue || !topCutBarsAlongShortSpanCutSize
+      ? ''
+      : steelLengthValue / Number(topCutBarsAlongShortSpanCutSize) < 1
+        ? '> than length'
+        : 'ok';
+
+  const topCutBarsAlongShortSpanTotalPcsSteelBar =
+    !spacingWidthValue ||
+    !spacingLengthValue ||
+    !topCutBarsAlongShortSpanPcsFromLengthBars
+      ? ''
+      : steelLengthValue / Number(topCutBarsAlongShortSpanCutSize) < 1
+        ? Number(topCutBarsAlongShortSpanCutBarPcs) *
+          Math.trunc(
+            Number(topCutBarsAlongShortSpanCutSize) / steelLengthValue + 1,
+          ) *
+          setsValue
+        : setsValue *
+          (Number(topCutBarsAlongShortSpanCutBarPcs) /
+            Number(topCutBarsAlongShortSpanPcsFromLengthBars));
+
+  const topCutBarsAlongShortSpan6m = !topCutBarsAlongShortSpanCutSize
+    ? ''
+    : 6 / Number(topCutBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongShortSpanCutSize) / 6 + 1) * 6 -
+            Number(topCutBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            6 -
+            Math.trunc(6 / Number(topCutBarsAlongShortSpanCutSize)) *
+              Number(topCutBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+  const topCutBarsAlongShortSpan75m = !topCutBarsAlongShortSpanCutSize
+    ? ''
+    : 7.5 / Number(topCutBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongShortSpanCutSize) / 7.5 + 1) *
+              7.5 -
+            Number(topCutBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            7.5 -
+            Math.trunc(7.5 / Number(topCutBarsAlongShortSpanCutSize)) *
+              Number(topCutBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongShortSpan9m = !topCutBarsAlongShortSpanCutSize
+    ? ''
+    : 9 / Number(topCutBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongShortSpanCutSize) / 9 + 1) * 9 -
+            Number(topCutBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            9 -
+            Math.trunc(9 / Number(topCutBarsAlongShortSpanCutSize)) *
+              Number(topCutBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongShortSpan105m = !topCutBarsAlongShortSpanCutSize
+    ? ''
+    : 10.5 / Number(topCutBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongShortSpanCutSize) / 10.5 + 1) *
+              10.5 -
+            Number(topCutBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            10.5 -
+            Math.trunc(10.5 / Number(topCutBarsAlongShortSpanCutSize)) *
+              Number(topCutBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongShortSpan12m = !topCutBarsAlongShortSpanCutSize
+    ? ''
+    : 12 / Number(topCutBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongShortSpanCutSize) / 12 + 1) * 12 -
+            Number(topCutBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            12 -
+            Math.trunc(12 / Number(topCutBarsAlongShortSpanCutSize)) *
+              Number(topCutBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongShortSpanMinimumWastage = Math.min(
+    Number(topCutBarsAlongShortSpan6m || 0),
+    Number(topCutBarsAlongShortSpan75m || 0),
+    Number(topCutBarsAlongShortSpan9m || 0),
+    Number(topCutBarsAlongShortSpan105m || 0),
+    Number(topCutBarsAlongShortSpan12m || 0),
+  );
+
+  const topCutBarsAlongLongSpanPcsFromLengthBars =
+    !topCutBarsAlongLongSpanCutSize || !steelLengthValue
+      ? ''
+      : steelLengthValue / Number(topCutBarsAlongLongSpanCutSize) < 1
+        ? Math.round(
+            (Math.trunc(
+              Number(topCutBarsAlongLongSpanCutSize) / steelLengthValue + 1,
+            ) *
+              steelLengthValue) /
+              steelLengthValue,
+          )
+        : Math.trunc(steelLengthValue / Number(topCutBarsAlongLongSpanCutSize));
+
+  const topCutBarsAlongLongSpanRemarks =
+    !steelLengthValue || !topCutBarsAlongLongSpanCutSize
+      ? ''
+      : steelLengthValue / Number(topCutBarsAlongLongSpanCutSize) < 1
+        ? '> than length'
+        : 'ok';
+
+  const topCutBarsAlongLongSpanTotalPcsSteelBar =
+    !spacingWidthValue ||
+    !spacingLengthValue ||
+    !topCutBarsAlongLongSpanPcsFromLengthBars
+      ? ''
+      : steelLengthValue / Number(topCutBarsAlongLongSpanCutSize) < 1
+        ? Number(topCutBarsAlongLongSpanCutBarPcs) *
+          Math.trunc(
+            Number(topCutBarsAlongLongSpanCutSize) / steelLengthValue + 1,
+          ) *
+          setsValue
+        : setsValue *
+          (Number(topCutBarsAlongLongSpanCutBarPcs) /
+            Number(topCutBarsAlongLongSpanPcsFromLengthBars));
+  const topCutBarsAlongLongSpan6m = !topCutBarsAlongLongSpanCutSize
+    ? ''
+    : 6 / Number(topCutBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongLongSpanCutSize) / 6 + 1) * 6 -
+            Number(topCutBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            6 -
+            Math.trunc(6 / Number(topCutBarsAlongLongSpanCutSize)) *
+              Number(topCutBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+  const topCutBarsAlongLongSpan75m = !topCutBarsAlongLongSpanCutSize
+    ? ''
+    : 7.5 / Number(topCutBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongLongSpanCutSize) / 7.5 + 1) * 7.5 -
+            Number(topCutBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            7.5 -
+            Math.trunc(7.5 / Number(topCutBarsAlongLongSpanCutSize)) *
+              Number(topCutBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongLongSpan9m = !topCutBarsAlongLongSpanCutSize
+    ? ''
+    : 9 / Number(topCutBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongLongSpanCutSize) / 9 + 1) * 9 -
+            Number(topCutBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            9 -
+            Math.trunc(9 / Number(topCutBarsAlongLongSpanCutSize)) *
+              Number(topCutBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongLongSpan105m = !topCutBarsAlongLongSpanCutSize
+    ? ''
+    : 10.5 / Number(topCutBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongLongSpanCutSize) / 10.5 + 1) *
+              10.5 -
+            Number(topCutBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            10.5 -
+            Math.trunc(10.5 / Number(topCutBarsAlongLongSpanCutSize)) *
+              Number(topCutBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongLongSpan12m = !topCutBarsAlongLongSpanCutSize
+    ? ''
+    : 12 / Number(topCutBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(topCutBarsAlongLongSpanCutSize) / 12 + 1) * 12 -
+            Number(topCutBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            12 -
+            Math.trunc(12 / Number(topCutBarsAlongLongSpanCutSize)) *
+              Number(topCutBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const topCutBarsAlongLongSpanMinimumWastage = Math.min(
+    Number(topCutBarsAlongLongSpan6m || 0),
+    Number(topCutBarsAlongLongSpan75m || 0),
+    Number(topCutBarsAlongLongSpan9m || 0),
+    Number(topCutBarsAlongLongSpan105m || 0),
+    Number(topCutBarsAlongLongSpan12m || 0),
+  );
+
+  const tempBarsAlongShortSpanPcsFromLengthBars =
+    !tempBarsAlongShortSpanCutSize || !steelLengthValue
+      ? ''
+      : steelLengthValue / Number(tempBarsAlongShortSpanCutSize) < 1
+        ? Math.round(
+            (Math.trunc(
+              Number(tempBarsAlongShortSpanCutSize) / steelLengthValue + 1,
+            ) *
+              steelLengthValue) /
+              steelLengthValue,
+          )
+        : Math.trunc(steelLengthValue / Number(tempBarsAlongShortSpanCutSize));
+
+  const tempBarsAlongShortSpanRemarks =
+    !steelLengthValue || !tempBarsAlongShortSpanCutSize
+      ? ''
+      : steelLengthValue / Number(tempBarsAlongShortSpanCutSize) < 1
+        ? '> than length'
+        : 'ok';
+
+  const tempBarsAlongShortSpanTotalPcsSteelBar =
+    !spacingWidthValue ||
+    !spacingLengthValue ||
+    !tempBarsAlongShortSpanPcsFromLengthBars
+      ? ''
+      : steelLengthValue / Number(tempBarsAlongShortSpanCutSize) < 1
+        ? Number(tempBarsAlongShortSpanCutBarPcs) *
+          Math.trunc(
+            Number(tempBarsAlongShortSpanCutSize) / steelLengthValue + 1,
+          ) *
+          setsValue
+        : setsValue *
+          (Number(tempBarsAlongShortSpanCutBarPcs) /
+            Number(tempBarsAlongShortSpanPcsFromLengthBars));
+
+  const tempBarsAlongShortSpan6m = !tempBarsAlongShortSpanCutSize
+    ? ''
+    : 6 / Number(tempBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongShortSpanCutSize) / 6 + 1) * 6 -
+            Number(tempBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            6 -
+            Math.trunc(6 / Number(tempBarsAlongShortSpanCutSize)) *
+              Number(tempBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongShortSpan75m = !tempBarsAlongShortSpanCutSize
+    ? ''
+    : 7.5 / Number(tempBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongShortSpanCutSize) / 7.5 + 1) * 7.5 -
+            Number(tempBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            7.5 -
+            Math.trunc(7.5 / Number(tempBarsAlongShortSpanCutSize)) *
+              Number(tempBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongShortSpan9m = !tempBarsAlongShortSpanCutSize
+    ? ''
+    : 9 / Number(tempBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongShortSpanCutSize) / 9 + 1) * 9 -
+            Number(tempBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            9 -
+            Math.trunc(9 / Number(tempBarsAlongShortSpanCutSize)) *
+              Number(tempBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongShortSpan105m = !tempBarsAlongShortSpanCutSize
+    ? ''
+    : 10.5 / Number(tempBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongShortSpanCutSize) / 10.5 + 1) *
+              10.5 -
+            Number(tempBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            10.5 -
+            Math.trunc(10.5 / Number(tempBarsAlongShortSpanCutSize)) *
+              Number(tempBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongShortSpan12m = !tempBarsAlongShortSpanCutSize
+    ? ''
+    : 12 / Number(tempBarsAlongShortSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongShortSpanCutSize) / 12 + 1) * 12 -
+            Number(tempBarsAlongShortSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            12 -
+            Math.trunc(12 / Number(tempBarsAlongShortSpanCutSize)) *
+              Number(tempBarsAlongShortSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongShortSpanMinimumWastage = Math.min(
+    Number(tempBarsAlongShortSpan6m || 0),
+    Number(tempBarsAlongShortSpan75m || 0),
+    Number(tempBarsAlongShortSpan9m || 0),
+    Number(tempBarsAlongShortSpan105m || 0),
+    Number(tempBarsAlongShortSpan12m || 0),
+  );
+
+  const tempBarsAlongLongSpanPcsFromLengthBars =
+    !tempBarsAlongLongSpanCutSize || !steelLengthValue
+      ? ''
+      : steelLengthValue / Number(tempBarsAlongLongSpanCutSize) < 1
+        ? Math.round(
+            (Math.trunc(
+              Number(tempBarsAlongLongSpanCutSize) / steelLengthValue + 1,
+            ) *
+              steelLengthValue) /
+              steelLengthValue,
+          )
+        : Math.trunc(steelLengthValue / Number(tempBarsAlongLongSpanCutSize));
+
+  const tempBarsAlongLongSpanRemarks =
+    !steelLengthValue || !tempBarsAlongLongSpanCutSize
+      ? ''
+      : steelLengthValue / Number(tempBarsAlongLongSpanCutSize) < 1
+        ? '> than length'
+        : 'ok';
+
+  const tempBarsAlongLongSpanTotalPcsSteelBar =
+    !spacingWidthValue ||
+    !spacingLengthValue ||
+    !tempBarsAlongLongSpanPcsFromLengthBars
+      ? ''
+      : steelLengthValue / Number(tempBarsAlongLongSpanCutSize) < 1
+        ? Number(tempBarsAlongLongSpanCutBarPcs) *
+          Math.trunc(
+            Number(tempBarsAlongLongSpanCutSize) / steelLengthValue + 1,
+          ) *
+          setsValue
+        : setsValue *
+          (Number(tempBarsAlongLongSpanCutBarPcs) /
+            Number(tempBarsAlongLongSpanPcsFromLengthBars));
+
+  const tempBarsAlongLongSpan6m = !tempBarsAlongLongSpanCutSize
+    ? ''
+    : 6 / Number(tempBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongLongSpanCutSize) / 6 + 1) * 6 -
+            Number(tempBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            6 -
+            Math.trunc(6 / Number(tempBarsAlongLongSpanCutSize)) *
+              Number(tempBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongLongSpan75m = !tempBarsAlongLongSpanCutSize
+    ? ''
+    : 7.5 / Number(tempBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongLongSpanCutSize) / 7.5 + 1) * 7.5 -
+            Number(tempBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            7.5 -
+            Math.trunc(7.5 / Number(tempBarsAlongLongSpanCutSize)) *
+              Number(tempBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongLongSpan9m = !tempBarsAlongLongSpanCutSize
+    ? ''
+    : 9 / Number(tempBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongLongSpanCutSize) / 9 + 1) * 9 -
+            Number(tempBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            9 -
+            Math.trunc(9 / Number(tempBarsAlongLongSpanCutSize)) *
+              Number(tempBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongLongSpan105m = !tempBarsAlongLongSpanCutSize
+    ? ''
+    : 10.5 / Number(tempBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongLongSpanCutSize) / 10.5 + 1) * 10.5 -
+            Number(tempBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            10.5 -
+            Math.trunc(10.5 / Number(tempBarsAlongLongSpanCutSize)) *
+              Number(tempBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongLongSpan12m = !tempBarsAlongLongSpanCutSize
+    ? ''
+    : 12 / Number(tempBarsAlongLongSpanCutSize) < 1
+      ? Number(
+          (
+            Math.trunc(Number(tempBarsAlongLongSpanCutSize) / 12 + 1) * 12 -
+            Number(tempBarsAlongLongSpanCutSize) -
+            0.6
+          ).toFixed(2),
+        )
+      : Number(
+          (
+            12 -
+            Math.trunc(12 / Number(tempBarsAlongLongSpanCutSize)) *
+              Number(tempBarsAlongLongSpanCutSize)
+          ).toFixed(2),
+        );
+
+  const tempBarsAlongLongSpanMinimumWastage = Math.min(
+    Number(tempBarsAlongLongSpan6m || 0),
+    Number(tempBarsAlongLongSpan75m || 0),
+    Number(tempBarsAlongLongSpan9m || 0),
+    Number(tempBarsAlongLongSpan105m || 0),
+    Number(tempBarsAlongLongSpan12m || 0),
+  );
+
   return {
     widthValue,
     lengthValue,
@@ -1068,5 +1603,45 @@ export function getSuspendedSlabComputations({
     straightBottomBarsLongSpan105m,
     straightBottomBarsLongSpan12m,
     straightBottomBarsLongSpanMinimumWastage,
+
+    topCutBarsAlongShortSpanPcsFromLengthBars,
+    topCutBarsAlongShortSpanRemarks,
+    topCutBarsAlongShortSpanTotalPcsSteelBar,
+    topCutBarsAlongShortSpan6m,
+    topCutBarsAlongShortSpan75m,
+    topCutBarsAlongShortSpan9m,
+    topCutBarsAlongShortSpan105m,
+    topCutBarsAlongShortSpan12m,
+    topCutBarsAlongShortSpanMinimumWastage,
+
+    topCutBarsAlongLongSpanPcsFromLengthBars,
+    topCutBarsAlongLongSpanRemarks,
+    topCutBarsAlongLongSpanTotalPcsSteelBar,
+    topCutBarsAlongLongSpan6m,
+    topCutBarsAlongLongSpan75m,
+    topCutBarsAlongLongSpan9m,
+    topCutBarsAlongLongSpan105m,
+    topCutBarsAlongLongSpan12m,
+    topCutBarsAlongLongSpanMinimumWastage,
+
+    tempBarsAlongShortSpanPcsFromLengthBars,
+    tempBarsAlongShortSpanRemarks,
+    tempBarsAlongShortSpanTotalPcsSteelBar,
+    tempBarsAlongShortSpan6m,
+    tempBarsAlongShortSpan75m,
+    tempBarsAlongShortSpan9m,
+    tempBarsAlongShortSpan105m,
+    tempBarsAlongShortSpan12m,
+    tempBarsAlongShortSpanMinimumWastage,
+
+    tempBarsAlongLongSpanPcsFromLengthBars,
+    tempBarsAlongLongSpanRemarks,
+    tempBarsAlongLongSpanTotalPcsSteelBar,
+    tempBarsAlongLongSpan6m,
+    tempBarsAlongLongSpan75m,
+    tempBarsAlongLongSpan9m,
+    tempBarsAlongLongSpan105m,
+    tempBarsAlongLongSpan12m,
+    tempBarsAlongLongSpanMinimumWastage,
   };
 }
