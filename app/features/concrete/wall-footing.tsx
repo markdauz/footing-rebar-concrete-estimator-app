@@ -19,23 +19,31 @@ import {
 } from 'react-native-safe-area-context';
 
 import {
-  getCement,
-  getSand,
-  getTotalPcs,
-  getVolume,
-} from '../../utils/mortarCalculator';
+  computeWallFootingCement,
+  computeWallFootingGravel,
+  computeWallFootingSand,
+  computeWallFootingVolume,
+} from '../../../utils/wallFootingCalculator';
 
-type MixType = 'a' | 'b' | 'c' | 'd';
+type MixType = 'aa' | 'a' | 'b' | 'c';
 type MixValue = MixType | 'custom';
-type ThicknessValue = '0.10' | '0.125' | '0.150' | '0.20' | '0.25' | 'custom';
+
+type WidthValue = '0.30' | '0.35' | '0.40' | '0.50' | '0.60' | 'custom';
+type ThicknessValue = '0.10' | '0.15' | '0.20' | '0.25' | '0.30' | 'custom';
+
 type Item<T> = { label: string; value: T };
 
 const isAndroid = Platform.OS === 'android';
 
-export default function Mortar() {
+export default function WallFooting() {
   const insets = useSafeAreaInsets();
 
-  const [area, setArea] = useState('');
+  const [sets, setSets] = useState('');
+  const [length, setLength] = useState('');
+
+  const [width, setWidth] = useState<WidthValue | null>(null);
+  const [customWidth, setCustomWidth] = useState('');
+  const [openWidth, setOpenWidth] = useState(false);
 
   const [thickness, setThickness] = useState<ThicknessValue | null>(null);
   const [customThickness, setCustomThickness] = useState('');
@@ -45,22 +53,38 @@ export default function Mortar() {
   const [customMix, setCustomMix] = useState('');
   const [openMix, setOpenMix] = useState(false);
 
+  const widthItems: Item<WidthValue>[] = [
+    { label: '0.30', value: '0.30' },
+    { label: '0.35', value: '0.35' },
+    { label: '0.40', value: '0.40' },
+    { label: '0.50', value: '0.50' },
+    { label: '0.60', value: '0.60' },
+    { label: 'Custom', value: 'custom' },
+  ];
+
   const thicknessItems: Item<ThicknessValue>[] = [
     { label: '0.10', value: '0.10' },
-    { label: '0.125', value: '0.125' },
-    { label: '0.150', value: '0.150' },
+    { label: '0.15', value: '0.15' },
     { label: '0.20', value: '0.20' },
     { label: '0.25', value: '0.25' },
+    { label: '0.30', value: '0.30' },
     { label: 'Custom', value: 'custom' },
   ];
 
   const mixItems: Item<MixValue>[] = [
-    { label: 'A (1:2)', value: 'a' },
-    { label: 'B (1:3)', value: 'b' },
-    { label: 'C (1:4)', value: 'c' },
-    { label: 'D (1:5)', value: 'd' },
+    { label: 'AA (1:1½:3)', value: 'aa' },
+    { label: 'A (1:2:4)', value: 'a' },
+    { label: 'B (1:2½:5)', value: 'b' },
+    { label: 'C (1:3:6)', value: 'c' },
     { label: 'Custom', value: 'custom' },
   ];
+
+  const effectiveWidth =
+    width === 'custom'
+      ? parseFloat(customWidth)
+      : width
+        ? parseFloat(width)
+        : NaN;
 
   const effectiveThickness =
     thickness === 'custom'
@@ -69,45 +93,83 @@ export default function Mortar() {
         ? parseFloat(thickness)
         : NaN;
 
-  const numericArea = parseFloat(area);
+  const numericLength = parseFloat(length);
+  const numericSets = parseFloat(sets);
 
   const volume = useMemo(() => {
-    if (isNaN(effectiveThickness)) return 0;
-    return getVolume(effectiveThickness, 0);
-  }, [effectiveThickness]);
+    if (
+      isNaN(effectiveWidth) ||
+      isNaN(effectiveThickness) ||
+      isNaN(numericLength)
+    )
+      return 0;
 
-  const totalPcs = useMemo(() => {
-    if (isNaN(numericArea)) return 0;
-    return getTotalPcs(numericArea);
-  }, [numericArea]);
+    return computeWallFootingVolume(
+      effectiveWidth,
+      numericLength,
+      effectiveThickness,
+    );
+  }, [effectiveWidth, effectiveThickness, numericLength]);
+
+  const totalVolume = useMemo(() => {
+    if (!volume || isNaN(numericSets)) return 0;
+    return volume * numericSets;
+  }, [volume, numericSets]);
 
   const cement = useMemo(() => {
-    if (!numericArea || !volume) return '0.00';
+    if (!totalVolume) return '0.00';
 
     if (mix === 'custom') {
       const val = parseFloat(customMix);
       if (isNaN(val)) return '0.00';
-      return getCement(volume, numericArea, 'custom', val).toFixed(2);
+      return computeWallFootingCement(totalVolume, val);
     }
 
     if (!mix) return '0.00';
-    return getCement(volume, numericArea, mix, 0).toFixed(2);
-  }, [volume, numericArea, mix, customMix]);
+
+    return computeWallFootingCement(totalVolume, mix);
+  }, [totalVolume, mix, customMix]);
 
   const sand = useMemo(() => {
-    if (!numericArea) return '0.00';
-    return getSand(volume, numericArea).toFixed(2);
-  }, [volume, numericArea]);
+    if (!totalVolume) return '0.00';
+
+    if (mix === 'custom') {
+      const val = parseFloat(customMix);
+      if (isNaN(val)) return '0.00';
+      return computeWallFootingSand(totalVolume, val);
+    }
+
+    if (!mix) return '0.00';
+
+    return computeWallFootingSand(totalVolume, mix);
+  }, [totalVolume, mix, customMix]);
+
+  const gravel = useMemo(() => {
+    if (!totalVolume) return '0.00';
+
+    if (mix === 'custom') {
+      const val = parseFloat(customMix);
+      if (isNaN(val)) return '0.00';
+      return computeWallFootingGravel(totalVolume, val);
+    }
+
+    if (!mix) return '0.00';
+
+    return computeWallFootingGravel(totalVolume, mix);
+  }, [totalVolume, mix, customMix]);
 
   const reset = () => {
-    setArea('');
+    setSets('');
+    setLength('');
+    setWidth(null);
+    setCustomWidth('');
     setThickness(null);
     setCustomThickness('');
     setMix(null);
     setCustomMix('');
   };
 
-  function renderModal<T>(
+  function renderAndroidModal<T>(
     visible: boolean,
     setVisible: (v: boolean) => void,
     items: Item<T>[],
@@ -127,7 +189,10 @@ export default function Mortar() {
           >
             <View style={styles.handle} />
 
-            <ScrollView>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
               {items.map((item) => (
                 <TouchableOpacity
                   key={String(item.value)}
@@ -159,7 +224,6 @@ export default function Mortar() {
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
-          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
@@ -168,22 +232,99 @@ export default function Mortar() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="flask-outline" size={26} color="#1e293b" />
+              <Ionicons name="square-outline" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>Mortar Calculator</Text>
-            <Text style={styles.subtitle}>Cement Sand Estimate</Text>
+            <Text style={styles.title}>Wall Footing</Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.label}>CHB Thickness</Text>
+            <Text style={styles.label}>No. of Sets</Text>
+            <TextInput
+              value={sets}
+              onChangeText={setSets}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Enter value"
+            />
 
+            <Text style={styles.label}>Length (m)</Text>
+            <TextInput
+              value={length}
+              onChangeText={setLength}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Enter value"
+            />
+
+            {/* Width */}
+            <Text style={styles.label}>Width (m)</Text>
+            {width === 'custom' ? (
+              <>
+                <TextInput
+                  value={customWidth}
+                  onChangeText={setCustomWidth}
+                  style={styles.input}
+                  keyboardType="numeric"
+                  placeholder="Enter value"
+                />
+                <TouchableOpacity onPress={() => setWidth(null)}>
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenWidth(true)}
+                >
+                  <Text>{width ?? 'Select width'}</Text>
+                </TouchableOpacity>
+                {renderAndroidModal(
+                  openWidth,
+                  setOpenWidth,
+                  widthItems,
+                  setWidth,
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 3000 }}>
+                <DropDownPicker<WidthValue>
+                  open={openWidth}
+                  value={width}
+                  items={widthItems}
+                  placeholder="Select width"
+                  setOpen={(val) =>
+                    setOpenWidth((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) {
+                        setOpenThickness(false);
+                        setOpenMix(false);
+                      }
+                      return next;
+                    })
+                  }
+                  setValue={(val) =>
+                    setWidth((prev) =>
+                      typeof val === 'function' ? val(prev) : val,
+                    )
+                  }
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                />
+              </View>
+            )}
+
+            {/* Thickness */}
+            <Text style={styles.label}>Thickness (m)</Text>
             {thickness === 'custom' ? (
               <>
                 <TextInput
                   value={customThickness}
                   onChangeText={setCustomThickness}
-                  keyboardType="numeric"
                   style={styles.input}
+                  keyboardType="numeric"
                   placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setThickness(null)}>
@@ -198,7 +339,7 @@ export default function Mortar() {
                 >
                   <Text>{thickness ?? 'Select thickness'}</Text>
                 </TouchableOpacity>
-                {renderModal(
+                {renderAndroidModal(
                   openThickness,
                   setOpenThickness,
                   thicknessItems,
@@ -206,13 +347,27 @@ export default function Mortar() {
                 )}
               </>
             ) : (
-              <View style={{ zIndex: 3000 }}>
-                <DropDownPicker
+              <View style={{ zIndex: 2000 }}>
+                <DropDownPicker<ThicknessValue>
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
-                  setValue={setThickness}
+                  placeholder="Select thickness"
+                  setOpen={(val) =>
+                    setOpenThickness((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) {
+                        setOpenWidth(false);
+                        setOpenMix(false);
+                      }
+                      return next;
+                    })
+                  }
+                  setValue={(val) =>
+                    setThickness((prev) =>
+                      typeof val === 'function' ? val(prev) : val,
+                    )
+                  }
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
@@ -220,24 +375,15 @@ export default function Mortar() {
               </View>
             )}
 
-            <Text style={styles.label}>Area (sqm)</Text>
-            <TextInput
-              value={area}
-              onChangeText={setArea}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Enter value"
-            />
-
+            {/* Mix */}
             <Text style={styles.label}>Mixture</Text>
-
             {mix === 'custom' ? (
               <>
                 <TextInput
                   value={customMix}
                   onChangeText={setCustomMix}
-                  keyboardType="numeric"
                   style={styles.input}
+                  keyboardType="numeric"
                   placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
@@ -252,16 +398,30 @@ export default function Mortar() {
                 >
                   <Text>{mix ?? 'Select mix'}</Text>
                 </TouchableOpacity>
-                {renderModal(openMix, setOpenMix, mixItems, setMix)}
+                {renderAndroidModal(openMix, setOpenMix, mixItems, setMix)}
               </>
             ) : (
-              <View style={{ zIndex: 2000 }}>
-                <DropDownPicker
+              <View style={{ zIndex: 1000 }}>
+                <DropDownPicker<MixValue>
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={setOpenMix}
-                  setValue={setMix}
+                  placeholder="Select mix"
+                  setOpen={(val) =>
+                    setOpenMix((prev) => {
+                      const next = typeof val === 'function' ? val(prev) : val;
+                      if (next) {
+                        setOpenWidth(false);
+                        setOpenThickness(false);
+                      }
+                      return next;
+                    })
+                  }
+                  setValue={(val) =>
+                    setMix((prev) =>
+                      typeof val === 'function' ? val(prev) : val,
+                    )
+                  }
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
@@ -274,13 +434,14 @@ export default function Mortar() {
             </TouchableOpacity>
           </View>
 
+          {/* RESULTS */}
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
+
             <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
-            <Result label="Area" value={`${area || 0} sqm`} />
-            <Result label="Total CHB" value={`${totalPcs}`} />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
+            <Result label="Gravel" value={`${gravel} m³`} />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -310,6 +471,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
   subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -317,12 +479,14 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     elevation: 3,
   },
+
   label: {
     marginTop: 12,
     marginBottom: 6,
     fontWeight: '600',
     color: '#334155',
   },
+
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -330,9 +494,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-  dropdown: { borderRadius: 12, borderColor: '#cbd5e1' },
-  dropdownContainer: { borderColor: '#cbd5e1' },
-  backText: { color: '#2563EB', marginTop: 6 },
+
+  dropdown: {
+    borderRadius: 12,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
+  },
+
+  dropdownContainer: {
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
+  },
+
   reset: {
     marginTop: 18,
     padding: 12,
@@ -340,37 +513,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#475569',
   },
+
   resetText: { color: '#fff', fontWeight: '600' },
+
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
   },
+
   resultTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
     color: '#e2e8f0',
   },
+
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
+
   resultLabel: { color: '#94a3b8' },
-  resultValue: { fontWeight: '700', color: '#fff' },
+
+  resultValue: {
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'flex-start',
     paddingHorizontal: 16,
   },
+
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
     maxHeight: 350,
   },
+
   handle: {
     width: 40,
     height: 4,
@@ -379,16 +565,19 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
+
   modalItem: {
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
+
   modalText: { fontSize: 15 },
+
   modalCancel: {
     textAlign: 'center',
     marginTop: 12,
     color: '#ef4444',
-    fontWeight: '600',
   },
+  backText: { color: '#2563EB', marginTop: 6 },
 });

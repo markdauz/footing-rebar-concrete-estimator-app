@@ -25,7 +25,7 @@ import {
   getEndWeb,
   getInnerWeb,
   getShell,
-} from '../../utils/chbCalculator';
+} from '../../../utils/chbCalculator';
 
 type ThicknessValue = '0.10' | '0.125' | '0.15' | '0.20' | 'custom';
 type WebValue = 2 | 3 | 4;

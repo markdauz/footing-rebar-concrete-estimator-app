@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Modal,
@@ -16,8 +17,8 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import InputField from '../../components/InputField';
-import ResultCard from '../../components/ResultCard';
+import InputField from '../../../components/InputField';
+import ResultCard from '../../../components/ResultCard';
 
 import {
   computeOption,
@@ -25,7 +26,7 @@ import {
   getCutSizeB,
   getTieWire,
   getVolume,
-} from '../../utils/footingRebarCalculator';
+} from '../../../utils/footingRebarCalculator';
 
 type OptionValue = 'A' | 'B';
 
@@ -148,6 +149,9 @@ export default function Footing() {
 
   return (
     <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
+      <Stack.Screen
+        options={{ headerShown: true, title: '', headerTransparent: true }}
+      />
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
@@ -169,7 +173,7 @@ export default function Footing() {
                 elevation: 2,
               }}
             >
-              <Ionicons name="build-outline" size={26} color="#1e293b" />
+              <Ionicons name="layers-outline" size={26} color="#1e293b" />
             </View>
 
             <Text

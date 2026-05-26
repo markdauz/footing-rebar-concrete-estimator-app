@@ -18,44 +18,34 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import {
-  computeFootingCement,
-  computeFootingTotalVolume,
-  computeFootingVolume,
-} from '../../utils/footingCalculator';
+import { computeCement, computeVolume } from '../../../utils/slabCalculator';
 
 type MixType = 'aa' | 'a' | 'b' | 'c';
-type MixValue = MixType | 'custom';
-type ThicknessValue = '0.25' | '0.30' | '0.35' | '0.40' | '0.45' | 'custom';
-type Item<T> = { label: string; value: T };
 
 const isAndroid = Platform.OS === 'android';
 
-export default function Footing() {
+export default function Slab() {
   const insets = useSafeAreaInsets();
 
-  const [sets, setSets] = useState('');
-  const [width, setWidth] = useState('');
-  const [length, setLength] = useState('');
+  const [area, setArea] = useState('');
 
-  const [thickness, setThickness] = useState<ThicknessValue | null>(null);
+  const [thickness, setThickness] = useState<string | 'custom' | null>(null);
   const [customThickness, setCustomThickness] = useState('');
   const [openThickness, setOpenThickness] = useState(false);
 
-  const [mix, setMix] = useState<MixValue | null>(null);
+  const [mix, setMix] = useState<MixType | 'custom' | null>(null);
   const [customMix, setCustomMix] = useState('');
   const [openMix, setOpenMix] = useState(false);
 
-  const thicknessItems: Item<ThicknessValue>[] = [
-    { label: '0.25', value: '0.25' },
-    { label: '0.30', value: '0.30' },
-    { label: '0.35', value: '0.35' },
-    { label: '0.40', value: '0.40' },
-    { label: '0.45', value: '0.45' },
+  const thicknessItems = [
+    { label: '0.10', value: '0.10' },
+    { label: '0.125', value: '0.125' },
+    { label: '0.15', value: '0.15' },
+    { label: '0.20', value: '0.20' },
     { label: 'Custom', value: 'custom' },
   ];
 
-  const mixItems: Item<MixValue>[] = [
+  const mixItems = [
     { label: 'AA (1:1½:3)', value: 'aa' },
     { label: 'A (1:2:4)', value: 'a' },
     { label: 'B (1:2½:5)', value: 'b' },
@@ -71,87 +61,72 @@ export default function Footing() {
         : NaN;
 
   const volume = useMemo(() => {
-    const w = parseFloat(width);
-    const l = parseFloat(length);
-    if (isNaN(w) || isNaN(l) || isNaN(effectiveThickness)) return 0;
-    return computeFootingVolume(w, l, effectiveThickness);
-  }, [width, length, effectiveThickness]);
-
-  const totalVolume = useMemo(() => {
-    const s = parseFloat(sets);
-    if (!volume || isNaN(s)) return 0;
-    return computeFootingTotalVolume(volume, s);
-  }, [volume, sets]);
+    const a = parseFloat(area);
+    if (isNaN(a) || isNaN(effectiveThickness)) return 0;
+    return computeVolume(a, effectiveThickness);
+  }, [area, effectiveThickness]);
 
   const cement = useMemo(() => {
-    if (!totalVolume) return '0.00';
-
-    if (mix === 'custom') {
-      const val = parseFloat(customMix);
-      if (isNaN(val)) return '0.00';
-      return (totalVolume * val).toFixed(2);
+    if (!volume) return '0.00';
+    if (mix === 'custom' && customMix) {
+      return (volume * parseFloat(customMix)).toFixed(2);
     }
-
     if (!mix) return '0.00';
-    return computeFootingCement(totalVolume, mix);
-  }, [totalVolume, mix, customMix]);
+    return computeCement(volume, mix as MixType);
+  }, [volume, mix, customMix]);
 
-  const sand = totalVolume ? (totalVolume * 0.5).toFixed(2) : '0.00';
-  const gravel = totalVolume ? totalVolume.toFixed(2) : '0.00';
+  const sand = volume ? (volume * 0.5).toFixed(2) : '0.00';
+  const gravel = volume ? volume.toFixed(2) : '0.00';
 
   const reset = () => {
-    setSets('');
-    setWidth('');
-    setLength('');
+    setArea('');
     setThickness(null);
-    setCustomThickness('');
     setMix(null);
+    setCustomThickness('');
     setCustomMix('');
   };
 
-  function renderAndroidModal<T>(
+  const renderAndroidModal = (
     visible: boolean,
     setVisible: (v: boolean) => void,
-    items: Item<T>[],
-    onSelect: (value: T) => void,
-  ) {
-    return (
-      <Modal visible={visible} transparent animationType="fade">
+    items: any[],
+    onSelect: (value: any) => void,
+  ) => (
+    <Modal visible={visible} transparent animationType="fade">
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
+        onPress={() => setVisible(false)}
+      >
         <TouchableOpacity
           activeOpacity={1}
-          style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
-          onPress={() => setVisible(false)}
+          style={styles.modalCard}
+          onPress={(e) => e.stopPropagation()}
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.modalCard}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={styles.handle} />
+          <View style={styles.handle} />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {items.map((item) => (
-                <TouchableOpacity
-                  key={String(item.value)}
-                  style={styles.modalItem}
-                  onPress={() => {
-                    onSelect(item.value);
-                    setVisible(false);
-                  }}
-                >
-                  <Text style={styles.modalText}>{item.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+          <ScrollView>
+            {items.map((item) => (
+              <TouchableOpacity
+                key={item.value}
+                style={styles.modalItem}
+                onPress={() => {
+                  onSelect(item.value);
+                  setVisible(false);
+                }}
+              >
+                <Text style={styles.modalText}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-            <TouchableOpacity onPress={() => setVisible(false)}>
-              <Text style={styles.modalCancel}>Cancel</Text>
-            </TouchableOpacity>
+          <TouchableOpacity onPress={() => setVisible(false)}>
+            <Text style={styles.modalCancel}>Cancel</Text>
           </TouchableOpacity>
         </TouchableOpacity>
-      </Modal>
-    );
-  }
+      </TouchableOpacity>
+    </Modal>
+  );
 
   return (
     <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
@@ -170,49 +145,31 @@ export default function Footing() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="cube-outline" size={26} color="#1e293b" />
+              <Ionicons name="grid-outline" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>Footing Calculator</Text>
+            <Text style={styles.title}>Slab Calculator</Text>
             <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.label}>No. of Sets</Text>
+            <Text style={styles.label}>Area (sqm)</Text>
             <TextInput
-              value={sets}
-              onChangeText={setSets}
-              style={styles.input}
+              value={area}
+              onChangeText={setArea}
               keyboardType="numeric"
+              style={styles.input}
               placeholder="Enter value"
             />
 
-            <Text style={styles.label}>Width (m)</Text>
-            <TextInput
-              value={width}
-              onChangeText={setWidth}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Enter value"
-            />
-
-            <Text style={styles.label}>Length (m)</Text>
-            <TextInput
-              value={length}
-              onChangeText={setLength}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Enter value"
-            />
-
-            <Text style={styles.label}>Thickness</Text>
+            <Text style={styles.label}>Thickness (m)</Text>
 
             {thickness === 'custom' ? (
               <>
                 <TextInput
                   value={customThickness}
                   onChangeText={setCustomThickness}
-                  style={styles.input}
                   keyboardType="numeric"
+                  style={styles.input}
                   placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setThickness(null)}>
@@ -222,7 +179,7 @@ export default function Footing() {
             ) : isAndroid ? (
               <>
                 <TouchableOpacity
-                  style={styles.input}
+                  style={[styles.input, styles.androidInput]}
                   onPress={() => setOpenThickness(true)}
                 >
                   <Text>
@@ -240,13 +197,14 @@ export default function Footing() {
                 )}
               </>
             ) : (
-              <View style={{ zIndex: 3000 }}>
+              <View style={{ zIndex: 1000 }}>
                 <DropDownPicker
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
                   setOpen={setOpenThickness}
                   setValue={setThickness}
+                  placeholder="Select thickness"
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
@@ -261,8 +219,8 @@ export default function Footing() {
                 <TextInput
                   value={customMix}
                   onChangeText={setCustomMix}
-                  style={styles.input}
                   keyboardType="numeric"
+                  style={styles.input}
                   placeholder="Enter value"
                 />
                 <TouchableOpacity onPress={() => setMix(null)}>
@@ -272,7 +230,7 @@ export default function Footing() {
             ) : isAndroid ? (
               <>
                 <TouchableOpacity
-                  style={styles.input}
+                  style={[styles.input, styles.androidInput]}
                   onPress={() => setOpenMix(true)}
                 >
                   <Text>
@@ -285,13 +243,14 @@ export default function Footing() {
                 {renderAndroidModal(openMix, setOpenMix, mixItems, setMix)}
               </>
             ) : (
-              <View style={{ zIndex: 2000 }}>
+              <View style={{ zIndex: 900 }}>
                 <DropDownPicker
                   open={openMix}
                   value={mix}
                   items={mixItems}
                   setOpen={setOpenMix}
                   setValue={setMix}
+                  placeholder="Select mixture"
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
                   dropDownContainerStyle={styles.dropdownContainer}
@@ -306,7 +265,6 @@ export default function Footing() {
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
             <Result label="Gravel" value={`${gravel} m³`} />
@@ -317,11 +275,13 @@ export default function Footing() {
   );
 }
 
-function Result({ label, value }: { label: string; value: string }) {
+function Result({ label, value, highlight }: any) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
-      <Text style={styles.resultValue}>{value}</Text>
+      <Text style={[styles.resultValue, highlight && { fontSize: 18 }]}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -339,8 +299,18 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
-  subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 10,
+  },
+
+  subtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 4,
+  },
 
   card: {
     backgroundColor: '#fff',
@@ -351,10 +321,11 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    marginTop: 12,
-    marginBottom: 6,
-    fontWeight: '600',
     color: '#334155',
+    marginBottom: 6,
+    marginTop: 14,
+    fontSize: 13,
+    fontWeight: '600',
   },
 
   input: {
@@ -365,16 +336,27 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1',
   },
 
+  androidInput: {
+    justifyContent: 'center',
+  },
+
   dropdown: {
     borderRadius: 12,
     borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
+    minHeight: 50,
   },
 
   dropdownContainer: {
     borderColor: '#cbd5e1',
+    borderRadius: 12,
   },
 
-  backText: { color: '#2563EB', marginTop: 6 },
+  backText: {
+    color: '#2563EB',
+    marginTop: 6,
+    fontSize: 13,
+  },
 
   reset: {
     marginTop: 18,
@@ -384,12 +366,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#475569',
   },
 
-  resetText: { color: '#fff', fontWeight: '600' },
+  resetText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
 
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
+    elevation: 3,
   },
 
   resultTitle: {
@@ -405,8 +391,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  resultLabel: { color: '#94a3b8' },
-  resultValue: { fontWeight: '700', color: '#fff', fontSize: 15 },
+  resultLabel: {
+    color: '#94a3b8',
+  },
+
+  resultValue: {
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+  },
 
   modalOverlay: {
     flex: 1,
@@ -437,7 +430,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
 
-  modalText: { fontSize: 15 },
+  modalText: {
+    fontSize: 15,
+    color: '#0f172a',
+  },
 
   modalCancel: {
     textAlign: 'center',

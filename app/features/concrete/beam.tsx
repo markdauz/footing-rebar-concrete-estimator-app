@@ -19,24 +19,25 @@ import {
 } from 'react-native-safe-area-context';
 
 import {
-  computeColumnCement,
-  computeColumnTotalVolume,
-  computeColumnVolume,
-} from '../../utils/columnCalculator';
+  computeBeamCement,
+  computeBeamTotalVolume,
+  computeBeamVolume,
+} from '../../../utils/beamCalculator';
 
 type MixType = 'aa' | 'a' | 'b' | 'c';
 type MixValue = MixType | 'custom';
+
 type Item<T> = { label: string; value: T };
 
 const isAndroid = Platform.OS === 'android';
 
-export default function Column() {
+export default function Beam() {
   const insets = useSafeAreaInsets();
 
   const [sets, setSets] = useState('');
+  const [length, setLength] = useState('');
   const [width, setWidth] = useState('');
   const [depth, setDepth] = useState('');
-  const [height, setHeight] = useState('');
 
   const [mix, setMix] = useState<MixValue | null>(null);
   const [customMix, setCustomMix] = useState('');
@@ -51,17 +52,17 @@ export default function Column() {
   ];
 
   const volume = useMemo(() => {
+    const l = parseFloat(length);
     const w = parseFloat(width);
     const d = parseFloat(depth);
-    const h = parseFloat(height);
-    if (isNaN(w) || isNaN(d) || isNaN(h)) return 0;
-    return computeColumnVolume(w, d, h);
-  }, [width, depth, height]);
+    if (isNaN(l) || isNaN(w) || isNaN(d)) return 0;
+    return computeBeamVolume(l, w, d);
+  }, [length, width, depth]);
 
   const totalVolume = useMemo(() => {
     const s = parseFloat(sets);
     if (!volume || isNaN(s)) return 0;
-    return computeColumnTotalVolume(volume, s);
+    return computeBeamTotalVolume(volume, s);
   }, [volume, sets]);
 
   const cement = useMemo(() => {
@@ -77,26 +78,24 @@ export default function Column() {
 
     if (!mix) return '0.00';
 
-    return computeColumnCement(totalVolume, mix);
+    return computeBeamCement(totalVolume, mix);
   }, [totalVolume, mix, customMix]);
 
   const sand = useMemo(() => {
     if (!totalVolume) return '0.00';
-
     return (totalVolume * 0.5).toFixed(2);
   }, [totalVolume]);
 
   const gravel = useMemo(() => {
     if (!totalVolume) return '0.00';
-
     return totalVolume.toFixed(2);
   }, [totalVolume]);
 
   const reset = () => {
     setSets('');
+    setLength('');
     setWidth('');
     setDepth('');
-    setHeight('');
     setMix(null);
     setCustomMix('');
   };
@@ -162,9 +161,9 @@ export default function Column() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="apps-outline" size={26} color="#1e293b" />
+              <Ionicons name="remove-outline" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>Column Calculator</Text>
+            <Text style={styles.title}>Beam Calculator</Text>
             <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
@@ -173,6 +172,15 @@ export default function Column() {
             <TextInput
               value={sets}
               onChangeText={setSets}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Enter value"
+            />
+
+            <Text style={styles.label}>Length (m)</Text>
+            <TextInput
+              value={length}
+              onChangeText={setLength}
               style={styles.input}
               keyboardType="numeric"
               placeholder="Enter value"
@@ -191,15 +199,6 @@ export default function Column() {
             <TextInput
               value={depth}
               onChangeText={setDepth}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Enter value"
-            />
-
-            <Text style={styles.label}>Height (m)</Text>
-            <TextInput
-              value={height}
-              onChangeText={setHeight}
               style={styles.input}
               keyboardType="numeric"
               placeholder="Enter value"
@@ -257,6 +256,7 @@ export default function Column() {
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
+
             <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />

@@ -19,88 +19,95 @@ import {
 } from 'react-native-safe-area-context';
 
 import {
-  computeBeamCement,
-  computeBeamTotalVolume,
-  computeBeamVolume,
-} from '../../utils/beamCalculator';
+  getCement,
+  getSand,
+  getTotalPcs,
+  getVolume,
+} from '../../../utils/mortarCalculator';
 
-type MixType = 'aa' | 'a' | 'b' | 'c';
+type MixType = 'a' | 'b' | 'c' | 'd';
 type MixValue = MixType | 'custom';
-
+type ThicknessValue = '0.10' | '0.125' | '0.150' | '0.20' | '0.25' | 'custom';
 type Item<T> = { label: string; value: T };
 
 const isAndroid = Platform.OS === 'android';
 
-export default function Beam() {
+export default function Mortar() {
   const insets = useSafeAreaInsets();
 
-  const [sets, setSets] = useState('');
-  const [length, setLength] = useState('');
-  const [width, setWidth] = useState('');
-  const [depth, setDepth] = useState('');
+  const [area, setArea] = useState('');
+
+  const [thickness, setThickness] = useState<ThicknessValue | null>(null);
+  const [customThickness, setCustomThickness] = useState('');
+  const [openThickness, setOpenThickness] = useState(false);
 
   const [mix, setMix] = useState<MixValue | null>(null);
   const [customMix, setCustomMix] = useState('');
   const [openMix, setOpenMix] = useState(false);
 
-  const mixItems: Item<MixValue>[] = [
-    { label: 'AA (1:1½:3)', value: 'aa' },
-    { label: 'A (1:2:4)', value: 'a' },
-    { label: 'B (1:2½:5)', value: 'b' },
-    { label: 'C (1:3:6)', value: 'c' },
+  const thicknessItems: Item<ThicknessValue>[] = [
+    { label: '0.10', value: '0.10' },
+    { label: '0.125', value: '0.125' },
+    { label: '0.150', value: '0.150' },
+    { label: '0.20', value: '0.20' },
+    { label: '0.25', value: '0.25' },
     { label: 'Custom', value: 'custom' },
   ];
 
-  const volume = useMemo(() => {
-    const l = parseFloat(length);
-    const w = parseFloat(width);
-    const d = parseFloat(depth);
-    if (isNaN(l) || isNaN(w) || isNaN(d)) return 0;
-    return computeBeamVolume(l, w, d);
-  }, [length, width, depth]);
+  const mixItems: Item<MixValue>[] = [
+    { label: 'A (1:2)', value: 'a' },
+    { label: 'B (1:3)', value: 'b' },
+    { label: 'C (1:4)', value: 'c' },
+    { label: 'D (1:5)', value: 'd' },
+    { label: 'Custom', value: 'custom' },
+  ];
 
-  const totalVolume = useMemo(() => {
-    const s = parseFloat(sets);
-    if (!volume || isNaN(s)) return 0;
-    return computeBeamTotalVolume(volume, s);
-  }, [volume, sets]);
+  const effectiveThickness =
+    thickness === 'custom'
+      ? parseFloat(customThickness)
+      : thickness
+        ? parseFloat(thickness)
+        : NaN;
+
+  const numericArea = parseFloat(area);
+
+  const volume = useMemo(() => {
+    if (isNaN(effectiveThickness)) return 0;
+    return getVolume(effectiveThickness, 0);
+  }, [effectiveThickness]);
+
+  const totalPcs = useMemo(() => {
+    if (isNaN(numericArea)) return 0;
+    return getTotalPcs(numericArea);
+  }, [numericArea]);
 
   const cement = useMemo(() => {
-    if (!totalVolume) return '0.00';
+    if (!numericArea || !volume) return '0.00';
 
     if (mix === 'custom') {
-      const factor = parseFloat(customMix);
-
-      if (isNaN(factor) || factor <= 0) return '0.00';
-
-      return (totalVolume * factor).toFixed(2);
+      const val = parseFloat(customMix);
+      if (isNaN(val)) return '0.00';
+      return getCement(volume, numericArea, 'custom', val).toFixed(2);
     }
 
     if (!mix) return '0.00';
-
-    return computeBeamCement(totalVolume, mix);
-  }, [totalVolume, mix, customMix]);
+    return getCement(volume, numericArea, mix, 0).toFixed(2);
+  }, [volume, numericArea, mix, customMix]);
 
   const sand = useMemo(() => {
-    if (!totalVolume) return '0.00';
-    return (totalVolume * 0.5).toFixed(2);
-  }, [totalVolume]);
-
-  const gravel = useMemo(() => {
-    if (!totalVolume) return '0.00';
-    return totalVolume.toFixed(2);
-  }, [totalVolume]);
+    if (!numericArea) return '0.00';
+    return getSand(volume, numericArea).toFixed(2);
+  }, [volume, numericArea]);
 
   const reset = () => {
-    setSets('');
-    setLength('');
-    setWidth('');
-    setDepth('');
+    setArea('');
+    setThickness(null);
+    setCustomThickness('');
     setMix(null);
     setCustomMix('');
   };
 
-  function renderAndroidModal<T>(
+  function renderModal<T>(
     visible: boolean,
     setVisible: (v: boolean) => void,
     items: Item<T>[],
@@ -120,7 +127,7 @@ export default function Beam() {
           >
             <View style={styles.handle} />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView>
               {items.map((item) => (
                 <TouchableOpacity
                   key={String(item.value)}
@@ -161,44 +168,62 @@ export default function Beam() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="remove-outline" size={26} color="#1e293b" />
+              <Ionicons name="flask-outline" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>Beam Calculator</Text>
-            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
+            <Text style={styles.title}>Mortar Calculator</Text>
+            <Text style={styles.subtitle}>Cement Sand Estimate</Text>
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.label}>No. of Sets</Text>
-            <TextInput
-              value={sets}
-              onChangeText={setSets}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Enter value"
-            />
+            <Text style={styles.label}>CHB Thickness</Text>
 
-            <Text style={styles.label}>Length (m)</Text>
-            <TextInput
-              value={length}
-              onChangeText={setLength}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Enter value"
-            />
+            {thickness === 'custom' ? (
+              <>
+                <TextInput
+                  value={customThickness}
+                  onChangeText={setCustomThickness}
+                  keyboardType="numeric"
+                  style={styles.input}
+                  placeholder="Enter value"
+                />
+                <TouchableOpacity onPress={() => setThickness(null)}>
+                  <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity>
+              </>
+            ) : isAndroid ? (
+              <>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setOpenThickness(true)}
+                >
+                  <Text>{thickness ?? 'Select thickness'}</Text>
+                </TouchableOpacity>
+                {renderModal(
+                  openThickness,
+                  setOpenThickness,
+                  thicknessItems,
+                  setThickness,
+                )}
+              </>
+            ) : (
+              <View style={{ zIndex: 3000 }}>
+                <DropDownPicker
+                  open={openThickness}
+                  value={thickness}
+                  items={thicknessItems}
+                  setOpen={setOpenThickness}
+                  setValue={setThickness}
+                  listMode="SCROLLVIEW"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                />
+              </View>
+            )}
 
-            <Text style={styles.label}>Width (m)</Text>
+            <Text style={styles.label}>Area (sqm)</Text>
             <TextInput
-              value={width}
-              onChangeText={setWidth}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Enter value"
-            />
-
-            <Text style={styles.label}>Depth (m)</Text>
-            <TextInput
-              value={depth}
-              onChangeText={setDepth}
+              value={area}
+              onChangeText={setArea}
               style={styles.input}
               keyboardType="numeric"
               placeholder="Enter value"
@@ -225,17 +250,12 @@ export default function Beam() {
                   style={styles.input}
                   onPress={() => setOpenMix(true)}
                 >
-                  <Text>
-                    {mix
-                      ? mixItems.find((i) => i.value === mix)?.label
-                      : 'Select mixture'}
-                  </Text>
+                  <Text>{mix ?? 'Select mix'}</Text>
                 </TouchableOpacity>
-
-                {renderAndroidModal(openMix, setOpenMix, mixItems, setMix)}
+                {renderModal(openMix, setOpenMix, mixItems, setMix)}
               </>
             ) : (
-              <View style={{ zIndex: 3000 }}>
+              <View style={{ zIndex: 2000 }}>
                 <DropDownPicker
                   open={openMix}
                   value={mix}
@@ -256,11 +276,11 @@ export default function Beam() {
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-
             <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
+            <Result label="Area" value={`${area || 0} sqm`} />
+            <Result label="Total CHB" value={`${totalPcs}`} />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
-            <Result label="Gravel" value={`${gravel} m³`} />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -279,7 +299,6 @@ function Result({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 24 },
-
   iconBox: {
     width: 56,
     height: 56,
@@ -289,10 +308,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 2,
   },
-
   title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
   subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
-
   card: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -300,14 +317,12 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     elevation: 3,
   },
-
   label: {
     marginTop: 12,
     marginBottom: 6,
     fontWeight: '600',
     color: '#334155',
   },
-
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -315,18 +330,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-
-  dropdown: {
-    borderRadius: 12,
-    borderColor: '#cbd5e1',
-  },
-
-  dropdownContainer: {
-    borderColor: '#cbd5e1',
-  },
-
+  dropdown: { borderRadius: 12, borderColor: '#cbd5e1' },
+  dropdownContainer: { borderColor: '#cbd5e1' },
   backText: { color: '#2563EB', marginTop: 6 },
-
   reset: {
     marginTop: 18,
     padding: 12,
@@ -334,45 +340,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#475569',
   },
-
   resetText: { color: '#fff', fontWeight: '600' },
-
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
   },
-
   resultTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
     color: '#e2e8f0',
   },
-
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
-
   resultLabel: { color: '#94a3b8' },
-  resultValue: { fontWeight: '700', color: '#fff', fontSize: 15 },
-
+  resultValue: { fontWeight: '700', color: '#fff' },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'flex-start',
     paddingHorizontal: 16,
   },
-
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
     maxHeight: 350,
   },
-
   handle: {
     width: 40,
     height: 4,
@@ -381,15 +379,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
-
   modalItem: {
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-
   modalText: { fontSize: 15 },
-
   modalCancel: {
     textAlign: 'center',
     marginTop: 12,

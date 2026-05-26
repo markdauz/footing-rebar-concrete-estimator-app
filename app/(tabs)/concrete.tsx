@@ -8,14 +8,14 @@ import {
 } from 'react-native-safe-area-context';
 
 type Route =
-  | '/features/slab'
-  | '/features/footing'
-  | '/features/column'
-  | '/features/beam'
-  | '/features/mortar'
-  | '/features/plaster'
-  | '/features/wall-footing'
-  | '/features/chb';
+  | '/features/concrete/slab'
+  | '/features/concrete/footing'
+  | '/features/concrete/column'
+  | '/features/concrete/beam'
+  | '/features/concrete/mortar'
+  | '/features/concrete/plaster'
+  | '/features/concrete/wall-footing'
+  | '/features/concrete/chb';
 
 type Feature = {
   name: string;
@@ -24,26 +24,30 @@ type Feature = {
 };
 
 const features: Feature[] = [
-  { name: 'Slab', icon: 'grid-outline', route: '/features/slab' },
-  { name: 'Footing', icon: 'cube-outline', route: '/features/footing' },
-  { name: 'Column', icon: 'apps-outline', route: '/features/column' },
-  { name: 'Beam', icon: 'remove-outline', route: '/features/beam' },
+  { name: 'Slab', icon: 'grid-outline', route: '/features/concrete/slab' },
+  {
+    name: 'Footing',
+    icon: 'cube-outline',
+    route: '/features/concrete/footing',
+  },
+  { name: 'Column', icon: 'apps-outline', route: '/features/concrete/column' },
+  { name: 'Beam', icon: 'remove-outline', route: '/features/concrete/beam' },
   {
     name: 'Mortar',
     icon: 'flask-outline',
-    route: '/features/mortar',
+    route: '/features/concrete/mortar',
   },
   {
     name: 'Plaster',
     icon: 'layers-outline',
-    route: '/features/plaster',
+    route: '/features/concrete/plaster',
   },
   {
     name: 'Wall Footing',
     icon: 'square-outline',
-    route: '/features/wall-footing',
+    route: '/features/concrete/wall-footing',
   },
-  { name: 'CHB', icon: 'cube', route: '/features/chb' },
+  { name: 'CHB', icon: 'cube', route: '/features/concrete/chb' },
 ];
 
 export default function Concrete() {

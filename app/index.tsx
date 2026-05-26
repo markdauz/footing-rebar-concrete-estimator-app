@@ -35,7 +35,7 @@ export default function Onboarding() {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.replace('/(tabs)/footing')}
+          onPress={() => router.replace('/(tabs)/steel')}
         >
           <Text style={styles.buttonText}>Start Calculating</Text>
         </TouchableOpacity>

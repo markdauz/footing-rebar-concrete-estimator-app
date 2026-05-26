@@ -19,93 +19,89 @@ import {
 } from 'react-native-safe-area-context';
 
 import {
-  computePlasterCement,
-  computePlasterSand,
-  computePlasterVolume,
-} from '../../utils/plasterCalculator';
+  computeColumnCement,
+  computeColumnTotalVolume,
+  computeColumnVolume,
+} from '../../../utils/columnCalculator';
 
-type MixType = 'a' | 'b' | 'c' | 'd';
-type ThicknessType = string | 'custom' | null;
-type MixValue = MixType | 'custom' | null;
-type Item<T extends string> = { label: string; value: T };
+type MixType = 'aa' | 'a' | 'b' | 'c';
+type MixValue = MixType | 'custom';
+type Item<T> = { label: string; value: T };
 
 const isAndroid = Platform.OS === 'android';
 
-export default function Plaster() {
+export default function Column() {
   const insets = useSafeAreaInsets();
 
-  const [area, setArea] = useState('');
-  const [thickness, setThickness] = useState<ThicknessType>(null);
-  const [customThickness, setCustomThickness] = useState('');
-  const [openThickness, setOpenThickness] = useState(false);
+  const [sets, setSets] = useState('');
+  const [width, setWidth] = useState('');
+  const [depth, setDepth] = useState('');
+  const [height, setHeight] = useState('');
 
-  const [mix, setMix] = useState<MixValue>(null);
+  const [mix, setMix] = useState<MixValue | null>(null);
   const [customMix, setCustomMix] = useState('');
   const [openMix, setOpenMix] = useState(false);
 
-  const thicknessItems: Item<string>[] = [
-    { label: '0.016', value: '0.016' },
-    { label: '0.020', value: '0.020' },
-    { label: '0.025', value: '0.025' },
-    { label: '0.050', value: '0.050' },
+  const mixItems: Item<MixValue>[] = [
+    { label: 'AA (1:1½:3)', value: 'aa' },
+    { label: 'A (1:2:4)', value: 'a' },
+    { label: 'B (1:2½:5)', value: 'b' },
+    { label: 'C (1:3:6)', value: 'c' },
     { label: 'Custom', value: 'custom' },
   ];
-
-  const mixItems: Item<MixType | 'custom'>[] = [
-    { label: 'A (1:2)', value: 'a' },
-    { label: 'B (1:3)', value: 'b' },
-    { label: 'C (1:4)', value: 'c' },
-    { label: 'D (1:5)', value: 'd' },
-    { label: 'Custom', value: 'custom' },
-  ];
-
-  const numericArea = parseFloat(area);
-
-  const effectiveThickness =
-    thickness === 'custom'
-      ? parseFloat(customThickness)
-      : thickness
-        ? parseFloat(thickness)
-        : NaN;
 
   const volume = useMemo(() => {
-    if (isNaN(numericArea) || isNaN(effectiveThickness)) return 0;
-    return computePlasterVolume(numericArea, effectiveThickness);
-  }, [numericArea, effectiveThickness]);
+    const w = parseFloat(width);
+    const d = parseFloat(depth);
+    const h = parseFloat(height);
+    if (isNaN(w) || isNaN(d) || isNaN(h)) return 0;
+    return computeColumnVolume(w, d, h);
+  }, [width, depth, height]);
+
+  const totalVolume = useMemo(() => {
+    const s = parseFloat(sets);
+    if (!volume || isNaN(s)) return 0;
+    return computeColumnTotalVolume(volume, s);
+  }, [volume, sets]);
 
   const cement = useMemo(() => {
-    if (!volume || isNaN(effectiveThickness)) return '0.00';
+    if (!totalVolume) return '0.00';
 
     if (mix === 'custom') {
-      const val = parseFloat(customMix);
-      if (isNaN(val)) return '0.00';
-      return computePlasterCement(volume, effectiveThickness, val);
+      const factor = parseFloat(customMix);
+
+      if (isNaN(factor) || factor <= 0) return '0.00';
+
+      return (totalVolume * factor).toFixed(2);
     }
 
     if (!mix) return '0.00';
 
-    return computePlasterCement(volume, effectiveThickness, mix);
-  }, [volume, effectiveThickness, mix, customMix]);
+    return computeColumnCement(totalVolume, mix);
+  }, [totalVolume, mix, customMix]);
 
   const sand = useMemo(() => {
-    if (!volume || isNaN(effectiveThickness)) return '0.00';
-    return computePlasterSand(volume, effectiveThickness);
-  }, [volume, effectiveThickness]);
+    if (!totalVolume) return '0.00';
 
-  const twoSidesCement =
-    cement !== '0.00' ? (Number(cement) * 2).toFixed(2) : '0.00';
+    return (totalVolume * 0.5).toFixed(2);
+  }, [totalVolume]);
 
-  const twoSidesSand = sand !== '0.00' ? (Number(sand) * 2).toFixed(2) : '0.00';
+  const gravel = useMemo(() => {
+    if (!totalVolume) return '0.00';
+
+    return totalVolume.toFixed(2);
+  }, [totalVolume]);
 
   const reset = () => {
-    setArea('');
-    setThickness(null);
-    setCustomThickness('');
+    setSets('');
+    setWidth('');
+    setDepth('');
+    setHeight('');
     setMix(null);
     setCustomMix('');
   };
 
-  function renderModal<T extends string>(
+  function renderAndroidModal<T>(
     visible: boolean,
     setVisible: (v: boolean) => void,
     items: Item<T>[],
@@ -125,10 +121,10 @@ export default function Plaster() {
           >
             <View style={styles.handle} />
 
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               {items.map((item) => (
                 <TouchableOpacity
-                  key={item.value}
+                  key={String(item.value)}
                   style={styles.modalItem}
                   onPress={() => {
                     onSelect(item.value);
@@ -166,66 +162,48 @@ export default function Plaster() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="layers-outline" size={26} color="#1e293b" />
+              <Ionicons name="apps-outline" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>Plaster Calculator</Text>
-            <Text style={styles.subtitle}>Cement Sand Estimate</Text>
+            <Text style={styles.title}>Column Calculator</Text>
+            <Text style={styles.subtitle}>Cement Sand Gravel Estimate</Text>
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.label}>Area (sqm)</Text>
+            <Text style={styles.label}>No. of Sets</Text>
             <TextInput
-              value={area}
-              onChangeText={setArea}
-              keyboardType="numeric"
+              value={sets}
+              onChangeText={setSets}
               style={styles.input}
+              keyboardType="numeric"
               placeholder="Enter value"
             />
 
-            <Text style={styles.label}>Thickness (m)</Text>
+            <Text style={styles.label}>Width (m)</Text>
+            <TextInput
+              value={width}
+              onChangeText={setWidth}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Enter value"
+            />
 
-            {thickness === 'custom' ? (
-              <>
-                <TextInput
-                  value={customThickness}
-                  onChangeText={setCustomThickness}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  placeholder="Enter value"
-                />
-                <TouchableOpacity onPress={() => setThickness(null)}>
-                  <Text style={styles.backText}>← Back</Text>
-                </TouchableOpacity>
-              </>
-            ) : isAndroid ? (
-              <>
-                <TouchableOpacity
-                  style={styles.input}
-                  onPress={() => setOpenThickness(true)}
-                >
-                  <Text>{thickness ?? 'Select thickness'}</Text>
-                </TouchableOpacity>
-                {renderModal(
-                  openThickness,
-                  setOpenThickness,
-                  thicknessItems,
-                  setThickness,
-                )}
-              </>
-            ) : (
-              <View style={{ zIndex: 1000 }}>
-                <DropDownPicker
-                  open={openThickness}
-                  value={thickness}
-                  items={thicknessItems}
-                  setOpen={setOpenThickness}
-                  setValue={setThickness}
-                  listMode="SCROLLVIEW"
-                  style={styles.dropdown}
-                  dropDownContainerStyle={styles.dropdownContainer}
-                />
-              </View>
-            )}
+            <Text style={styles.label}>Depth (m)</Text>
+            <TextInput
+              value={depth}
+              onChangeText={setDepth}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Enter value"
+            />
+
+            <Text style={styles.label}>Height (m)</Text>
+            <TextInput
+              value={height}
+              onChangeText={setHeight}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Enter value"
+            />
 
             <Text style={styles.label}>Mixture</Text>
 
@@ -248,12 +226,17 @@ export default function Plaster() {
                   style={styles.input}
                   onPress={() => setOpenMix(true)}
                 >
-                  <Text>{mix ?? 'Select mix'}</Text>
+                  <Text>
+                    {mix
+                      ? mixItems.find((i) => i.value === mix)?.label
+                      : 'Select mixture'}
+                  </Text>
                 </TouchableOpacity>
-                {renderModal(openMix, setOpenMix, mixItems, setMix)}
+
+                {renderAndroidModal(openMix, setOpenMix, mixItems, setMix)}
               </>
             ) : (
-              <View style={{ zIndex: 900 }}>
+              <View style={{ zIndex: 3000 }}>
                 <DropDownPicker
                   open={openMix}
                   value={mix}
@@ -274,15 +257,10 @@ export default function Plaster() {
 
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>Results</Text>
-            <Result
-              label="Volume"
-              value={`${volume.toFixed(3)} m³`}
-              highlight
-            />
+            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
             <Result label="Cement" value={`${cement} bags`} />
             <Result label="Sand" value={`${sand} m³`} />
-            <Result label="Cement (2 sides)" value={`${twoSidesCement} bags`} />
-            <Result label="Sand (2 sides)" value={`${twoSidesSand} m³`} />
+            <Result label="Gravel" value={`${gravel} m³`} />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -290,19 +268,18 @@ export default function Plaster() {
   );
 }
 
-function Result({ label, value, highlight }: any) {
+function Result({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
-      <Text style={[styles.resultValue, highlight && { fontSize: 18 }]}>
-        {value}
-      </Text>
+      <Text style={styles.resultValue}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 24 },
+
   iconBox: {
     width: 56,
     height: 56,
@@ -312,8 +289,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 2,
   },
+
   title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
   subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -321,12 +300,14 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     elevation: 3,
   },
+
   label: {
     marginTop: 12,
     marginBottom: 6,
     fontWeight: '600',
     color: '#334155',
   },
+
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -334,9 +315,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-  dropdown: { borderRadius: 12, borderColor: '#cbd5e1' },
-  dropdownContainer: { borderColor: '#cbd5e1' },
+
+  dropdown: {
+    borderRadius: 12,
+    borderColor: '#cbd5e1',
+  },
+
+  dropdownContainer: {
+    borderColor: '#cbd5e1',
+  },
+
   backText: { color: '#2563EB', marginTop: 6 },
+
   reset: {
     marginTop: 18,
     padding: 12,
@@ -344,37 +334,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#475569',
   },
+
   resetText: { color: '#fff', fontWeight: '600' },
+
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
   },
+
   resultTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
     color: '#e2e8f0',
   },
+
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
+
   resultLabel: { color: '#94a3b8' },
-  resultValue: { fontWeight: '700', color: '#fff' },
+  resultValue: { fontWeight: '700', color: '#fff', fontSize: 15 },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'flex-start',
     paddingHorizontal: 16,
   },
+
   modalCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
     maxHeight: 350,
   },
+
   handle: {
     width: 40,
     height: 4,
@@ -383,12 +381,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
+
   modalItem: {
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
+
   modalText: { fontSize: 15 },
+
   modalCancel: {
     textAlign: 'center',
     marginTop: 12,

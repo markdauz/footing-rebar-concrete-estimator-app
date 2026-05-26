@@ -15,9 +15,9 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="footing"
+        name="steel"
         options={{
-          tabBarLabel: 'Footing Rebar',
+          tabBarLabel: 'Steel Estimates',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="cube-outline" size={size} color={color} />
           ),
@@ -39,6 +39,15 @@ export default function TabsLayout() {
           tabBarLabel: 'Slab Tools',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="summary"
+        options={{
+          tabBarLabel: 'Summary',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="clipboard-outline" size={size} color={color} />
           ),
         }}
       />
