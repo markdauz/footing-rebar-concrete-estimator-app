@@ -606,7 +606,7 @@ export default function SlabOnFill() {
             </View>
 
             <Text style={styles.title}>Slab on Fill</Text>
-            <Text style={styles.subtitle}>Slab on fill estimator</Text>
+            <Text style={styles.subtitle}>Slab on Fill or Slab on Grade</Text>
           </View>
 
           <View style={styles.card}>
