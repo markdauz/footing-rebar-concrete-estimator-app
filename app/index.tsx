@@ -25,9 +25,7 @@ export default function Onboarding() {
 
         <Text style={styles.title}>Build Smarter</Text>
 
-        <Text style={styles.subtitle}>
-          Accurate material estimates in seconds
-        </Text>
+        <Text style={styles.subtitle}>Material estimates in seconds</Text>
 
         <Text style={styles.featureInline}>
           Slab • Footing • Concrete • CHB

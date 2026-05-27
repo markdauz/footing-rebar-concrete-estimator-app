@@ -1054,7 +1054,7 @@ export default function SuspendedSlab() {
               )}
             </View>
           </View>
-          {/*  */}
+
           <View style={[styles.resultCard, { marginTop: 18 }]}>
             <Text style={styles.resultTitle}>Total Pcs of Bars</Text>
 
@@ -1107,13 +1107,12 @@ export default function SuspendedSlab() {
               />
             </View>
           </View>
-          {/*  */}
-          <View style={[styles.resultCard, { marginTop: 18 }]}>
+
+          {/* <View style={[styles.resultCard, { marginTop: 18 }]}>
             <Text style={styles.resultTitle}>
               Overview Wastage from Different Steel Length
             </Text>
 
-            {/* Bent Bars Along Short Span */}
             {barDescription === 'bentShort' && (
               <>
                 <Result
@@ -1213,7 +1212,6 @@ export default function SuspendedSlab() {
               </>
             )}
 
-            {/* Bent Bars Along Long Span */}
             {barDescription === 'bentLong' && (
               <>
                 <Result
@@ -1312,7 +1310,7 @@ export default function SuspendedSlab() {
                 />
               </>
             )}
-            {/* Straight Bottom Bars (Short Span) */}
+
             {barDescription === 'straightShort' && (
               <>
                 <Result
@@ -1413,7 +1411,7 @@ export default function SuspendedSlab() {
                 />
               </>
             )}
-            {/* Straight Bottom Bars (Long Span) */}
+
             {barDescription === 'straightLong' && (
               <>
                 <Result
@@ -1514,7 +1512,7 @@ export default function SuspendedSlab() {
                 />
               </>
             )}
-            {/* Top Cut Bars Along Short Span */}
+
             {barDescription === 'topShort' && (
               <>
                 <Result
@@ -1614,7 +1612,7 @@ export default function SuspendedSlab() {
                 />
               </>
             )}
-            {/* Top Cut Bars Along Long Span */}
+
             {barDescription === 'topLong' && (
               <>
                 <Result
@@ -1713,7 +1711,7 @@ export default function SuspendedSlab() {
                 />
               </>
             )}
-            {/* Temp Bars Along Short Span */}
+
             {barDescription === 'tempShort' && (
               <>
                 <Result
@@ -1812,7 +1810,7 @@ export default function SuspendedSlab() {
                 />
               </>
             )}
-            {/* Temp Bars Along Long Span */}
+
             {barDescription === 'tempLong' && (
               <>
                 <Result
@@ -1911,7 +1909,7 @@ export default function SuspendedSlab() {
                 />
               </>
             )}
-          </View>
+          </View> */}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
