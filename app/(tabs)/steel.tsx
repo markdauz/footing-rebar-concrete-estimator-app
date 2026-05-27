@@ -18,7 +18,7 @@ type SteelFeature = {
   route: Route;
 };
 
-const slabFeatures: SteelFeature[] = [
+const steelFeatures: SteelFeature[] = [
   {
     name: 'Footing',
     icon: 'layers-outline',
@@ -64,7 +64,7 @@ export default function Steel() {
           {/* GRID */}
           {/* GRID */}
           <View style={styles.grid}>
-            {slabFeatures.map((feature, i) => (
+            {steelFeatures.map((feature, i) => (
               <TouchableOpacity
                 key={feature.name}
                 style={[styles.card, i % 2 === 0 ? { marginRight: 12 } : null]}

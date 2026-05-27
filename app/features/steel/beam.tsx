@@ -33,6 +33,10 @@ export default function Beam() {
             </View>
             <Text style={styles.title}>Beam Rebar Calculator</Text>
             <Text style={styles.subtitle}>Beam Rebar Calculator</Text>
+            <View style={styles.comingSoonBadge}>
+              <Ionicons name="time-outline" size={14} color="#fff" />
+              <Text style={styles.comingSoonText}>Coming Soon</Text>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -142,5 +146,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  comingSoonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    marginTop: 14,
+  },
+
+  comingSoonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
+    marginLeft: 6,
+    letterSpacing: 0.5,
   },
 });

@@ -23,6 +23,15 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="earth"
+        options={{
+          tabBarLabel: 'Earth Estimates',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="globe-outline" size={size} color={color} />
+          ),
+        }}
+      />
 
       <Tabs.Screen
         name="concrete"

@@ -7,28 +7,36 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-type Route = '/features/slab/suspended-slab' | '/features/slab/slab-on-fill';
+type Route =
+  | '/features/earth/footing'
+  | '/features/earth/wall-footing'
+  | '/features/earth/footing-tie-beams';
 
-type SlabFeature = {
+type EarthFeature = {
   name: string;
   icon: keyof typeof Ionicons.glyphMap;
   route: Route;
 };
 
-const slabFeatures: SlabFeature[] = [
+const earthFeatures: EarthFeature[] = [
   {
-    name: 'Suspended Slab',
+    name: 'Footing',
     icon: 'layers-outline',
-    route: '/features/slab/suspended-slab',
+    route: '/features/earth/footing',
   },
   {
-    name: 'Slab on Fill',
-    icon: 'grid-outline',
-    route: '/features/slab/slab-on-fill',
+    name: 'Wall Footing',
+    icon: 'cube-outline',
+    route: '/features/earth/wall-footing',
+  },
+  {
+    name: 'Footing Tie Beams',
+    icon: 'remove-outline',
+    route: '/features/earth/footing-tie-beams',
   },
 ];
 
-export default function Slab() {
+export default function Earth() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -46,19 +54,20 @@ export default function Slab() {
               <Ionicons name="grid-outline" size={26} color="#1e293b" />
             </View>
 
-            <Text style={styles.title}>Slab Tools</Text>
+            <Text style={styles.title}>Earth Estimates</Text>
 
             <Text style={styles.subtitle}>
-              Select a slab calculator to begin
+              Select an earth calculator to begin
             </Text>
           </View>
 
           {/* GRID */}
+          {/* GRID */}
           <View style={styles.grid}>
-            {slabFeatures.map((feature, i) => (
+            {earthFeatures.map((feature, i) => (
               <TouchableOpacity
                 key={feature.name}
-                style={[styles.card, i === 0 && { marginRight: 12 }]}
+                style={[styles.card, i % 2 === 0 ? { marginRight: 12 } : null]}
                 activeOpacity={0.85}
                 onPress={() => router.push(feature.route)}
               >

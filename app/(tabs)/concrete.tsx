@@ -70,29 +70,23 @@ export default function Concrete() {
 
           {/* GRID */}
           <View style={styles.grid}>
-            {[0, 1, 2, 3].map((rowIndex) => (
-              <View key={rowIndex} style={styles.row}>
-                {features
-                  .slice(rowIndex * 2, rowIndex * 2 + 2)
-                  .map((feature, i) => (
-                    <TouchableOpacity
-                      key={feature.name}
-                      style={[styles.card, i === 0 && { marginRight: 12 }]}
-                      activeOpacity={0.85}
-                      onPress={() => router.push(feature.route)}
-                    >
-                      <View style={styles.cardIconBox}>
-                        <Ionicons
-                          name={feature.icon as any}
-                          size={22}
-                          color="#1e293b"
-                        />
-                      </View>
+            {features.map((feature, i) => (
+              <TouchableOpacity
+                key={feature.name}
+                style={[styles.card, i === 0 && { marginRight: 12 }]}
+                activeOpacity={0.85}
+                onPress={() => router.push(feature.route)}
+              >
+                <View style={styles.cardIconBox}>
+                  <Ionicons
+                    name={feature.icon as any}
+                    size={22}
+                    color="#1e293b"
+                  />
+                </View>
 
-                      <Text style={styles.cardText}>{feature.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-              </View>
+                <Text style={styles.cardText}>{feature.name}</Text>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -136,22 +130,19 @@ const styles = StyleSheet.create({
   },
 
   grid: {
-    flex: 1,
-  },
-
-  row: {
-    flex: 1,
     flexDirection: 'row',
-    marginBottom: 12,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 
   card: {
-    flex: 1,
+    width: '48%',
     backgroundColor: '#fff',
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
+    paddingVertical: 24,
+    marginBottom: 12,
     elevation: 3,
   },
 

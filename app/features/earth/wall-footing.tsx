@@ -9,7 +9,7 @@ import {
 
 const isAndroid = Platform.OS === 'android';
 
-export default function Column() {
+export default function WallFooting() {
   const insets = useSafeAreaInsets();
 
   return (
@@ -29,10 +29,12 @@ export default function Column() {
         >
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="cube-outline" size={26} color="#1e293b" />
+              <Ionicons name="remove-outline" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>Column Rebar Calculator</Text>
-            <Text style={styles.subtitle}>Column Rebar Calculator</Text>
+            <Text style={styles.title}>Wall Footing Earthwork Calculator</Text>
+            <Text style={styles.subtitle}>
+              Wall Footing Earthwork Calculator
+            </Text>
             <View style={styles.comingSoonBadge}>
               <Ionicons name="time-outline" size={14} color="#fff" />
               <Text style={styles.comingSoonText}>Coming Soon</Text>

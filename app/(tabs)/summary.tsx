@@ -38,6 +38,10 @@ export default function Summary() {
             <Text style={styles.title}>Summary</Text>
 
             <Text style={styles.subtitle}>Summary</Text>
+            <View style={styles.comingSoonBadge}>
+              <Ionicons name="time-outline" size={14} color="#fff" />
+              <Text style={styles.comingSoonText}>Coming Soon</Text>
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -111,5 +115,22 @@ const styles = StyleSheet.create({
     color: '#334155',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  comingSoonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    marginTop: 14,
+  },
+
+  comingSoonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
+    marginLeft: 6,
+    letterSpacing: 0.5,
   },
 });

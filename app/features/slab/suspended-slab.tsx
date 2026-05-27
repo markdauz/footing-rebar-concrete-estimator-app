@@ -237,7 +237,8 @@ export default function SuspendedSlab() {
     );
   }
 
-  const selectedSteelLength = steelLengthMode || steelLength;
+  const selectedSteelLength =
+    steelLengthMode === 'custom' ? steelLength : steelLengthMode || steelLength;
 
   const showSteelLength = (length: number) => {
     if (!selectedSteelLength || selectedSteelLength === 'custom') {
