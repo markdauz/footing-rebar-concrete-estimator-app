@@ -232,12 +232,7 @@ export default function WallFooting() {
                 color="#2563eb"
               />
 
-              <Text style={styles.infoText}>
-                Gravel bed is fixed to 0.1m.
-                {'\n'}
-                15mm on both sides of footing width is automatically added as
-                excavation allowance.
-              </Text>
+              <Text style={styles.infoText}>Gravel bed is fixed to 0.1m.</Text>
             </View>
 
             <TouchableOpacity style={styles.reset} onPress={reset}>
