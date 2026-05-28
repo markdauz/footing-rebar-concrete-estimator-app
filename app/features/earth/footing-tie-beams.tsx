@@ -1,21 +1,94 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-const isAndroid = Platform.OS === 'android';
-
 export default function FootingTieBeams() {
   const insets = useSafeAreaInsets();
+
+  const [excavationHeight, setExcavationHeight] = useState('');
+  const [width, setWidth] = useState('');
+  const [depth, setDepth] = useState('');
+  const [length, setLength] = useState('');
+  const [noOfBeams, setNoOfBeams] = useState('');
+
+  const gravelBed = 0.1;
+
+  const handleNumberInput = (
+    value: string,
+    setter: (value: string) => void,
+  ) => {
+    const sanitized = value.replace(/[^0-9.]/g, '');
+
+    const parts = sanitized.split('.');
+
+    if (parts.length > 2) {
+      return;
+    }
+
+    setter(sanitized);
+  };
+
+  const totalExcavation = useMemo(() => {
+    const excavationHeightValue = parseFloat(excavationHeight || '0') || 0;
+
+    const widthValue = parseFloat(width || '0') || 0;
+
+    const lengthValue = parseFloat(length || '0') || 0;
+
+    const beams = parseFloat(noOfBeams || '0') || 0;
+
+    if (!beams) {
+      return 0;
+    }
+
+    return (
+      beams *
+      (excavationHeightValue * (widthValue + 0.3) * lengthValue +
+        (widthValue + 0.3) * lengthValue * gravelBed)
+    );
+  }, [excavationHeight, width, length, noOfBeams]);
+
+  const totalBackfill = useMemo(() => {
+    const widthValue = parseFloat(width || '0') || 0;
+
+    const depthValue = parseFloat(depth || '0') || 0;
+
+    const lengthValue = parseFloat(length || '0') || 0;
+
+    const beams = parseFloat(noOfBeams || '0') || 0;
+
+    return totalExcavation - widthValue * depthValue * lengthValue * beams;
+  }, [totalExcavation, width, depth, length, noOfBeams]);
+
+  const reset = () => {
+    setExcavationHeight('');
+    setWidth('');
+    setDepth('');
+    setLength('');
+    setNoOfBeams('');
+  };
 
   return (
     <LinearGradient colors={['#f1f5f9', '#e2e8f0']} style={{ flex: 1 }}>
       <Stack.Screen
-        options={{ headerShown: true, title: '', headerTransparent: true }}
+        options={{
+          headerShown: true,
+          title: '',
+          headerTransparent: true,
+        }}
       />
 
       <SafeAreaView style={{ flex: 1 }}>
@@ -31,16 +104,107 @@ export default function FootingTieBeams() {
             <View style={styles.iconBox}>
               <Ionicons name="remove-outline" size={26} color="#1e293b" />
             </View>
-            <Text style={styles.title}>
-              Footing Tie Beams Earthwork Calculator
-            </Text>
-            <Text style={styles.subtitle}>
-              Footing Tie Beams Earthwork Calculator
-            </Text>
-            <View style={styles.comingSoonBadge}>
-              <Ionicons name="time-outline" size={14} color="#fff" />
-              <Text style={styles.comingSoonText}>Coming Soon</Text>
+
+            <Text style={styles.title}>Footing Tie Beams Earthwork</Text>
+
+            <Text style={styles.subtitle}>Excavation Volume Calculator</Text>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Excavation Details</Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Excavation Height (m)</Text>
+
+              <TextInput
+                value={excavationHeight}
+                onChangeText={(v) => handleNumberInput(v, setExcavationHeight)}
+                keyboardType="decimal-pad"
+                style={styles.input}
+                placeholder="Enter value"
+              />
             </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Width (m)</Text>
+
+              <TextInput
+                value={width}
+                onChangeText={(v) => handleNumberInput(v, setWidth)}
+                keyboardType="decimal-pad"
+                style={styles.input}
+                placeholder="Enter value"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Depth (m)</Text>
+
+              <TextInput
+                value={depth}
+                onChangeText={(v) => handleNumberInput(v, setDepth)}
+                keyboardType="decimal-pad"
+                style={styles.input}
+                placeholder="Enter value"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Length (m)</Text>
+
+              <TextInput
+                value={length}
+                onChangeText={(v) => handleNumberInput(v, setLength)}
+                keyboardType="decimal-pad"
+                style={styles.input}
+                placeholder="Enter value"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>No. of Beams</Text>
+
+              <TextInput
+                value={noOfBeams}
+                onChangeText={(v) => handleNumberInput(v, setNoOfBeams)}
+                keyboardType="decimal-pad"
+                style={styles.input}
+                placeholder="Enter value"
+              />
+            </View>
+
+            <View style={styles.infoBox}>
+              <Ionicons
+                name="information-circle-outline"
+                size={18}
+                color="#2563eb"
+              />
+
+              <Text style={styles.infoText}>
+                Gravel bed is fixed to 0.1m.
+                {'\n'}
+                15mm on both sides of beam width is automatically added as
+                excavation allowance.
+              </Text>
+            </View>
+
+            <TouchableOpacity style={styles.reset} onPress={reset}>
+              <Text style={styles.resetText}>Reset</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.resultCard}>
+            <Text style={styles.resultTitle}>Computed Quantity</Text>
+
+            <Result
+              label="Total Excavation"
+              value={`${totalExcavation.toFixed(3)} m³`}
+            />
+
+            <Result
+              label="Total Backfill"
+              value={`${totalBackfill.toFixed(3)} m³`}
+            />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -52,13 +216,18 @@ function Result({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
+
       <Text style={styles.resultValue}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { alignItems: 'center', marginBottom: 24 },
+  header: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+
   iconBox: {
     width: 56,
     height: 56,
@@ -68,8 +237,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 2,
   },
-  title: { fontSize: 20, fontWeight: '700', marginTop: 10 },
-  subtitle: { fontSize: 13, color: '#64748b', marginTop: 4 },
+
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+
+  subtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 4,
+  },
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -77,95 +259,91 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     elevation: 3,
   },
-  label: {
-    marginTop: 12,
-    marginBottom: 6,
-    fontWeight: '600',
-    color: '#334155',
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 14,
   },
+
+  inputGroup: {
+    marginBottom: 16,
+  },
+
+  label: {
+    color: '#334155',
+    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
     borderColor: '#cbd5e1',
+    fontWeight: '600',
+    color: '#0f172a',
   },
-  dropdown: { borderRadius: 12, borderColor: '#cbd5e1' },
-  dropdownContainer: { borderColor: '#cbd5e1' },
-  backText: { color: '#2563EB', marginTop: 6 },
+
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+  },
+
+  infoText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#1e40af',
+  },
+
   reset: {
-    marginTop: 18,
+    marginTop: 8,
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
     backgroundColor: '#475569',
   },
-  resetText: { color: '#fff', fontWeight: '600' },
+
+  resetText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+
   resultCard: {
     backgroundColor: '#0f172a',
     borderRadius: 18,
     padding: 18,
   },
+
   resultTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
     color: '#e2e8f0',
   },
+
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
-  resultLabel: { color: '#94a3b8' },
-  resultValue: { fontWeight: '700', color: '#fff' },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-start',
-    paddingHorizontal: 16,
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 16,
-    maxHeight: 350,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#cbd5e1',
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  modalItem: {
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  modalText: { fontSize: 15 },
-  modalCancel: {
-    textAlign: 'center',
-    marginTop: 12,
-    color: '#ef4444',
-    fontWeight: '600',
-  },
-  comingSoonBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f59e0b',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    marginTop: 14,
+
+  resultLabel: {
+    color: '#94a3b8',
   },
 
-  comingSoonText: {
-    color: '#fff',
+  resultValue: {
     fontWeight: '700',
-    fontSize: 12,
-    marginLeft: 6,
-    letterSpacing: 0.5,
+    color: '#fff',
+    fontSize: 15,
   },
 });
