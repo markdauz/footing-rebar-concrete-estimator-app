@@ -73,6 +73,15 @@ export default function SlabOnFill() {
   const [openTempBars, setOpenTempBars] = useState(false);
   const [openSteelLength, setOpenSteelLength] = useState(false);
 
+  const closeAllDropdowns = () => {
+    setOpenThickness(false);
+    setOpenSpacingWidth(false);
+    setOpenSpacingLength(false);
+    setOpenMainBars(false);
+    setOpenTempBars(false);
+    setOpenSteelLength(false);
+  };
+
   const [kgsPerCum, setKgsPerCum] = useState('');
 
   const thicknessItems: Item<string>[] = [
@@ -689,7 +698,10 @@ export default function SlabOnFill() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenThickness(true)}
+                  onPress={() => {
+                    closeAllDropdowns();
+                    setOpenThickness(true);
+                  }}
                 >
                   <Text>
                     {slabThicknessMode
@@ -719,7 +731,18 @@ export default function SlabOnFill() {
                   open={openThickness}
                   value={slabThicknessMode}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function'
+                        ? value(openThickness)
+                        : value;
+
+                    if (next) {
+                      closeAllDropdowns();
+                    }
+
+                    setOpenThickness(next);
+                  }}
                   setValue={setSlabThicknessMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -764,7 +787,10 @@ export default function SlabOnFill() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenSpacingWidth(true)}
+                  onPress={() => {
+                    closeAllDropdowns();
+                    setOpenSpacingWidth(true);
+                  }}
                 >
                   <Text>
                     {spacingWidthMode
@@ -793,7 +819,18 @@ export default function SlabOnFill() {
                   open={openSpacingWidth}
                   value={spacingWidthMode}
                   items={spacingItems}
-                  setOpen={setOpenSpacingWidth}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function'
+                        ? value(openSpacingWidth)
+                        : value;
+
+                    if (next) {
+                      closeAllDropdowns();
+                    }
+
+                    setOpenSpacingWidth(next);
+                  }}
                   setValue={setSpacingWidthMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -828,7 +865,10 @@ export default function SlabOnFill() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenSpacingLength(true)}
+                  onPress={() => {
+                    closeAllDropdowns();
+                    setOpenSpacingLength(true);
+                  }}
                 >
                   <Text>
                     {spacingLengthMode
@@ -857,7 +897,18 @@ export default function SlabOnFill() {
                   open={openSpacingLength}
                   value={spacingLengthMode}
                   items={spacingItems}
-                  setOpen={setOpenSpacingLength}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function'
+                        ? value(openSpacingLength)
+                        : value;
+
+                    if (next) {
+                      closeAllDropdowns();
+                    }
+
+                    setOpenSpacingLength(next);
+                  }}
                   setValue={setSpacingLengthMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -892,7 +943,10 @@ export default function SlabOnFill() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenMainBars(true)}
+                  onPress={() => {
+                    closeAllDropdowns();
+                    setOpenMainBars(true);
+                  }}
                 >
                   <Text>
                     {mainBarsMode
@@ -920,7 +974,16 @@ export default function SlabOnFill() {
                   open={openMainBars}
                   value={mainBarsMode}
                   items={barItems}
-                  setOpen={setOpenMainBars}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function' ? value(openMainBars) : value;
+
+                    if (next) {
+                      closeAllDropdowns();
+                    }
+
+                    setOpenMainBars(next);
+                  }}
                   setValue={setMainBarsMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -955,7 +1018,10 @@ export default function SlabOnFill() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenTempBars(true)}
+                  onPress={() => {
+                    closeAllDropdowns();
+                    setOpenTempBars(true);
+                  }}
                 >
                   <Text>
                     {tempBarsMode
@@ -983,7 +1049,16 @@ export default function SlabOnFill() {
                   open={openTempBars}
                   value={tempBarsMode}
                   items={barItems}
-                  setOpen={setOpenTempBars}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function' ? value(openTempBars) : value;
+
+                    if (next) {
+                      closeAllDropdowns();
+                    }
+
+                    setOpenTempBars(next);
+                  }}
                   setValue={setTempBarsMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -1018,7 +1093,10 @@ export default function SlabOnFill() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenSteelLength(true)}
+                  onPress={() => {
+                    closeAllDropdowns();
+                    setOpenSteelLength(true);
+                  }}
                 >
                   <Text>
                     {steelLengthMode
@@ -1048,7 +1126,18 @@ export default function SlabOnFill() {
                   open={openSteelLength}
                   value={steelLengthMode}
                   items={steelLengthItems}
-                  setOpen={setOpenSteelLength}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function'
+                        ? value(openSteelLength)
+                        : value;
+
+                    if (next) {
+                      closeAllDropdowns();
+                    }
+
+                    setOpenSteelLength(next);
+                  }}
                   setValue={setSteelLengthMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}

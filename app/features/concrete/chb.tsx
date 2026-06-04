@@ -39,6 +39,10 @@ const isAndroid = Platform.OS === 'android';
 export default function CHB() {
   const insets = useSafeAreaInsets();
 
+  const [activePicker, setActivePicker] = useState<
+    'thickness' | 'webs' | 'class' | null
+  >(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
@@ -49,9 +53,9 @@ export default function CHB() {
   const [webs, setWebs] = useState<WebValue | null>(null);
   const [cementClass, setCementClass] = useState<ClassValue | null>(null);
 
-  const [openThickness, setOpenThickness] = useState(false);
-  const [openWebs, setOpenWebs] = useState(false);
-  const [openClass, setOpenClass] = useState(false);
+  const openThickness = activePicker === 'thickness';
+  const openWebs = activePicker === 'webs';
+  const openClass = activePicker === 'class';
 
   const [wallArea, setWallArea] = useState('');
 
@@ -173,7 +177,7 @@ export default function CHB() {
 
   function renderAndroidModal<T>(
     visible: boolean,
-    setVisible: (v: boolean) => void,
+    onClose: () => void,
     items: Item<T>[],
     onSelect: (value: T) => void,
   ) {
@@ -182,7 +186,7 @@ export default function CHB() {
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
-          onPress={() => setVisible(false)}
+          onPress={() => onClose()}
         >
           <TouchableOpacity
             activeOpacity={1}
@@ -198,7 +202,7 @@ export default function CHB() {
                   style={styles.modalItem}
                   onPress={() => {
                     onSelect(item.value);
-                    setVisible(false);
+                    onClose();
                   }}
                 >
                   <Text style={styles.modalText}>{item.label}</Text>
@@ -206,7 +210,7 @@ export default function CHB() {
               ))}
             </ScrollView>
 
-            <TouchableOpacity onPress={() => setVisible(false)}>
+            <TouchableOpacity onPress={() => onClose()}>
               <Text style={styles.modalCancel}>Cancel</Text>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -261,7 +265,7 @@ export default function CHB() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenThickness(true)}
+                  onPress={() => setActivePicker('thickness')}
                 >
                   <Text>
                     {thicknessMode
@@ -273,7 +277,7 @@ export default function CHB() {
 
                 {renderAndroidModal(
                   openThickness,
-                  setOpenThickness,
+                  () => setActivePicker(null),
                   thicknessItems,
                   (val) => {
                     if (val === 'custom') setThickness('');
@@ -287,7 +291,14 @@ export default function CHB() {
                   open={openThickness}
                   value={thicknessMode}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function'
+                        ? value(openThickness)
+                        : value;
+
+                    setActivePicker(next ? 'thickness' : null);
+                  }}
                   setValue={setThicknessMode}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -302,12 +313,17 @@ export default function CHB() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenWebs(true)}
+                  onPress={() => setActivePicker('webs')}
                 >
                   <Text>{webs ?? 'Select webs'}</Text>
                 </TouchableOpacity>
 
-                {renderAndroidModal(openWebs, setOpenWebs, webItems, setWebs)}
+                {renderAndroidModal(
+                  openWebs,
+                  () => setActivePicker(null),
+                  webItems,
+                  setWebs,
+                )}
               </>
             ) : (
               <View style={{ zIndex: 900 }}>
@@ -315,7 +331,12 @@ export default function CHB() {
                   open={openWebs}
                   value={webs}
                   items={webItems}
-                  setOpen={setOpenWebs}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function' ? value(openWebs) : value;
+
+                    setActivePicker(next ? 'webs' : null);
+                  }}
                   setValue={setWebs}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -330,7 +351,7 @@ export default function CHB() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenClass(true)}
+                  onPress={() => setActivePicker('class')}
                 >
                   <Text>
                     {cementClass
@@ -341,7 +362,7 @@ export default function CHB() {
 
                 {renderAndroidModal(
                   openClass,
-                  setOpenClass,
+                  () => setActivePicker(null),
                   classItems,
                   setCementClass,
                 )}
@@ -352,7 +373,12 @@ export default function CHB() {
                   open={openClass}
                   value={cementClass}
                   items={classItems}
-                  setOpen={setOpenClass}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function' ? value(openClass) : value;
+
+                    setActivePicker(next ? 'class' : null);
+                  }}
                   setValue={setCementClass}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}

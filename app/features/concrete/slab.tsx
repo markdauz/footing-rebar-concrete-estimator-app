@@ -212,7 +212,10 @@ export default function Slab() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenThickness(true)}
+                  onPress={() => {
+                    setOpenMix(false);
+                    setOpenThickness(true);
+                  }}
                 >
                   <Text>
                     {thickness
@@ -234,7 +237,18 @@ export default function Slab() {
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function'
+                        ? value(openThickness)
+                        : value;
+
+                    if (next) {
+                      setOpenMix(false);
+                    }
+
+                    setOpenThickness(next);
+                  }}
                   setValue={setThickness}
                   placeholder="Select thickness"
                   listMode="SCROLLVIEW"
@@ -263,7 +277,10 @@ export default function Slab() {
               <>
                 <TouchableOpacity
                   style={[styles.input, styles.androidInput]}
-                  onPress={() => setOpenMix(true)}
+                  onPress={() => {
+                    setOpenThickness(false);
+                    setOpenMix(true);
+                  }}
                 >
                   <Text>
                     {mix
@@ -280,7 +297,16 @@ export default function Slab() {
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={setOpenMix}
+                  setOpen={(value) => {
+                    const next =
+                      typeof value === 'function' ? value(openMix) : value;
+
+                    if (next) {
+                      setOpenThickness(false);
+                    }
+
+                    setOpenMix(next);
+                  }}
                   setValue={setMix}
                   placeholder="Select mixture"
                   listMode="SCROLLVIEW"

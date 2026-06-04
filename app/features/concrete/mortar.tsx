@@ -40,14 +40,16 @@ export default function Mortar() {
   const [showResults, setShowResults] = useState(false);
 
   const [area, setArea] = useState('');
-
+  const [activePicker, setActivePicker] = useState<'thickness' | 'mix' | null>(
+    null,
+  );
+  const openThickness = activePicker === 'thickness';
+  const openMix = activePicker === 'mix';
   const [thickness, setThickness] = useState<ThicknessValue | null>(null);
   const [customThickness, setCustomThickness] = useState('');
-  const [openThickness, setOpenThickness] = useState(false);
 
   const [mix, setMix] = useState<MixValue | null>(null);
   const [customMix, setCustomMix] = useState('');
-  const [openMix, setOpenMix] = useState(false);
 
   const thicknessItems: Item<ThicknessValue>[] = [
     { label: '0.10', value: '0.10' },
@@ -141,7 +143,7 @@ export default function Mortar() {
 
   function renderModal<T>(
     visible: boolean,
-    setVisible: (v: boolean) => void,
+    setVisible: () => void,
     items: Item<T>[],
     onSelect: (value: T) => void,
   ) {
@@ -150,7 +152,7 @@ export default function Mortar() {
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.modalOverlay, { paddingTop: insets.top + 80 }]}
-          onPress={() => setVisible(false)}
+          onPress={() => setVisible()}
         >
           <TouchableOpacity
             activeOpacity={1}
@@ -166,7 +168,7 @@ export default function Mortar() {
                   style={styles.modalItem}
                   onPress={() => {
                     onSelect(item.value);
-                    setVisible(false);
+                    setVisible();
                   }}
                 >
                   <Text style={styles.modalText}>{item.label}</Text>
@@ -174,7 +176,7 @@ export default function Mortar() {
               ))}
             </ScrollView>
 
-            <TouchableOpacity onPress={() => setVisible(false)}>
+            <TouchableOpacity onPress={() => setVisible()}>
               <Text style={styles.modalCancel}>Cancel</Text>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -226,13 +228,13 @@ export default function Mortar() {
               <>
                 <TouchableOpacity
                   style={styles.input}
-                  onPress={() => setOpenThickness(true)}
+                  onPress={() => setActivePicker('thickness')}
                 >
                   <Text>{thickness ?? 'Select thickness'}</Text>
                 </TouchableOpacity>
                 {renderModal(
                   openThickness,
-                  setOpenThickness,
+                  () => setActivePicker(null),
                   thicknessItems,
                   setThickness,
                 )}
@@ -243,7 +245,9 @@ export default function Mortar() {
                   open={openThickness}
                   value={thickness}
                   items={thicknessItems}
-                  setOpen={setOpenThickness}
+                  setOpen={() =>
+                    setActivePicker(openThickness ? null : 'thickness')
+                  }
                   setValue={setThickness}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
@@ -280,11 +284,16 @@ export default function Mortar() {
               <>
                 <TouchableOpacity
                   style={styles.input}
-                  onPress={() => setOpenMix(true)}
+                  onPress={() => setActivePicker('mix')}
                 >
                   <Text>{mix ?? 'Select mix'}</Text>
                 </TouchableOpacity>
-                {renderModal(openMix, setOpenMix, mixItems, setMix)}
+                {renderModal(
+                  openMix,
+                  () => setActivePicker(null),
+                  mixItems,
+                  setMix,
+                )}
               </>
             ) : (
               <View style={{ zIndex: 2000 }}>
@@ -292,7 +301,7 @@ export default function Mortar() {
                   open={openMix}
                   value={mix}
                   items={mixItems}
-                  setOpen={setOpenMix}
+                  setOpen={() => setActivePicker(openMix ? null : 'mix')}
                   setValue={setMix}
                   listMode="SCROLLVIEW"
                   style={styles.dropdown}
