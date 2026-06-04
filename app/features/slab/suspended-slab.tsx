@@ -2,8 +2,9 @@ import { getSuspendedSlabComputations } from '@/utils/suspendedSlabCalculator';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -25,6 +26,9 @@ const isAndroid = Platform.OS === 'android';
 
 export default function SuspendedSlab() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [width, setWidth] = useState('');
   const [length, setLength] = useState('');
@@ -167,6 +171,71 @@ export default function SuspendedSlab() {
     steelLengthMode,
   });
 
+  useEffect(() => {
+    const effectiveThickness =
+      slabThicknessMode === 'custom' ? slabThickness : slabThicknessMode;
+
+    const effectiveSpacingWidth =
+      spacingWidthMode === 'custom' ? spacingWidth : spacingWidthMode;
+
+    const effectiveSpacingLength =
+      spacingLengthMode === 'custom' ? spacingLength : spacingLengthMode;
+
+    const effectiveMainBars =
+      mainBarsMode === 'custom' ? mainBars : mainBarsMode;
+
+    const effectiveTempBars =
+      tempBarsMode === 'custom' ? tempBars : tempBarsMode;
+
+    const effectiveSteelLength =
+      steelLengthMode === 'custom' ? steelLength : steelLengthMode;
+
+    const hasRequiredValues =
+      width &&
+      length &&
+      sets &&
+      effectiveThickness &&
+      effectiveSpacingWidth &&
+      effectiveSpacingLength &&
+      effectiveMainBars &&
+      effectiveTempBars &&
+      effectiveSteelLength &&
+      barDescription;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [
+    width,
+    length,
+    sets,
+    slabThickness,
+    slabThicknessMode,
+    spacingWidth,
+    spacingWidthMode,
+    spacingLength,
+    spacingLengthMode,
+    mainBars,
+    mainBarsMode,
+    tempBars,
+    tempBarsMode,
+    steelLength,
+    steelLengthMode,
+    barDescription,
+  ]);
+
   const reset = () => {
     setWidth('');
     setLength('');
@@ -191,6 +260,9 @@ export default function SuspendedSlab() {
 
     setSteelLengthMode(null);
     setBarDescription(null);
+
+    setShowResults(false);
+    setIsLoading(false);
   };
 
   function renderAndroidModal<T>(
@@ -748,1169 +820,384 @@ export default function SuspendedSlab() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Results</Text>
-
-            <Result
-              label="Volume"
-              value={`${computations.volume.toFixed(3)} cu.m`}
-            />
-
-            <Result
-              label="Type"
-              value={computations.slabType === '' ? '-' : computations.slabType}
-            />
-
-            <Result
-              label="General mRatio"
-              value={`${computations.generalMRatio}`}
-            />
-
-            <Result
-              label="Steel Kgs/cu.m"
-              value={`${Number(computations.steelKgsPerCum || 0).toFixed(
-                2,
-              )} kg`}
-            />
-
-            <Result
-              label="W/4 (for temp bars)"
-              value={`${computations.w4TempBars} m`}
-            />
-
-            <Result
-              label="L/4 (for temp bars)"
-              value={`${computations.l4TempBars} m`}
-            />
-
-            <Result
-              label="W/3 (for extra bars)"
-              value={`${computations.w3ExtraBars} m`}
-            />
-
-            <Result
-              label="L/3 (for extra bars)"
-              value={`${computations.l3ExtraBars} m`}
-            />
-
-            <Result
-              label="L/2 (for bent bars) “//” to W"
-              value={`${computations.l2BentBarsToW} m`}
-            />
-
-            <Result
-              label="L/2 (for bent bars) “//” to L"
-              value={`${computations.l2BentBarsToL} m`}
-            />
-
-            <View style={styles.resultSection}>
-              <Text style={styles.resultSectionTitle}>Computed Quantity</Text>
-
-              {barDescription === 'bentShort' && (
-                <>
-                  <Result
-                    label="Bent Bars Along Short Span (cut bar pcs)"
-                    value={
-                      computations.bentBarsAlongShortSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongShortSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Bent Bars Along Short Span (cut size)"
-                    value={
-                      computations.bentBarsAlongShortSpanCutSize === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongShortSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Bent Bars Along Short Span (wastage/bar)"
-                    value={
-                      computations.bentBarsAlongShortSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongShortSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
-
-              {barDescription === 'bentLong' && (
-                <>
-                  <Result
-                    label="Bent Bars Along Long Span (cut bar pcs)"
-                    value={
-                      computations.bentBarsAlongLongSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Bent Bars Along Long Span (cut size)"
-                    value={
-                      computations.bentBarsAlongLongSpanCutSize === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Bent Bars Along Long Span (wastage/bar)"
-                    value={
-                      computations.bentBarsAlongLongSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
-
-              {barDescription === 'straightShort' && (
-                <>
-                  <Result
-                    label="Straight Bottom Bars Short Span (cut bar pcs)"
-                    value={
-                      computations.straightBottomBarsShortSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Straight Bottom Bars Short Span (cut size)"
-                    value={
-                      computations.straightBottomBarsShortSpanCutSize === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Straight Bottom Bars Short Span (wastage/bar)"
-                    value={
-                      computations.straightBottomBarsShortSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
-
-              {barDescription === 'straightLong' && (
-                <>
-                  <Result
-                    label="Straight Bottom Bars Long Span (cut bar pcs)"
-                    value={
-                      computations.straightBottomBarsLongSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Straight Bottom Bars Long Span (cut size)"
-                    value={
-                      computations.straightBottomBarsLongSpanCutSize === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Straight Bottom Bars Long Span (wastage/bar)"
-                    value={
-                      computations.straightBottomBarsLongSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
-
-              {barDescription === 'topShort' && (
-                <>
-                  <Result
-                    label="Top Cut Bars Along Short Span (cut bar pcs)"
-                    value={
-                      computations.topCutBarsAlongShortSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Top Cut Bars Along Short Span (cut size)"
-                    value={
-                      computations.topCutBarsAlongShortSpanCutSize === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Top Cut Bars Along Short Span (wastage/bar)"
-                    value={
-                      computations.topCutBarsAlongShortSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
-
-              {barDescription === 'topLong' && (
-                <>
-                  <Result
-                    label="Top Cut Bars Along Long Span (cut bar pcs)"
-                    value={
-                      computations.topCutBarsAlongLongSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Top Cut Bars Along Long Span (cut size)"
-                    value={
-                      computations.topCutBarsAlongLongSpanCutSize === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Top Cut Bars Along Long Span (wastage/bar)"
-                    value={
-                      computations.topCutBarsAlongLongSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
-
-              {barDescription === 'tempShort' && (
-                <>
-                  <Result
-                    label="Temp Bars Along Short Span (cut bar pcs)"
-                    value={
-                      computations.tempBarsAlongShortSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Temp Bars Along Short Span (cut size)"
-                    value={
-                      computations.tempBarsAlongShortSpanCutSize === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Temp Bars Along Short Span (wastage/bar)"
-                    value={
-                      computations.tempBarsAlongShortSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
-
-              {barDescription === 'tempLong' && (
-                <>
-                  <Result
-                    label="Temp Bars Along Long Span (cut bar pcs)"
-                    value={
-                      computations.tempBarsAlongLongSpanCutBarPcs === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpanCutBarPcs} pcs`
-                    }
-                  />
-
-                  <Result
-                    label="Temp Bars Along Long Span (cut size)"
-                    value={
-                      computations.tempBarsAlongLongSpanCutSize === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpanCutSize}`
-                    }
-                  />
-
-                  <Result
-                    label="Temp Bars Along Long Span (wastage/bar)"
-                    value={
-                      computations.tempBarsAlongLongSpanWastageBar === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpanWastageBar}`
-                    }
-                  />
-                </>
-              )}
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
             </View>
-          </View>
+          )}
+          {showResults && (
+            <>
+              <View style={styles.resultCard}>
+                <Text style={styles.resultTitle}>Results</Text>
 
-          <View style={[styles.resultCard, { marginTop: 18 }]}>
-            <Text style={styles.resultTitle}>Total Pcs of Bars</Text>
-
-            <Result
-              label="A. Main Bars Pcs"
-              value={`${computations.mainBarsPcs} pcs`}
-            />
-
-            <Result
-              label="A. Main Bars Length"
-              value={
-                computations.mainBarsLength === ''
-                  ? '-'
-                  : computations.mainBarsLength
-              }
-            />
-
-            <Result
-              label="A. Main Bars Kgs"
-              value={`${computations.mainBarsKgs} kg`}
-            />
-
-            <View style={styles.resultSection}>
-              <Result
-                label="B. Temp Bars Pcs"
-                value={`${computations.tempBarsPcs} pcs`}
-              />
-
-              <Result
-                label="B. Temp Bars Length"
-                value={
-                  computations.tempBarsLength === ''
-                    ? '-'
-                    : computations.tempBarsLength
-                }
-              />
-
-              <Result
-                label="B. Temp Bars Kgs"
-                value={`${computations.tempBarsKgs} kg`}
-              />
-            </View>
-
-            <View style={styles.resultSection}>
-              <Result
-                label="Total #16 G.I Wire (kg)"
-                value={`${Number(computations.totalGIWireKg || 0).toFixed(
-                  2,
-                )} kg`}
-              />
-            </View>
-          </View>
-
-          {/* <View style={[styles.resultCard, { marginTop: 18 }]}>
-            <Text style={styles.resultTitle}>
-              Overview Wastage from Different Steel Length
-            </Text>
-
-            {barDescription === 'bentShort' && (
-              <>
                 <Result
-                  label="Bent Bars Along Short Span (# pcs from length/# of bars)"
+                  label="Volume"
+                  value={`${computations.volume.toFixed(3)} cu.m`}
+                />
+
+                <Result
+                  label="Type"
                   value={
-                    computations.bentBarsAlongShortSpanPcsFromLengthBars === ''
-                      ? '-'
-                      : `${computations.bentBarsAlongShortSpanPcsFromLengthBars} pcs`
+                    computations.slabType === '' ? '-' : computations.slabType
                   }
                 />
 
                 <Result
-                  label="Bent Bars Along Short Span (remarks)"
+                  label="General mRatio"
+                  value={`${computations.generalMRatio}`}
+                />
+
+                <Result
+                  label="Steel Kgs/cu.m"
+                  value={`${Number(computations.steelKgsPerCum || 0).toFixed(
+                    2,
+                  )} kg`}
+                />
+
+                <Result
+                  label="W/4 (for temp bars)"
+                  value={`${computations.w4TempBars} m`}
+                />
+
+                <Result
+                  label="L/4 (for temp bars)"
+                  value={`${computations.l4TempBars} m`}
+                />
+
+                <Result
+                  label="W/3 (for extra bars)"
+                  value={`${computations.w3ExtraBars} m`}
+                />
+
+                <Result
+                  label="L/3 (for extra bars)"
+                  value={`${computations.l3ExtraBars} m`}
+                />
+
+                <Result
+                  label="L/2 (for bent bars) “//” to W"
+                  value={`${computations.l2BentBarsToW} m`}
+                />
+
+                <Result
+                  label="L/2 (for bent bars) “//” to L"
+                  value={`${computations.l2BentBarsToL} m`}
+                />
+
+                <View style={styles.resultSection}>
+                  <Text style={styles.resultSectionTitle}>
+                    Computed Quantity
+                  </Text>
+
+                  {barDescription === 'bentShort' && (
+                    <>
+                      <Result
+                        label="Bent Bars Along Short Span (cut bar pcs)"
+                        value={
+                          computations.bentBarsAlongShortSpanCutBarPcs === ''
+                            ? '-'
+                            : `${computations.bentBarsAlongShortSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Bent Bars Along Short Span (cut size)"
+                        value={
+                          computations.bentBarsAlongShortSpanCutSize === ''
+                            ? '-'
+                            : `${computations.bentBarsAlongShortSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Bent Bars Along Short Span (wastage/bar)"
+                        value={
+                          computations.bentBarsAlongShortSpanWastageBar === ''
+                            ? '-'
+                            : `${computations.bentBarsAlongShortSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+
+                  {barDescription === 'bentLong' && (
+                    <>
+                      <Result
+                        label="Bent Bars Along Long Span (cut bar pcs)"
+                        value={
+                          computations.bentBarsAlongLongSpanCutBarPcs === ''
+                            ? '-'
+                            : `${computations.bentBarsAlongLongSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Bent Bars Along Long Span (cut size)"
+                        value={
+                          computations.bentBarsAlongLongSpanCutSize === ''
+                            ? '-'
+                            : `${computations.bentBarsAlongLongSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Bent Bars Along Long Span (wastage/bar)"
+                        value={
+                          computations.bentBarsAlongLongSpanWastageBar === ''
+                            ? '-'
+                            : `${computations.bentBarsAlongLongSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+
+                  {barDescription === 'straightShort' && (
+                    <>
+                      <Result
+                        label="Straight Bottom Bars Short Span (cut bar pcs)"
+                        value={
+                          computations.straightBottomBarsShortSpanCutBarPcs ===
+                          ''
+                            ? '-'
+                            : `${computations.straightBottomBarsShortSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Straight Bottom Bars Short Span (cut size)"
+                        value={
+                          computations.straightBottomBarsShortSpanCutSize === ''
+                            ? '-'
+                            : `${computations.straightBottomBarsShortSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Straight Bottom Bars Short Span (wastage/bar)"
+                        value={
+                          computations.straightBottomBarsShortSpanWastageBar ===
+                          ''
+                            ? '-'
+                            : `${computations.straightBottomBarsShortSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+
+                  {barDescription === 'straightLong' && (
+                    <>
+                      <Result
+                        label="Straight Bottom Bars Long Span (cut bar pcs)"
+                        value={
+                          computations.straightBottomBarsLongSpanCutBarPcs ===
+                          ''
+                            ? '-'
+                            : `${computations.straightBottomBarsLongSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Straight Bottom Bars Long Span (cut size)"
+                        value={
+                          computations.straightBottomBarsLongSpanCutSize === ''
+                            ? '-'
+                            : `${computations.straightBottomBarsLongSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Straight Bottom Bars Long Span (wastage/bar)"
+                        value={
+                          computations.straightBottomBarsLongSpanWastageBar ===
+                          ''
+                            ? '-'
+                            : `${computations.straightBottomBarsLongSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+
+                  {barDescription === 'topShort' && (
+                    <>
+                      <Result
+                        label="Top Cut Bars Along Short Span (cut bar pcs)"
+                        value={
+                          computations.topCutBarsAlongShortSpanCutBarPcs === ''
+                            ? '-'
+                            : `${computations.topCutBarsAlongShortSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Top Cut Bars Along Short Span (cut size)"
+                        value={
+                          computations.topCutBarsAlongShortSpanCutSize === ''
+                            ? '-'
+                            : `${computations.topCutBarsAlongShortSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Top Cut Bars Along Short Span (wastage/bar)"
+                        value={
+                          computations.topCutBarsAlongShortSpanWastageBar === ''
+                            ? '-'
+                            : `${computations.topCutBarsAlongShortSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+
+                  {barDescription === 'topLong' && (
+                    <>
+                      <Result
+                        label="Top Cut Bars Along Long Span (cut bar pcs)"
+                        value={
+                          computations.topCutBarsAlongLongSpanCutBarPcs === ''
+                            ? '-'
+                            : `${computations.topCutBarsAlongLongSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Top Cut Bars Along Long Span (cut size)"
+                        value={
+                          computations.topCutBarsAlongLongSpanCutSize === ''
+                            ? '-'
+                            : `${computations.topCutBarsAlongLongSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Top Cut Bars Along Long Span (wastage/bar)"
+                        value={
+                          computations.topCutBarsAlongLongSpanWastageBar === ''
+                            ? '-'
+                            : `${computations.topCutBarsAlongLongSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+
+                  {barDescription === 'tempShort' && (
+                    <>
+                      <Result
+                        label="Temp Bars Along Short Span (cut bar pcs)"
+                        value={
+                          computations.tempBarsAlongShortSpanCutBarPcs === ''
+                            ? '-'
+                            : `${computations.tempBarsAlongShortSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Temp Bars Along Short Span (cut size)"
+                        value={
+                          computations.tempBarsAlongShortSpanCutSize === ''
+                            ? '-'
+                            : `${computations.tempBarsAlongShortSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Temp Bars Along Short Span (wastage/bar)"
+                        value={
+                          computations.tempBarsAlongShortSpanWastageBar === ''
+                            ? '-'
+                            : `${computations.tempBarsAlongShortSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+
+                  {barDescription === 'tempLong' && (
+                    <>
+                      <Result
+                        label="Temp Bars Along Long Span (cut bar pcs)"
+                        value={
+                          computations.tempBarsAlongLongSpanCutBarPcs === ''
+                            ? '-'
+                            : `${computations.tempBarsAlongLongSpanCutBarPcs} pcs`
+                        }
+                      />
+
+                      <Result
+                        label="Temp Bars Along Long Span (cut size)"
+                        value={
+                          computations.tempBarsAlongLongSpanCutSize === ''
+                            ? '-'
+                            : `${computations.tempBarsAlongLongSpanCutSize}`
+                        }
+                      />
+
+                      <Result
+                        label="Temp Bars Along Long Span (wastage/bar)"
+                        value={
+                          computations.tempBarsAlongLongSpanWastageBar === ''
+                            ? '-'
+                            : `${computations.tempBarsAlongLongSpanWastageBar}`
+                        }
+                      />
+                    </>
+                  )}
+                </View>
+              </View>
+
+              <View style={[styles.resultCard, { marginTop: 18 }]}>
+                <Text style={styles.resultTitle}>Total Pcs of Bars</Text>
+
+                <Result
+                  label="A. Main Bars Pcs"
+                  value={`${computations.mainBarsPcs} pcs`}
+                />
+
+                <Result
+                  label="A. Main Bars Length"
                   value={
-                    computations.bentBarsAlongShortSpanRemarks === ''
+                    computations.mainBarsLength === ''
                       ? '-'
-                      : computations.bentBarsAlongShortSpanRemarks
+                      : computations.mainBarsLength
                   }
                 />
 
                 <Result
-                  label="Bent Bars Along Short Span (total pcs of steel bar)"
-                  value={
-                    computations.bentBarsAlongShortSpanTotalPcsSteelBar === ''
-                      ? '-'
-                      : `${Number(
-                          computations.bentBarsAlongShortSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
+                  label="A. Main Bars Kgs"
+                  value={`${computations.mainBarsKgs} kg`}
                 />
 
-                {showSteelLength(6) && (
+                <View style={styles.resultSection}>
                   <Result
-                    label="Bent Bars Along Short Span (6m)"
+                    label="B. Temp Bars Pcs"
+                    value={`${computations.tempBarsPcs} pcs`}
+                  />
+
+                  <Result
+                    label="B. Temp Bars Length"
                     value={
-                      computations.bentBarsAlongShortSpan6m === ''
+                      computations.tempBarsLength === ''
                         ? '-'
-                        : `${computations.bentBarsAlongShortSpan6m} m`
+                        : computations.tempBarsLength
                     }
                   />
-                )}
 
-                {showSteelLength(7.5) && (
                   <Result
-                    label="Bent Bars Along Short Span (7.5m)"
-                    value={
-                      computations.bentBarsAlongShortSpan75m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongShortSpan75m} m`
-                    }
+                    label="B. Temp Bars Kgs"
+                    value={`${computations.tempBarsKgs} kg`}
                   />
-                )}
+                </View>
 
-                {showSteelLength(9) && (
+                <View style={styles.resultSection}>
                   <Result
-                    label="Bent Bars Along Short Span (9m)"
-                    value={
-                      computations.bentBarsAlongShortSpan9m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongShortSpan9m} m`
-                    }
+                    label="Total #16 G.I Wire (kg)"
+                    value={`${Number(computations.totalGIWireKg || 0).toFixed(
+                      2,
+                    )} kg`}
                   />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Bent Bars Along Short Span (10.5m)"
-                    value={
-                      computations.bentBarsAlongShortSpan105m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongShortSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Bent Bars Along Short Span (12m)"
-                    value={
-                      computations.bentBarsAlongShortSpan12m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongShortSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Bent Bars Along Short Span (minimum wastage)"
-                  value={
-                    computations.bentBarsAlongShortSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.bentBarsAlongShortSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-
-            {barDescription === 'bentLong' && (
-              <>
-                <Result
-                  label="Bent Bars Along Long Span (# pcs from length/# of bars)"
-                  value={
-                    computations.bentBarsAlongLongSpanPcsFromLengthBars === ''
-                      ? '-'
-                      : `${computations.bentBarsAlongLongSpanPcsFromLengthBars} pcs`
-                  }
-                />
-
-                <Result
-                  label="Bent Bars Along Long Span (remarks)"
-                  value={
-                    computations.bentBarsAlongLongSpanRemarks === ''
-                      ? '-'
-                      : computations.bentBarsAlongLongSpanRemarks
-                  }
-                />
-
-                <Result
-                  label="Bent Bars Along Long Span (total pcs of steel bar)"
-                  value={
-                    computations.bentBarsAlongLongSpanTotalPcsSteelBar === ''
-                      ? '-'
-                      : `${Number(
-                          computations.bentBarsAlongLongSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
-                />
-
-                {showSteelLength(6) && (
-                  <Result
-                    label="Bent Bars Along Long Span (6m)"
-                    value={
-                      computations.bentBarsAlongLongSpan6m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpan6m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(7.5) && (
-                  <Result
-                    label="Bent Bars Along Long Span (7.5m)"
-                    value={
-                      computations.bentBarsAlongLongSpan75m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpan75m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(9) && (
-                  <Result
-                    label="Bent Bars Along Long Span (9m)"
-                    value={
-                      computations.bentBarsAlongLongSpan9m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpan9m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Bent Bars Along Long Span (10.5m)"
-                    value={
-                      computations.bentBarsAlongLongSpan105m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Bent Bars Along Long Span (12m)"
-                    value={
-                      computations.bentBarsAlongLongSpan12m === ''
-                        ? '-'
-                        : `${computations.bentBarsAlongLongSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Bent Bars Along Long Span (minimum wastage)"
-                  value={
-                    computations.bentBarsAlongLongSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.bentBarsAlongLongSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-
-            {barDescription === 'straightShort' && (
-              <>
-                <Result
-                  label="Straight Bottom Bars (Short Span) (# pcs from length/# of bars)"
-                  value={
-                    computations.straightBottomBarsShortSpanPcsFromLengthBars ===
-                    ''
-                      ? '-'
-                      : `${computations.straightBottomBarsShortSpanPcsFromLengthBars} pcs`
-                  }
-                />
-
-                <Result
-                  label="Straight Bottom Bars (Short Span) (remarks)"
-                  value={
-                    computations.straightBottomBarsShortSpanRemarks === ''
-                      ? '-'
-                      : computations.straightBottomBarsShortSpanRemarks
-                  }
-                />
-
-                <Result
-                  label="Straight Bottom Bars (Short Span) (total pcs of steel bar)"
-                  value={
-                    computations.straightBottomBarsShortSpanTotalPcsSteelBar ===
-                    ''
-                      ? '-'
-                      : `${Number(
-                          computations.straightBottomBarsShortSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
-                />
-
-                {showSteelLength(6) && (
-                  <Result
-                    label="Straight Bottom Bars (Short Span) (6m)"
-                    value={
-                      computations.straightBottomBarsShortSpan6m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpan6m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(7.5) && (
-                  <Result
-                    label="Straight Bottom Bars (Short Span) (7.5m)"
-                    value={
-                      computations.straightBottomBarsShortSpan75m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpan75m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(9) && (
-                  <Result
-                    label="Straight Bottom Bars (Short Span) (9m)"
-                    value={
-                      computations.straightBottomBarsShortSpan9m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpan9m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Straight Bottom Bars (Short Span) (10.5m)"
-                    value={
-                      computations.straightBottomBarsShortSpan105m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Straight Bottom Bars (Short Span) (12m)"
-                    value={
-                      computations.straightBottomBarsShortSpan12m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsShortSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Straight Bottom Bars (Short Span) (minimum wastage)"
-                  value={
-                    computations.straightBottomBarsShortSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.straightBottomBarsShortSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-
-            {barDescription === 'straightLong' && (
-              <>
-                <Result
-                  label="Straight Bottom Bars (Long Span) (# pcs from length/# of bars)"
-                  value={
-                    computations.straightBottomBarsLongSpanPcsFromLengthBars ===
-                    ''
-                      ? '-'
-                      : `${computations.straightBottomBarsLongSpanPcsFromLengthBars} pcs`
-                  }
-                />
-
-                <Result
-                  label="Straight Bottom Bars (Long Span) (remarks)"
-                  value={
-                    computations.straightBottomBarsLongSpanRemarks === ''
-                      ? '-'
-                      : computations.straightBottomBarsLongSpanRemarks
-                  }
-                />
-
-                <Result
-                  label="Straight Bottom Bars (Long Span) (total pcs of steel bar)"
-                  value={
-                    computations.straightBottomBarsLongSpanTotalPcsSteelBar ===
-                    ''
-                      ? '-'
-                      : `${Number(
-                          computations.straightBottomBarsLongSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
-                />
-
-                {showSteelLength(6) && (
-                  <Result
-                    label="Straight Bottom Bars (Long Span) (6m)"
-                    value={
-                      computations.straightBottomBarsLongSpan6m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpan6m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(7.5) && (
-                  <Result
-                    label="Straight Bottom Bars (Long Span) (7.5m)"
-                    value={
-                      computations.straightBottomBarsLongSpan75m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpan75m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(9) && (
-                  <Result
-                    label="Straight Bottom Bars (Long Span) (9m)"
-                    value={
-                      computations.straightBottomBarsLongSpan9m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpan9m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Straight Bottom Bars (Long Span) (10.5m)"
-                    value={
-                      computations.straightBottomBarsLongSpan105m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Straight Bottom Bars (Long Span) (12m)"
-                    value={
-                      computations.straightBottomBarsLongSpan12m === ''
-                        ? '-'
-                        : `${computations.straightBottomBarsLongSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Straight Bottom Bars (Long Span) (minimum wastage)"
-                  value={
-                    computations.straightBottomBarsLongSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.straightBottomBarsLongSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-
-            {barDescription === 'topShort' && (
-              <>
-                <Result
-                  label="Top Cut Bars Along Short Span (# pcs from length/# of bars)"
-                  value={
-                    computations.topCutBarsAlongShortSpanPcsFromLengthBars ===
-                    ''
-                      ? '-'
-                      : `${computations.topCutBarsAlongShortSpanPcsFromLengthBars} pcs`
-                  }
-                />
-
-                <Result
-                  label="Top Cut Bars Along Short Span (remarks)"
-                  value={
-                    computations.topCutBarsAlongShortSpanRemarks === ''
-                      ? '-'
-                      : computations.topCutBarsAlongShortSpanRemarks
-                  }
-                />
-
-                <Result
-                  label="Top Cut Bars Along Short Span (total pcs of steel bar)"
-                  value={
-                    computations.topCutBarsAlongShortSpanTotalPcsSteelBar === ''
-                      ? '-'
-                      : `${Number(
-                          computations.topCutBarsAlongShortSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
-                />
-
-                {showSteelLength(6) && (
-                  <Result
-                    label="Top Cut Bars Along Short Span (6m)"
-                    value={
-                      computations.topCutBarsAlongShortSpan6m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpan6m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(7.5) && (
-                  <Result
-                    label="Top Cut Bars Along Short Span (7.5m)"
-                    value={
-                      computations.topCutBarsAlongShortSpan75m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpan75m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(9) && (
-                  <Result
-                    label="Top Cut Bars Along Short Span (9m)"
-                    value={
-                      computations.topCutBarsAlongShortSpan9m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpan9m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Top Cut Bars Along Short Span (10.5m)"
-                    value={
-                      computations.topCutBarsAlongShortSpan105m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Top Cut Bars Along Short Span (12m)"
-                    value={
-                      computations.topCutBarsAlongShortSpan12m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongShortSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Top Cut Bars Along Short Span (minimum wastage)"
-                  value={
-                    computations.topCutBarsAlongShortSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.topCutBarsAlongShortSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-
-            {barDescription === 'topLong' && (
-              <>
-                <Result
-                  label="Top Cut Bars Along Long Span (# pcs from length/# of bars)"
-                  value={
-                    computations.topCutBarsAlongLongSpanPcsFromLengthBars === ''
-                      ? '-'
-                      : `${computations.topCutBarsAlongLongSpanPcsFromLengthBars} pcs`
-                  }
-                />
-
-                <Result
-                  label="Top Cut Bars Along Long Span (remarks)"
-                  value={
-                    computations.topCutBarsAlongLongSpanRemarks === ''
-                      ? '-'
-                      : computations.topCutBarsAlongLongSpanRemarks
-                  }
-                />
-
-                <Result
-                  label="Top Cut Bars Along Long Span (total pcs of steel bar)"
-                  value={
-                    computations.topCutBarsAlongLongSpanTotalPcsSteelBar === ''
-                      ? '-'
-                      : `${Number(
-                          computations.topCutBarsAlongLongSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
-                />
-
-                {showSteelLength(6) && (
-                  <Result
-                    label="Top Cut Bars Along Long Span (6m)"
-                    value={
-                      computations.topCutBarsAlongLongSpan6m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpan6m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(7.5) && (
-                  <Result
-                    label="Top Cut Bars Along Long Span (7.5m)"
-                    value={
-                      computations.topCutBarsAlongLongSpan75m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpan75m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(9) && (
-                  <Result
-                    label="Top Cut Bars Along Long Span (9m)"
-                    value={
-                      computations.topCutBarsAlongLongSpan9m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpan9m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Top Cut Bars Along Long Span (10.5m)"
-                    value={
-                      computations.topCutBarsAlongLongSpan105m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Top Cut Bars Along Long Span (12m)"
-                    value={
-                      computations.topCutBarsAlongLongSpan12m === ''
-                        ? '-'
-                        : `${computations.topCutBarsAlongLongSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Top Cut Bars Along Long Span (minimum wastage)"
-                  value={
-                    computations.topCutBarsAlongLongSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.topCutBarsAlongLongSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-
-            {barDescription === 'tempShort' && (
-              <>
-                <Result
-                  label="Temp Bars Along Short Span (# pcs from length/# of bars)"
-                  value={
-                    computations.tempBarsAlongShortSpanPcsFromLengthBars === ''
-                      ? '-'
-                      : `${computations.tempBarsAlongShortSpanPcsFromLengthBars} pcs`
-                  }
-                />
-
-                <Result
-                  label="Temp Bars Along Short Span (remarks)"
-                  value={
-                    computations.tempBarsAlongShortSpanRemarks === ''
-                      ? '-'
-                      : computations.tempBarsAlongShortSpanRemarks
-                  }
-                />
-
-                <Result
-                  label="Temp Bars Along Short Span (total pcs of steel bar)"
-                  value={
-                    computations.tempBarsAlongShortSpanTotalPcsSteelBar === ''
-                      ? '-'
-                      : `${Number(
-                          computations.tempBarsAlongShortSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
-                />
-
-                {showSteelLength(6) && (
-                  <Result
-                    label="Temp Bars Along Short Span (6m)"
-                    value={
-                      computations.tempBarsAlongShortSpan6m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpan6m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(7.5) && (
-                  <Result
-                    label="Temp Bars Along Short Span (7.5m)"
-                    value={
-                      computations.tempBarsAlongShortSpan75m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpan75m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(9) && (
-                  <Result
-                    label="Temp Bars Along Short Span (9m)"
-                    value={
-                      computations.tempBarsAlongShortSpan9m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpan9m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Temp Bars Along Short Span (10.5m)"
-                    value={
-                      computations.tempBarsAlongShortSpan105m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Temp Bars Along Short Span (12m)"
-                    value={
-                      computations.tempBarsAlongShortSpan12m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongShortSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Temp Bars Along Short Span (minimum wastage)"
-                  value={
-                    computations.tempBarsAlongShortSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.tempBarsAlongShortSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-
-            {barDescription === 'tempLong' && (
-              <>
-                <Result
-                  label="Temp Bars Along Long Span (# pcs from length/# of bars)"
-                  value={
-                    computations.tempBarsAlongLongSpanPcsFromLengthBars === ''
-                      ? '-'
-                      : `${computations.tempBarsAlongLongSpanPcsFromLengthBars} pcs`
-                  }
-                />
-
-                <Result
-                  label="Temp Bars Along Long Span (remarks)"
-                  value={
-                    computations.tempBarsAlongLongSpanRemarks === ''
-                      ? '-'
-                      : computations.tempBarsAlongLongSpanRemarks
-                  }
-                />
-
-                <Result
-                  label="Temp Bars Along Long Span (total pcs of steel bar)"
-                  value={
-                    computations.tempBarsAlongLongSpanTotalPcsSteelBar === ''
-                      ? '-'
-                      : `${Number(
-                          computations.tempBarsAlongLongSpanTotalPcsSteelBar,
-                        ).toFixed(2)} pcs`
-                  }
-                />
-
-                {showSteelLength(6) && (
-                  <Result
-                    label="Temp Bars Along Long Span (6m)"
-                    value={
-                      computations.tempBarsAlongLongSpan6m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpan6m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(7.5) && (
-                  <Result
-                    label="Temp Bars Along Long Span (7.5m)"
-                    value={
-                      computations.tempBarsAlongLongSpan75m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpan75m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(9) && (
-                  <Result
-                    label="Temp Bars Along Long Span (9m)"
-                    value={
-                      computations.tempBarsAlongLongSpan9m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpan9m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(10.5) && (
-                  <Result
-                    label="Temp Bars Along Long Span (10.5m)"
-                    value={
-                      computations.tempBarsAlongLongSpan105m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpan105m} m`
-                    }
-                  />
-                )}
-
-                {showSteelLength(12) && (
-                  <Result
-                    label="Temp Bars Along Long Span (12m)"
-                    value={
-                      computations.tempBarsAlongLongSpan12m === ''
-                        ? '-'
-                        : `${computations.tempBarsAlongLongSpan12m} m`
-                    }
-                  />
-                )}
-
-                <Result
-                  label="Temp Bars Along Long Span (minimum wastage)"
-                  value={
-                    computations.tempBarsAlongLongSpanMinimumWastage === 0
-                      ? '-'
-                      : `${computations.tempBarsAlongLongSpanMinimumWastage.toFixed(
-                          2,
-                        )} m`
-                  }
-                />
-              </>
-            )}
-          </View> */}
+                </View>
+              </View>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -2098,5 +1385,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#e2e8f0',
     marginBottom: 10,
+  },
+
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

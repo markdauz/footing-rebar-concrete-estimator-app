@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -26,6 +27,9 @@ const isAndroid = Platform.OS === 'android';
 
 export default function Slab() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [area, setArea] = useState('');
 
@@ -78,12 +82,40 @@ export default function Slab() {
   const sand = volume ? (volume * 0.5).toFixed(2) : '0.00';
   const gravel = volume ? volume.toFixed(2) : '0.00';
 
+  useEffect(() => {
+    const effectiveThickness =
+      thickness === 'custom' ? customThickness : thickness;
+
+    const effectiveMix = mix === 'custom' ? customMix : mix;
+
+    const hasRequiredValues = area && effectiveThickness && effectiveMix;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [area, thickness, customThickness, mix, customMix]);
+
   const reset = () => {
     setArea('');
     setThickness(null);
     setMix(null);
     setCustomThickness('');
     setCustomMix('');
+
+    setShowResults(false);
+    setIsLoading(false);
   };
 
   const renderAndroidModal = (
@@ -262,13 +294,20 @@ export default function Slab() {
               <Text style={styles.resetText}>Reset</Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Results</Text>
-            <Result label="Cement" value={`${cement} bags`} />
-            <Result label="Sand" value={`${sand} m³`} />
-            <Result label="Gravel" value={`${gravel} m³`} />
-          </View>
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
+            </View>
+          )}
+          {showResults && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultTitle}>Results</Text>
+              <Result label="Cement" value={`${cement} bags`} />
+              <Result label="Sand" value={`${sand} m³`} />
+              <Result label="Gravel" value={`${gravel} m³`} />
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -440,5 +479,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

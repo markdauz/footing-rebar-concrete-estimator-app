@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,6 +18,9 @@ import {
 
 export default function FootingTieBeams() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [excavationHeight, setExcavationHeight] = useState('');
   const [width, setWidth] = useState('');
@@ -73,12 +77,36 @@ export default function FootingTieBeams() {
     return totalExcavation - widthValue * depthValue * lengthValue * beams;
   }, [totalExcavation, width, depth, length, noOfBeams]);
 
+  useEffect(() => {
+    const hasRequiredValues =
+      excavationHeight && width && depth && length && noOfBeams;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [excavationHeight, width, depth, length, noOfBeams]);
+
   const reset = () => {
     setExcavationHeight('');
     setWidth('');
     setDepth('');
     setLength('');
     setNoOfBeams('');
+
+    setShowResults(false);
+    setIsLoading(false);
   };
 
   return (
@@ -193,19 +221,28 @@ export default function FootingTieBeams() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Computed Quantity</Text>
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
+            </View>
+          )}
 
-            <Result
-              label="Total Excavation"
-              value={`${totalExcavation.toFixed(3)} m³`}
-            />
+          {showResults && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultTitle}>Computed Quantity</Text>
 
-            <Result
-              label="Total Backfill"
-              value={`${totalBackfill.toFixed(3)} m³`}
-            />
-          </View>
+              <Result
+                label="Total Excavation"
+                value={`${totalExcavation.toFixed(3)} m³`}
+              />
+
+              <Result
+                label="Total Backfill"
+                value={`${totalBackfill.toFixed(3)} m³`}
+              />
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -345,5 +382,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     fontSize: 15,
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

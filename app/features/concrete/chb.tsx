@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -37,6 +38,9 @@ const isAndroid = Platform.OS === 'android';
 
 export default function CHB() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [thicknessMode, setThicknessMode] = useState<ThicknessValue | null>(
     null,
@@ -132,12 +136,39 @@ export default function CHB() {
     return area * cement;
   }, [wallArea, cement]);
 
+  useEffect(() => {
+    const effectiveThicknessValue =
+      thicknessMode === 'custom' ? thickness : thicknessMode;
+
+    const hasRequiredValues =
+      effectiveThicknessValue && webs && cementClass && wallArea;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [thicknessMode, thickness, webs, cementClass, wallArea]);
+
   const reset = () => {
     setThickness('');
     setThicknessMode(null);
     setWebs(null);
     setCementClass(null);
     setWallArea('');
+
+    setShowResults(false);
+    setIsLoading(false);
   };
 
   function renderAndroidModal<T>(
@@ -345,22 +376,34 @@ export default function CHB() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Results</Text>
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
+            </View>
+          )}
 
-            <Result label="End Web" value={String(endWeb || '-')} />
-            <Result label="Inner Web" value={String(innerWeb || '-')} />
-            <Result label="Shell" value={String(shell || '-')} />
-            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
-            <Result label="Vol Between" value={`${volBetween.toFixed(3)} m³`} />
-            <Result label="Total Vol" value={`${totalVol.toFixed(4)} m³`} />
-            <Result label="Mixture" value={`${cement.toFixed(3)} m³`} />
-            <Result label="Cement Bags" value={`${bags.toFixed(3)}`} />
-            <Result
-              label="Sand"
-              value={`${parseFloat(totalVol.toFixed(4)) * parseFloat(wallArea || '0')} m³`}
-            />
-          </View>
+          {showResults && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultTitle}>Results</Text>
+
+              <Result label="End Web" value={String(endWeb || '-')} />
+              <Result label="Inner Web" value={String(innerWeb || '-')} />
+              <Result label="Shell" value={String(shell || '-')} />
+              <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
+              <Result
+                label="Vol Between"
+                value={`${volBetween.toFixed(3)} m³`}
+              />
+              <Result label="Total Vol" value={`${totalVol.toFixed(4)} m³`} />
+              <Result label="Mixture" value={`${cement.toFixed(3)} m³`} />
+              <Result label="Cement Bags" value={`${bags.toFixed(3)}`} />
+              <Result
+                label="Sand"
+                value={`${parseFloat(totalVol.toFixed(4)) * parseFloat(wallArea || '0')} m³`}
+              />
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -532,5 +575,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

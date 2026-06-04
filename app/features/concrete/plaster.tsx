@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -33,6 +34,9 @@ const isAndroid = Platform.OS === 'android';
 
 export default function Plaster() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [area, setArea] = useState('');
   const [thickness, setThickness] = useState<ThicknessType>(null);
@@ -97,12 +101,40 @@ export default function Plaster() {
 
   const twoSidesSand = sand !== '0.00' ? (Number(sand) * 2).toFixed(2) : '0.00';
 
+  useEffect(() => {
+    const effectiveThickness =
+      thickness === 'custom' ? customThickness : thickness;
+
+    const effectiveMix = mix === 'custom' ? customMix : mix;
+
+    const hasRequiredValues = area && effectiveThickness && effectiveMix;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [area, thickness, customThickness, mix, customMix]);
+
   const reset = () => {
     setArea('');
     setThickness(null);
     setCustomThickness('');
     setMix(null);
     setCustomMix('');
+
+    setShowResults(false);
+    setIsLoading(false);
   };
 
   function renderModal<T extends string>(
@@ -272,18 +304,31 @@ export default function Plaster() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Results</Text>
-            <Result
-              label="Volume"
-              value={`${volume.toFixed(3)} m³`}
-              highlight
-            />
-            <Result label="Cement" value={`${cement} bags`} />
-            <Result label="Sand" value={`${sand} m³`} />
-            <Result label="Cement (2 sides)" value={`${twoSidesCement} bags`} />
-            <Result label="Sand (2 sides)" value={`${twoSidesSand} m³`} />
-          </View>
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
+            </View>
+          )}
+
+          {showResults && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultTitle}>Results</Text>
+
+              <Result
+                label="Volume"
+                value={`${volume.toFixed(3)} m³`}
+                highlight
+              />
+              <Result label="Cement" value={`${cement} bags`} />
+              <Result label="Sand" value={`${sand} m³`} />
+              <Result
+                label="Cement (2 sides)"
+                value={`${twoSidesCement} bags`}
+              />
+              <Result label="Sand (2 sides)" value={`${twoSidesSand} m³`} />
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -394,5 +439,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -34,6 +35,9 @@ const isAndroid = Platform.OS === 'android';
 
 export default function Mortar() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [area, setArea] = useState('');
 
@@ -99,12 +103,40 @@ export default function Mortar() {
     return getSand(volume, numericArea).toFixed(2);
   }, [volume, numericArea]);
 
+  useEffect(() => {
+    const effectiveThickness =
+      thickness === 'custom' ? customThickness : thickness;
+
+    const effectiveMix = mix === 'custom' ? customMix : mix;
+
+    const hasRequiredValues = effectiveThickness && area && effectiveMix;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [area, thickness, customThickness, mix, customMix]);
+
   const reset = () => {
     setArea('');
     setThickness(null);
     setCustomThickness('');
     setMix(null);
     setCustomMix('');
+
+    setShowResults(false);
+    setIsLoading(false);
   };
 
   function renderModal<T>(
@@ -274,14 +306,24 @@ export default function Mortar() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Results</Text>
-            <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
-            <Result label="Area" value={`${area || 0} sqm`} />
-            <Result label="Total CHB" value={`${totalPcs}`} />
-            <Result label="Cement" value={`${cement} bags`} />
-            <Result label="Sand" value={`${sand} m³`} />
-          </View>
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
+            </View>
+          )}
+
+          {showResults && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultTitle}>Results</Text>
+
+              <Result label="Volume" value={`${volume.toFixed(3)} m³`} />
+              <Result label="Area" value={`${area || 0} sqm`} />
+              <Result label="Total CHB" value={`${totalPcs}`} />
+              <Result label="Cement" value={`${cement} bags`} />
+              <Result label="Sand" value={`${sand} m³`} />
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -390,5 +432,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

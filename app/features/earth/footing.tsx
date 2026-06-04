@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,6 +18,9 @@ import {
 
 export default function Footing() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [excavationHeight, setExcavationHeight] = useState('');
 
@@ -280,6 +284,40 @@ export default function Footing() {
     ).toFixed(2);
   }, [targetDays, ratePerDay, numberOfLaborers]);
 
+  useEffect(() => {
+    const hasRequiredValues =
+      excavationHeight &&
+      footingWidth &&
+      footingLength &&
+      footingThickness &&
+      numberOfFooting;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [
+    excavationHeight,
+    footingWidth,
+    footingLength,
+    footingThickness,
+    numberOfFooting,
+    columnWidth,
+    columnLength,
+    numberOfColumn,
+  ]);
+
   const reset = () => {
     setExcavationHeight('');
     setFootingWidth('');
@@ -474,29 +512,40 @@ export default function Footing() {
             </TouchableOpacity>
           </View>
 
-          <ResultCard
-            title="Without Formworks"
-            excavation={excavationWithoutFormworks}
-            backfill={backfillWithoutFormworks}
-          />
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
+            </View>
+          )}
 
-          <ResultCard
-            title="With Formworks All Sides"
-            excavation={excavationWithFormworks}
-            backfill={backfillWithFormworks}
-          />
+          {showResults && (
+            <>
+              <ResultCard
+                title="Without Formworks"
+                excavation={excavationWithoutFormworks}
+                backfill={backfillWithoutFormworks}
+              />
 
-          <ResultCard
-            title="Without Working Space"
-            excavation={excavationWithoutWorkingSpace}
-            backfill={backfillWithoutWorkingSpace}
-          />
+              <ResultCard
+                title="With Formworks All Sides"
+                excavation={excavationWithFormworks}
+                backfill={backfillWithFormworks}
+              />
 
-          <ResultCard
-            title="With Working Space"
-            excavation={excavationWithWorkingSpace}
-            backfill={backfillWithWorkingSpace}
-          />
+              <ResultCard
+                title="Without Working Space"
+                excavation={excavationWithoutWorkingSpace}
+                backfill={backfillWithoutWorkingSpace}
+              />
+
+              <ResultCard
+                title="With Working Space"
+                excavation={excavationWithWorkingSpace}
+                backfill={backfillWithWorkingSpace}
+              />
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -720,5 +769,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     fontSize: 15,
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

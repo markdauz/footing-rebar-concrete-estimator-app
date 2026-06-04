@@ -16,8 +16,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -39,6 +40,9 @@ const isAndroid = Platform.OS === 'android';
 
 export default function SlabOnFill() {
   const insets = useSafeAreaInsets();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const [width, setWidth] = useState('');
   const [length, setLength] = useState('');
@@ -470,6 +474,35 @@ export default function SlabOnFill() {
     };
   }, [tempCutSize, tempCutBarPcs, sets, effectiveSteelLength]);
 
+  const hasRequiredValues =
+    width &&
+    length &&
+    sets &&
+    effectiveThickness &&
+    effectiveSpacingWidth &&
+    effectiveSpacingLength &&
+    effectiveMainBars &&
+    effectiveTempBars &&
+    effectiveSteelLength;
+
+  useEffect(() => {
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [hasRequiredValues]);
+
   const reset = () => {
     setWidth('');
     setLength('');
@@ -490,6 +523,9 @@ export default function SlabOnFill() {
     setSteelLength('');
 
     setKgsPerCum('');
+
+    setShowResults(false);
+    setIsLoading(false);
   };
 
   function renderAndroidModal<T>(
@@ -1037,184 +1073,202 @@ export default function SlabOnFill() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Results</Text>
-
-            <Result label="Volume" value={`${volume.toFixed(3)} cu.m`} />
-
-            <Result
-              label="Main Bars + 9d Hook Cut Bar Pcs"
-              value={`${mainCutBarPcs}`}
-            />
-
-            <Result label="Main Bars Cut Size" value={`${mainCutSize}`} />
-
-            <Result label="Main Bars Wastage/Bar" value={`${mainWastage}`} />
-
-            <Result
-              label="Temp Bars + 9d Hook Cut Bar Pcs"
-              value={`${tempCutBarPcs}`}
-            />
-
-            <Result label="Temp Bars Cut Size" value={`${tempCutSize}`} />
-
-            <Result label="Temp Bars Wastage/Bar" value={`${tempWastage}`} />
-
-            <Result
-              label="Total Pcs of Bars (Main)"
-              value={`${mainTotalBars}`}
-            />
-
-            <Result
-              label="Steel Length"
-              value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
-            />
-
-            <Result label="Bars (Main) Kgs" value={`${mainKgs}`} />
-
-            <Result
-              label="Total Pcs of Bars (Temp)"
-              value={`${tempTotalBars}`}
-            />
-
-            <Result
-              label="Steel Length"
-              value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
-            />
-
-            <Result label="Bars (Temp) Kgs" value={`${tempKgs}`} />
-
-            <Result label="#16 G.I Wire (kg)" value={`${giWire}`} />
-
-            <Result
-              label="Polyethylene Sheet (sqm)"
-              value={`${polyethyleneSheet}`}
-            />
-
-            <Result
-              label="Computed Quantity via Volume Method"
-              value={kgsPerCum && Number(kgsPerCum) > 0 ? kgsPerCum : '90'}
-            />
-
-            <Result label={`Kgs`} value={`${computedKgs}`} />
-
-            <Result label="Tie Wire (kgs)" value={`${tieWire}`} />
-
-            <Result
-              label="Steel Length"
-              value={effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'}
-            />
-
-            <Result label="PCS" value={`${computedPcs}`} />
-          </View>
-          {/*  */}
-          <View style={[styles.resultCard, { marginTop: 18 }]}>
-            <View style={styles.overviewCard}>
-              <Text style={styles.resultTitle}>
-                Overview of Wastage from Different Steel Length
-              </Text>
-
-              {
-                <View style={styles.overviewSection}>
-                  <Text style={styles.overviewHeading}>
-                    Main Bars + 9d Hook
-                  </Text>
-
-                  <Result
-                    label="# pcs from length/# of bars"
-                    value={`${mainBarsOverview.pcsFromLength}`}
-                  />
-
-                  <Result label="Remarks" value={mainBarsOverview.remarks} />
-
-                  <Result
-                    label="Total pcs of steel bar"
-                    value={mainBarsOverview.totalPcs.toFixed(2)}
-                  />
-
-                  <Result
-                    label="6m Wastage"
-                    value={mainBarsOverview.wastages[0].toFixed(2)}
-                  />
-
-                  <Result
-                    label="7.5m Wastage"
-                    value={mainBarsOverview.wastages[1].toFixed(2)}
-                  />
-
-                  <Result
-                    label="9m Wastage"
-                    value={mainBarsOverview.wastages[2].toFixed(2)}
-                  />
-
-                  <Result
-                    label="10.5m Wastage"
-                    value={mainBarsOverview.wastages[3].toFixed(2)}
-                  />
-
-                  <Result
-                    label="12m Wastage"
-                    value={mainBarsOverview.wastages[4].toFixed(2)}
-                  />
-
-                  <Result
-                    label="Minimum Wastage"
-                    value={mainBarsOverview.minimum.toFixed(2)}
-                  />
-                </View>
-              }
-
-              {
-                <View style={styles.overviewSection}>
-                  <Text style={styles.overviewHeading}>
-                    Temp Bars + 9d Hook
-                  </Text>
-
-                  <Result
-                    label="# pcs from length/# of bars"
-                    value={`${tempBarsOverview.pcsFromLength}`}
-                  />
-
-                  <Result label="Remarks" value={tempBarsOverview.remarks} />
-
-                  <Result
-                    label="Total pcs of steel bar"
-                    value={tempBarsOverview.totalPcs.toFixed(2)}
-                  />
-
-                  <Result
-                    label="6m Wastage"
-                    value={tempBarsOverview.wastages[0].toFixed(2)}
-                  />
-
-                  <Result
-                    label="7.5m Wastage"
-                    value={tempBarsOverview.wastages[1].toFixed(2)}
-                  />
-
-                  <Result
-                    label="9m Wastage"
-                    value={tempBarsOverview.wastages[2].toFixed(2)}
-                  />
-
-                  <Result
-                    label="10.5m Wastage"
-                    value={tempBarsOverview.wastages[3].toFixed(2)}
-                  />
-
-                  <Result
-                    label="12m Wastage"
-                    value={tempBarsOverview.wastages[4].toFixed(2)}
-                  />
-
-                  <Result
-                    label="Minimum Wastage"
-                    value={tempBarsOverview.minimum.toFixed(2)}
-                  />
-                </View>
-              }
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
             </View>
-          </View>
+          )}
+
+          {showResults && (
+            <>
+              <View style={styles.resultCard}>
+                <Text style={styles.resultTitle}>Results</Text>
+
+                <Result label="Volume" value={`${volume.toFixed(3)} cu.m`} />
+
+                <Result
+                  label="Main Bars + 9d Hook Cut Bar Pcs"
+                  value={`${mainCutBarPcs}`}
+                />
+
+                <Result label="Main Bars Cut Size" value={`${mainCutSize}`} />
+
+                <Result
+                  label="Main Bars Wastage/Bar"
+                  value={`${mainWastage}`}
+                />
+
+                <Result
+                  label="Temp Bars + 9d Hook Cut Bar Pcs"
+                  value={`${tempCutBarPcs}`}
+                />
+
+                <Result label="Temp Bars Cut Size" value={`${tempCutSize}`} />
+
+                <Result
+                  label="Temp Bars Wastage/Bar"
+                  value={`${tempWastage}`}
+                />
+
+                <Result
+                  label="Total Pcs of Bars (Main)"
+                  value={`${mainTotalBars}`}
+                />
+
+                <Result
+                  label="Steel Length"
+                  value={
+                    effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'
+                  }
+                />
+
+                <Result label="Bars (Main) Kgs" value={`${mainKgs}`} />
+
+                <Result
+                  label="Total Pcs of Bars (Temp)"
+                  value={`${tempTotalBars}`}
+                />
+
+                <Result
+                  label="Steel Length"
+                  value={
+                    effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'
+                  }
+                />
+
+                <Result label="Bars (Temp) Kgs" value={`${tempKgs}`} />
+
+                <Result label="#16 G.I Wire (kg)" value={`${giWire}`} />
+
+                <Result
+                  label="Polyethylene Sheet (sqm)"
+                  value={`${polyethyleneSheet}`}
+                />
+
+                <Result
+                  label="Computed Quantity via Volume Method"
+                  value={kgsPerCum && Number(kgsPerCum) > 0 ? kgsPerCum : '90'}
+                />
+
+                <Result label={`Kgs`} value={`${computedKgs}`} />
+
+                <Result label="Tie Wire (kgs)" value={`${tieWire}`} />
+
+                <Result
+                  label="Steel Length"
+                  value={
+                    effectiveSteelLength ? `@${effectiveSteelLength}m` : '-'
+                  }
+                />
+
+                <Result label="PCS" value={`${computedPcs}`} />
+              </View>
+              <View style={[styles.resultCard, { marginTop: 18 }]}>
+                <View style={styles.overviewCard}>
+                  <Text style={styles.resultTitle}>
+                    Overview of Wastage from Different Steel Length
+                  </Text>
+
+                  <View style={styles.overviewSection}>
+                    <Text style={styles.overviewHeading}>
+                      Main Bars + 9d Hook
+                    </Text>
+
+                    <Result
+                      label="# pcs from length/# of bars"
+                      value={`${mainBarsOverview.pcsFromLength}`}
+                    />
+
+                    <Result label="Remarks" value={mainBarsOverview.remarks} />
+
+                    <Result
+                      label="Total pcs of steel bar"
+                      value={mainBarsOverview.totalPcs.toFixed(2)}
+                    />
+
+                    <Result
+                      label="6m Wastage"
+                      value={mainBarsOverview.wastages[0].toFixed(2)}
+                    />
+
+                    <Result
+                      label="7.5m Wastage"
+                      value={mainBarsOverview.wastages[1].toFixed(2)}
+                    />
+
+                    <Result
+                      label="9m Wastage"
+                      value={mainBarsOverview.wastages[2].toFixed(2)}
+                    />
+
+                    <Result
+                      label="10.5m Wastage"
+                      value={mainBarsOverview.wastages[3].toFixed(2)}
+                    />
+
+                    <Result
+                      label="12m Wastage"
+                      value={mainBarsOverview.wastages[4].toFixed(2)}
+                    />
+
+                    <Result
+                      label="Minimum Wastage"
+                      value={mainBarsOverview.minimum.toFixed(2)}
+                    />
+                  </View>
+
+                  <View style={styles.overviewSection}>
+                    <Text style={styles.overviewHeading}>
+                      Temp Bars + 9d Hook
+                    </Text>
+
+                    <Result
+                      label="# pcs from length/# of bars"
+                      value={`${tempBarsOverview.pcsFromLength}`}
+                    />
+
+                    <Result label="Remarks" value={tempBarsOverview.remarks} />
+
+                    <Result
+                      label="Total pcs of steel bar"
+                      value={tempBarsOverview.totalPcs.toFixed(2)}
+                    />
+
+                    <Result
+                      label="6m Wastage"
+                      value={tempBarsOverview.wastages[0].toFixed(2)}
+                    />
+
+                    <Result
+                      label="7.5m Wastage"
+                      value={tempBarsOverview.wastages[1].toFixed(2)}
+                    />
+
+                    <Result
+                      label="9m Wastage"
+                      value={tempBarsOverview.wastages[2].toFixed(2)}
+                    />
+
+                    <Result
+                      label="10.5m Wastage"
+                      value={tempBarsOverview.wastages[3].toFixed(2)}
+                    />
+
+                    <Result
+                      label="12m Wastage"
+                      value={tempBarsOverview.wastages[4].toFixed(2)}
+                    />
+
+                    <Result
+                      label="Minimum Wastage"
+                      value={tempBarsOverview.minimum.toFixed(2)}
+                    />
+                  </View>
+                </View>
+              </View>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -1389,5 +1443,16 @@ const styles = StyleSheet.create({
     color: '#2563EB',
     marginTop: 6,
     fontSize: 13,
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });

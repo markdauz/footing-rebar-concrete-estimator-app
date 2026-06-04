@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -51,6 +52,9 @@ export default function Footing() {
     barsL: '',
   };
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
   const [input, setInput] = useState(EMPTY_INPUT);
 
   const [selectedOption, setSelectedOption] = useState<OptionValue | null>(
@@ -97,6 +101,34 @@ export default function Footing() {
   const tieWire = useMemo(() => getTieWire(input), [input]);
 
   const volume = useMemo(() => getVolume(input), [input]);
+
+  useEffect(() => {
+    const hasRequiredValues =
+      input.width &&
+      input.length &&
+      input.thickness &&
+      input.diameter &&
+      input.steelLength &&
+      input.quantity &&
+      input.barsW &&
+      input.barsL &&
+      selectedOption;
+
+    if (!hasRequiredValues) {
+      setShowResults(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setShowResults(false);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowResults(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [input, selectedOption]);
 
   const handleReset = () => {
     setInput(EMPTY_INPUT);
@@ -284,43 +316,53 @@ export default function Footing() {
                 />
               </View>
             )}
+            <TouchableOpacity style={styles.reset} onPress={handleReset}>
+              <Text style={styles.resetText}>Reset</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Volume</Text>
-
-            <Text style={styles.resultValue}>
-              {volume ? `${volume} m³` : '-'}
-            </Text>
-          </View>
-
-          {selectedOption === 'A' && (
-            <ResultCard
-              title="Without Bend"
-              subtitle="w/o bend (75mm cover)"
-              cutW={cutSizeW_A}
-              cutL={cutSizeL_A}
-              data={optionA}
-              tieWire={tieWire}
-              color="blue"
-            />
+          {isLoading && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={styles.loaderText}>Calculating...</Text>
+            </View>
           )}
 
-          {selectedOption === 'B' && (
-            <ResultCard
-              title="With Bend"
-              subtitle="w/ bend (75mm cover)"
-              cutW={cutSizeW_B}
-              cutL={cutSizeL_B}
-              data={optionB}
-              tieWire={tieWire}
-              color="green"
-            />
-          )}
+          {showResults && (
+            <>
+              <View style={styles.resultCard}>
+                <Text style={styles.resultTitle}>Volume</Text>
 
-          <TouchableOpacity style={styles.reset} onPress={handleReset}>
-            <Text style={styles.resetText}>Reset</Text>
-          </TouchableOpacity>
+                <Text style={styles.resultValue}>
+                  {volume ? `${volume} m³` : '-'}
+                </Text>
+              </View>
+
+              {selectedOption === 'A' && (
+                <ResultCard
+                  title="Without Bend"
+                  subtitle="w/o bend (75mm cover)"
+                  cutW={cutSizeW_A}
+                  cutL={cutSizeL_A}
+                  data={optionA}
+                  tieWire={tieWire}
+                  color="blue"
+                />
+              )}
+
+              {selectedOption === 'B' && (
+                <ResultCard
+                  title="With Bend"
+                  subtitle="w/ bend (75mm cover)"
+                  cutW={cutSizeW_B}
+                  cutL={cutSizeL_B}
+                  data={optionB}
+                  tieWire={tieWire}
+                  color="green"
+                />
+              )}
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -434,5 +476,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: '#64748b',
+    fontSize: 14,
   },
 });
