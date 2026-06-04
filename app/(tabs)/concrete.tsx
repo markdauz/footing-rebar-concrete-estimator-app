@@ -61,7 +61,7 @@ export default function Concrete() {
           {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="construct-outline" size={26} color="#1e293b" />
+              <Ionicons name="apps-outline" size={26} color="#1e293b" />
             </View>
 
             <Text style={styles.title}>Concrete Calculator</Text>

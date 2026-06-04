@@ -51,7 +51,7 @@ export default function Steel() {
           {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
-              <Ionicons name="grid-outline" size={26} color="#1e293b" />
+              <Ionicons name="cube-outline" size={26} color="#1e293b" />
             </View>
 
             <Text style={styles.title}>Steel Estimates</Text>
