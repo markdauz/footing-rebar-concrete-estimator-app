@@ -1,0 +1,335 @@
+export const getLatTiesDiameter = (mainBarDiameter: string): string => {
+  const diameter = Number(mainBarDiameter);
+
+  if (!mainBarDiameter) {
+    return '';
+  }
+
+  return diameter <= 30 ? '10' : '12';
+};
+
+export const getPcsLatTiesOptionA = ({
+  columnHeight,
+  columnWidth,
+  columnLength,
+  numberOfColumns,
+}: {
+  columnHeight: string;
+  columnWidth: string;
+  columnLength: string;
+  numberOfColumns: string;
+}): string => {
+  const height = Number(columnHeight);
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const columns = Number(numberOfColumns);
+
+  if (!columnHeight) {
+    return '';
+  }
+
+  const maxSide = Math.max(width, length);
+
+  const latTiesPerColumn = Math.round((height - 2.2) / 0.2 - 1 + 22);
+
+  return String(
+    maxSide - 0.08 > 0.15
+      ? latTiesPerColumn * columns * 2
+      : latTiesPerColumn * columns,
+  );
+};
+
+export const getTieWiresOptionA = ({
+  pcsLatTiesOptionA,
+  numberOfBarsA,
+  numberOfBarsB,
+}: {
+  pcsLatTiesOptionA: string;
+  numberOfBarsA: string;
+  numberOfBarsB: string;
+}): string => {
+  if (!pcsLatTiesOptionA) {
+    return '';
+  }
+
+  return String(
+    Number(pcsLatTiesOptionA) *
+      (Number(numberOfBarsA || 0) + Number(numberOfBarsB || 0)),
+  );
+};
+
+export const getPcsLatTiesOptionBOne = ({
+  columnHeight,
+  columnWidth,
+  columnLength,
+  numberOfColumns,
+  mainBarDiameter,
+  latTiesDiameter,
+}: {
+  columnHeight: string;
+  columnWidth: string;
+  columnLength: string;
+  numberOfColumns: string;
+  mainBarDiameter: string;
+  latTiesDiameter: string;
+}): string => {
+  const height = Number(columnHeight);
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const columns = Number(numberOfColumns);
+  const mainBar = Number(mainBarDiameter);
+  const latTies = Number(latTiesDiameter);
+
+  if (!height || !width || !length || !columns || !mainBar || !latTies) {
+    return '';
+  }
+
+  const minValue = Math.min(width, length, mainBar * 0.016, latTies * 0.048);
+
+  if (!minValue || Number.isNaN(minValue)) {
+    return '';
+  }
+
+  const maxSide = Math.max(width, length);
+
+  const pcsPerColumn = Math.round(height / minValue + 1);
+
+  return String(
+    maxSide - 0.08 > 0.15 ? pcsPerColumn * columns * 2 : pcsPerColumn * columns,
+  );
+};
+
+export const getTieWiresOptionBOne = ({
+  pcsLatTiesOptionBOne,
+  numberOfBarsA,
+  numberOfBarsB,
+}: {
+  pcsLatTiesOptionBOne: string;
+  numberOfBarsA: string;
+  numberOfBarsB: string;
+}): string => {
+  if (!pcsLatTiesOptionBOne) {
+    return '';
+  }
+
+  return String(
+    Number(pcsLatTiesOptionBOne) *
+      (Number(numberOfBarsA || 0) + Number(numberOfBarsB || 0)),
+  );
+};
+
+export const getPcsLatTiesOptionBTwo = ({
+  columnHeight,
+  columnWidth,
+  columnLength,
+  numberOfColumns,
+  mainBarDiameter,
+  tieBarDiameter,
+  latTiesDiameter,
+}: {
+  columnHeight: string;
+  columnWidth: string;
+  columnLength: string;
+  numberOfColumns: string;
+  mainBarDiameter: string;
+  tieBarDiameter: string;
+  latTiesDiameter: string;
+}): string => {
+  const height = Number(columnHeight);
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const columns = Number(numberOfColumns);
+  const mainBar = Number(mainBarDiameter);
+  const tieBar = Number(tieBarDiameter);
+  const latTies = Number(latTiesDiameter);
+
+  if (
+    !height ||
+    !width ||
+    !length ||
+    !columns ||
+    !mainBar ||
+    !tieBar ||
+    !latTies
+  ) {
+    return '';
+  }
+
+  const minValue = Math.min(
+    width,
+    length,
+    mainBar * 0.016,
+    tieBar * 0.016,
+    latTies * 0.048,
+  );
+
+  if (!minValue || Number.isNaN(minValue)) {
+    return '';
+  }
+
+  const maxSide = Math.max(width, length);
+
+  const pcsPerColumn = Math.round(height / minValue + 1);
+
+  return String(
+    maxSide - 0.08 > 0.15 ? columns * 2 * pcsPerColumn : columns * pcsPerColumn,
+  );
+};
+
+export const getTieWiresOptionBTwo = ({
+  pcsLatTiesOptionBTwo,
+  numberOfBarsA,
+  numberOfBarsB,
+}: {
+  pcsLatTiesOptionBTwo: string;
+  numberOfBarsA: string;
+  numberOfBarsB: string;
+}): string => {
+  if (!pcsLatTiesOptionBTwo) {
+    return '';
+  }
+
+  return String(
+    Number(pcsLatTiesOptionBTwo) *
+      (Number(numberOfBarsA || 0) + Number(numberOfBarsB || 0)),
+  );
+};
+export const getRequiredSteelLength = (
+  columnHeight: string,
+  mainBarDiameter: string,
+) => {
+  const height = Number(columnHeight);
+  const diameter = Number(mainBarDiameter);
+
+  if (!height || !diameter) {
+    return 0;
+  }
+
+  return height + 0.4 - 0.075 - 2 * 0.016 + 0.016 * diameter;
+};
+export const getWaste = (barLength: number, requiredSteelLength: number) => {
+  if (!requiredSteelLength) {
+    return 0;
+  }
+
+  if (barLength / requiredSteelLength < 1) {
+    return (
+      Math.trunc(requiredSteelLength / barLength + 1) * barLength -
+      requiredSteelLength -
+      0.6
+    );
+  }
+
+  return (
+    barLength -
+    Math.trunc(barLength / requiredSteelLength) * requiredSteelLength
+  );
+};
+export const getWasteRemark = (waste: number) => {
+  if (waste > 0.6) {
+    return 'X';
+  }
+
+  if (waste < 0.5) {
+    return 'Best';
+  }
+
+  return 'Good';
+};
+
+export const STEEL_WEIGHT: Record<number, number> = {
+  10: 0.616,
+  12: 0.888,
+  16: 1.579,
+  20: 2.466,
+  25: 3.854,
+  28: 4.833,
+  32: 6.313,
+  36: 7.991,
+  40: 9.865,
+  50: 15.413,
+};
+
+export const getL24 = (
+  steelLength: string,
+  requiredSteelLength: number,
+): number => {
+  const steel = Number(steelLength);
+
+  if (!steel || !requiredSteelLength) {
+    return 0;
+  }
+
+  if (steel / requiredSteelLength < 1) {
+    return Math.round(
+      (Math.trunc(requiredSteelLength / steel + 1) * steel) / steel,
+    );
+  }
+
+  return Math.trunc(steel / requiredSteelLength);
+};
+
+export const getL26 = ({
+  numberOfBarsA,
+  numberOfColumns,
+  steelLength,
+  requiredSteelLength,
+  l24,
+}: {
+  numberOfBarsA: string;
+  numberOfColumns: string;
+  steelLength: string;
+  requiredSteelLength: number;
+  l24: number;
+}): number => {
+  const bars = Number(numberOfBarsA);
+  const columns = Number(numberOfColumns);
+  const steel = Number(steelLength);
+
+  if (!bars || !columns || !steel || !requiredSteelLength || !l24) {
+    return 0;
+  }
+
+  if (steel / requiredSteelLength < 1) {
+    return bars * Math.trunc(requiredSteelLength / steel + 1) * columns;
+  }
+
+  return columns * (bars / l24);
+};
+
+export const getL27 = ({
+  l26,
+  steelLength,
+  mainBarDiameter,
+}: {
+  l26: number;
+  steelLength: string;
+  mainBarDiameter: string;
+}): number => {
+  const steel = Number(steelLength);
+  const diameter = Number(mainBarDiameter);
+
+  const weight = STEEL_WEIGHT[diameter] || 0;
+
+  if (!l26 || !steel || !weight) {
+    return 0;
+  }
+
+  return Math.round(l26 * steel * weight + 0.25);
+};
+
+export const getKgsPerCuM = ({
+  l27,
+  volume,
+}: {
+  l27: number;
+  volume: string;
+}): string => {
+  const vol = Number(volume);
+
+  if (!l27 || !vol) {
+    return '';
+  }
+
+  return (l27 / vol).toFixed(2);
+};
