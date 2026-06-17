@@ -42,15 +42,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="slab"
-        options={{
-          tabBarLabel: 'Slab Tools',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name="summary"
         options={{

@@ -150,15 +150,6 @@ export default function Column() {
     input.columnHeight,
     input.mainBarDiameter,
   );
-  const waste6m = getWaste(6, requiredSteelLength);
-
-  const waste75m = getWaste(7.5, requiredSteelLength);
-
-  const waste9m = getWaste(9, requiredSteelLength);
-
-  const waste105m = getWaste(10.5, requiredSteelLength);
-
-  const waste12m = getWaste(12, requiredSteelLength);
 
   const l24 = getL24(input.steelLength, requiredSteelLength);
 
@@ -176,12 +167,77 @@ export default function Column() {
     mainBarDiameter: input.mainBarDiameter,
   });
 
-  const kgsPerCuM = getKgsPerCuM({
-    l27,
-    volume,
-  });
-
   //
+  const getWasteValue = (barDiameter: string, stockLength: number) => {
+    const requiredLength = getRequiredSteelLength(
+      input.columnHeight,
+      barDiameter,
+    );
+
+    return getWaste(stockLength, requiredLength);
+  };
+
+  // const getKgsPerCuMValue = (barDiameter: string) => {
+  //   const requiredLength = getRequiredSteelLength(
+  //     input.columnHeight,
+  //     barDiameter,
+  //   );
+
+  //   const l24Value = getL24(input.steelLength, requiredLength);
+
+  //   const l26Value = getL26({
+  //     numberOfBarsA: input.numberOfBarsA,
+  //     numberOfColumns: input.numberOfColumns,
+  //     steelLength: input.steelLength,
+  //     requiredSteelLength: requiredLength,
+  //     l24: l24Value,
+  //   });
+
+  //   const l27Value = getL27({
+  //     l26: l26Value,
+  //     steelLength: input.steelLength,
+  //     mainBarDiameter: barDiameter,
+  //   });
+
+  //   return getKgsPerCuM({
+  //     l27: l27Value,
+  //     volume,
+  //   });
+  // };
+  //
+  const getKgsPerCuMValue = ({
+    barDiameter,
+    numberOfBars,
+  }: {
+    barDiameter: string;
+    numberOfBars: string;
+  }) => {
+    const requiredLength = getRequiredSteelLength(
+      input.columnHeight,
+      barDiameter,
+    );
+
+    const l24Value = getL24(input.steelLength, requiredLength);
+
+    const l26Value = getL26({
+      numberOfBarsA: numberOfBars,
+      numberOfColumns: input.numberOfColumns,
+      steelLength: input.steelLength,
+      requiredSteelLength: requiredLength,
+      l24: l24Value,
+    });
+
+    const l27Value = getL27({
+      l26: l26Value,
+      steelLength: input.steelLength,
+      mainBarDiameter: barDiameter,
+    });
+
+    return getKgsPerCuM({
+      l27: l27Value,
+      volume,
+    });
+  };
 
   const handleReset = () => {
     setInput(EMPTY_INPUT);
@@ -326,34 +382,138 @@ export default function Column() {
 
               <View style={[styles.resultCard, { marginTop: 20 }]}>
                 <Text style={styles.resultTitle}>
-                  Column Wastage / Bar Length
+                  Column Wastage / Bar Length {'\n'}(a. main bars)
                 </Text>
 
                 <Result
                   label="6m Waste"
-                  value={`${waste6m.toFixed(3)} (${getWasteRemark(waste6m)})`}
+                  value={`${getWasteValue(input.mainBarDiameter, 6).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.mainBarDiameter, 6),
+                  )})`}
                 />
 
                 <Result
                   label="7.5m Waste"
-                  value={`${waste75m.toFixed(3)} (${getWasteRemark(waste75m)})`}
+                  value={`${getWasteValue(input.mainBarDiameter, 7.5).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.mainBarDiameter, 7.5),
+                  )})`}
                 />
 
                 <Result
                   label="9m Waste"
-                  value={`${waste9m.toFixed(3)} (${getWasteRemark(waste9m)})`}
+                  value={`${getWasteValue(input.mainBarDiameter, 9).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.mainBarDiameter, 9),
+                  )})`}
                 />
 
                 <Result
                   label="10.5m Waste"
-                  value={`${waste105m.toFixed(3)} (${getWasteRemark(waste105m)})`}
+                  value={`${getWasteValue(input.mainBarDiameter, 10.5).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.mainBarDiameter, 10.5),
+                  )})`}
                 />
 
                 <Result
                   label="12m Waste"
-                  value={`${waste12m.toFixed(3)} (${getWasteRemark(waste12m)})`}
+                  value={`${getWasteValue(input.mainBarDiameter, 12).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.mainBarDiameter, 12),
+                  )})`}
                 />
-                <Result label="kgs/cu.m" value={kgsPerCuM || '-'} />
+
+                <Result
+                  label="kgs/cu.m"
+                  value={
+                    getKgsPerCuMValue({
+                      barDiameter: input.mainBarDiameter,
+                      numberOfBars: input.numberOfBarsA,
+                    }) || '-'
+                  }
+                />
+              </View>
+              <View style={[styles.resultCard, { marginTop: 20 }]}>
+                <Text style={styles.resultTitle}>
+                  Computed Quantity (a. main bars)
+                </Text>
+
+                <Result
+                  label="Cut Bar Size (m)"
+                  value={requiredSteelLength.toFixed(3)}
+                />
+                <Result
+                  label="Total Cut Bars"
+                  value={input.numberOfBarsA || ''}
+                />
+
+                <Result
+                  label="Total Cut Bars (usable/# of bars needed)"
+                  value={l24.toString()}
+                />
+
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoText}>
+                    Height + FTG Thickness + Hook (16d) - 75mm
+                  </Text>
+                </View>
+
+                <Result
+                  label={`Total Pcs of Bars @ ${input.steelLength}m`}
+                  value={l26 ? l26.toString() : '-'}
+                />
+
+                <Result
+                  label="Steel Weight (total kgs)"
+                  value={l27 ? Number(l27).toLocaleString() : '-'}
+                />
+              </View>
+              <View style={[styles.resultCard, { marginTop: 20 }]}>
+                <Text style={styles.resultTitle}>
+                  Column Wastage / Bar Length {'\n'}(b. main bars)
+                </Text>
+
+                <Result
+                  label="6m Waste"
+                  value={`${getWasteValue(input.tieBarDiameter, 6).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.tieBarDiameter, 6),
+                  )})`}
+                />
+
+                <Result
+                  label="7.5m Waste"
+                  value={`${getWasteValue(input.tieBarDiameter, 7.5).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.tieBarDiameter, 7.5),
+                  )})`}
+                />
+
+                <Result
+                  label="9m Waste"
+                  value={`${getWasteValue(input.tieBarDiameter, 9).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.tieBarDiameter, 9),
+                  )})`}
+                />
+
+                <Result
+                  label="10.5m Waste"
+                  value={`${getWasteValue(input.tieBarDiameter, 10.5).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.tieBarDiameter, 10.5),
+                  )})`}
+                />
+
+                <Result
+                  label="12m Waste"
+                  value={`${getWasteValue(input.tieBarDiameter, 12).toFixed(3)} (${getWasteRemark(
+                    getWasteValue(input.tieBarDiameter, 12),
+                  )})`}
+                />
+
+                <Result
+                  label="kgs/cu.m"
+                  value={
+                    getKgsPerCuMValue({
+                      barDiameter: input.tieBarDiameter,
+                      numberOfBars: input.numberOfBarsB,
+                    }) || '-'
+                  }
+                />
               </View>
             </>
           )}
@@ -462,5 +622,17 @@ const styles = StyleSheet.create({
   resultValue: {
     color: '#fff',
     fontWeight: '700',
+  },
+  infoRow: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e293b',
+  },
+
+  infoText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });

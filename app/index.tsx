@@ -27,9 +27,7 @@ export default function Onboarding() {
 
         <Text style={styles.subtitle}>Material estimates in seconds</Text>
 
-        <Text style={styles.featureInline}>
-          Slab • Footing • Concrete • CHB
-        </Text>
+        <Text style={styles.featureInline}>Steel • Earth • Concrete</Text>
 
         <TouchableOpacity
           style={styles.button}

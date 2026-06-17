@@ -35,8 +35,6 @@ const summarySections: SummaryGroup[] = [
       },
       {
         description: 'Footing - Tie Wire',
-        diameter: '-',
-        steelLength: '-',
         qty: '-',
         unit: 'kgs',
       },

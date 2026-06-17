@@ -10,7 +10,9 @@ import {
 type Route =
   | '/features/steel/footing'
   | '/features/steel/column'
-  | '/features/steel/beam';
+  | '/features/steel/beam'
+  | '/features/steel/slab-on-fill'
+  | '/features/steel/suspended-slab';
 
 type SteelFeature = {
   name: string;
@@ -33,6 +35,16 @@ const steelFeatures: SteelFeature[] = [
     name: 'Beam',
     icon: 'remove-outline',
     route: '/features/steel/beam',
+  },
+  {
+    name: 'Slab on Fill',
+    icon: 'grid-outline',
+    route: '/features/steel/slab-on-fill',
+  },
+  {
+    name: 'Suspended Slab',
+    icon: 'layers-outline',
+    route: '/features/steel/suspended-slab',
   },
 ];
 
