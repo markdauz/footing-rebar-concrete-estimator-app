@@ -333,3 +333,182 @@ export const getKgsPerCuM = ({
 
   return (l27 / vol).toFixed(2);
 };
+
+export const getCutBarSize = ({
+  columnHeight,
+  mainBarDiameter,
+  tieBarDiameter,
+}: {
+  columnHeight: string;
+  mainBarDiameter: string;
+  tieBarDiameter: string;
+}): string => {
+  const height = Number(columnHeight);
+  const mainBar = Number(mainBarDiameter);
+  const tieBar = Number(tieBarDiameter);
+
+  if (!height || !tieBar) {
+    return '';
+  }
+
+  const maxDiameter = Math.max(mainBar, tieBar);
+
+  return (height + 0.4 - 0.075 - 2 * 0.016 + 0.016 * maxDiameter).toFixed(3);
+};
+
+export const getTotalCutBars = (numberOfBarsB: string): string => {
+  if (!numberOfBarsB) {
+    return '';
+  }
+
+  return numberOfBarsB;
+};
+
+export const getTotalCutBarsUsable = ({
+  steelLength,
+  cutBarSize,
+}: {
+  steelLength: string;
+  cutBarSize: string;
+}): string => {
+  const steel = Number(steelLength);
+  const cutBar = Number(cutBarSize);
+
+  if (!steel || !cutBar) {
+    return '';
+  }
+
+  if (steel / cutBar < 1) {
+    return String(Math.round((Math.trunc(cutBar / steel + 1) * steel) / steel));
+  }
+
+  return String(Math.trunc(steel / cutBar));
+};
+
+export const getTotalPcsOfBars = ({
+  steelLength,
+  numberOfColumns,
+  totalCutBars,
+  totalCutBarsUsable,
+  cutBarSize,
+}: {
+  steelLength: string;
+  numberOfColumns: string;
+  totalCutBars: string;
+  totalCutBarsUsable: string;
+  cutBarSize: string;
+}): string => {
+  const steel = Number(steelLength);
+  const columns = Number(numberOfColumns);
+  const totalBars = Number(totalCutBars);
+  const usableBars = Number(totalCutBarsUsable);
+  const cutBar = Number(cutBarSize);
+
+  if (!totalBars || !usableBars || !steel || !columns || !cutBar) {
+    return '';
+  }
+
+  if (steel / cutBar < 1) {
+    return String(totalBars * Math.trunc(cutBar / steel + 1) * columns);
+  }
+
+  return String(columns * (totalBars / usableBars));
+};
+
+export const getSteelWeightTotalKgs = ({
+  tieBarDiameter,
+  steelLength,
+  totalPcsOfBars,
+}: {
+  tieBarDiameter: string;
+  steelLength: string;
+  totalPcsOfBars: string;
+}): string => {
+  const diameter = Number(tieBarDiameter);
+  const steel = Number(steelLength);
+  const totalPcs = Number(totalPcsOfBars);
+
+  const weight = STEEL_WEIGHT[diameter] || 0;
+
+  if (!diameter || !steel || !totalPcs || !weight) {
+    return '';
+  }
+
+  return String(Math.round(totalPcs * steel * weight + 0.25));
+};
+export const getTiesSteelLength = ({
+  columnWidth,
+  columnLength,
+  latTiesDiameter,
+}: {
+  columnWidth: string;
+  columnLength: string;
+  latTiesDiameter: string;
+}): string => {
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const latTies = Number(latTiesDiameter);
+
+  if (!width || !length || !latTies) {
+    return '';
+  }
+
+  return (2 * (width + length - 0.16) + 0.15 - 0.006 * latTies).toFixed(2);
+};
+export const getLateralWaste = ({
+  barLength,
+  requiredLength,
+}: {
+  barLength: number;
+  requiredLength: string;
+}): string => {
+  const required = Number(requiredLength);
+
+  if (!required) {
+    return '';
+  }
+
+  let waste = 0;
+
+  if (barLength / required < 1) {
+    waste = Math.trunc(required / barLength + 1) * barLength - required - 0.6;
+  } else {
+    waste = barLength - Math.trunc(barLength / required) * required;
+  }
+
+  return waste.toFixed(2);
+};
+
+export const getLateralWasteRemark = (waste: string): string => {
+  const value = Number(waste);
+
+  if (!waste || Number.isNaN(value)) {
+    return '';
+  }
+
+  if (value > 0.6) {
+    return 'X';
+  }
+
+  if (value < 0.5) {
+    return 'BEST';
+  }
+
+  return 'GOOD';
+};
+
+export const getLateralWireKgsPerCuM = (
+  tieWiresOptionA: string,
+  volume: string,
+): string => {
+  const tieWires = Number(tieWiresOptionA);
+  const vol = Number(volume);
+
+  if (!tieWires || !vol) {
+    return '';
+  }
+
+  const wireWeight = Math.round(((tieWires * 0.3) / 53 + 0.1) * 100) / 100;
+
+  return (wireWeight / vol).toFixed(2);
+};

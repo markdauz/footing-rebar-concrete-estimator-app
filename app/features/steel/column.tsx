@@ -16,18 +16,26 @@ import {
 } from 'react-native-safe-area-context';
 import InputField from '../../../components/InputField';
 import {
+  getCutBarSize,
   getKgsPerCuM,
   getL24,
   getL26,
   getL27,
+  getLateralWaste,
+  getLateralWireKgsPerCuM,
   getLatTiesDiameter,
   getPcsLatTiesOptionA,
   getPcsLatTiesOptionBOne,
   getPcsLatTiesOptionBTwo,
   getRequiredSteelLength,
+  getSteelWeightTotalKgs,
+  getTiesSteelLength,
   getTieWiresOptionA,
   getTieWiresOptionBOne,
   getTieWiresOptionBTwo,
+  getTotalCutBars,
+  getTotalCutBarsUsable,
+  getTotalPcsOfBars,
   getWaste,
   getWasteRemark,
 } from '../../../utils/columnRebarCalculator';
@@ -177,34 +185,6 @@ export default function Column() {
     return getWaste(stockLength, requiredLength);
   };
 
-  // const getKgsPerCuMValue = (barDiameter: string) => {
-  //   const requiredLength = getRequiredSteelLength(
-  //     input.columnHeight,
-  //     barDiameter,
-  //   );
-
-  //   const l24Value = getL24(input.steelLength, requiredLength);
-
-  //   const l26Value = getL26({
-  //     numberOfBarsA: input.numberOfBarsA,
-  //     numberOfColumns: input.numberOfColumns,
-  //     steelLength: input.steelLength,
-  //     requiredSteelLength: requiredLength,
-  //     l24: l24Value,
-  //   });
-
-  //   const l27Value = getL27({
-  //     l26: l26Value,
-  //     steelLength: input.steelLength,
-  //     mainBarDiameter: barDiameter,
-  //   });
-
-  //   return getKgsPerCuM({
-  //     l27: l27Value,
-  //     volume,
-  //   });
-  // };
-  //
   const getKgsPerCuMValue = ({
     barDiameter,
     numberOfBars,
@@ -238,6 +218,72 @@ export default function Column() {
       volume,
     });
   };
+
+  const cutBarSize = getCutBarSize({
+    columnHeight: input.columnHeight,
+    mainBarDiameter: input.mainBarDiameter,
+    tieBarDiameter: input.tieBarDiameter,
+  });
+
+  const totalCutBars = getTotalCutBars(input.numberOfBarsB);
+
+  const totalCutBarsUsable = getTotalCutBarsUsable({
+    steelLength: input.steelLength,
+    cutBarSize,
+  });
+
+  const totalPcsOfBars = getTotalPcsOfBars({
+    steelLength: input.steelLength,
+    numberOfColumns: input.numberOfColumns,
+    totalCutBars,
+    totalCutBarsUsable,
+    cutBarSize,
+  });
+
+  const steelWeightTotalKgs = getSteelWeightTotalKgs({
+    tieBarDiameter: input.tieBarDiameter,
+    steelLength: input.steelLength,
+    totalPcsOfBars,
+  });
+
+  const tiesSteelLength = getTiesSteelLength({
+    columnWidth: input.columnWidth,
+    columnLength: input.columnLength,
+    latTiesDiameter,
+  });
+
+  const waste6m = getLateralWaste({
+    barLength: 6,
+    requiredLength: tiesSteelLength,
+  });
+
+  const waste75m = getLateralWaste({
+    barLength: 7.5,
+    requiredLength: tiesSteelLength,
+  });
+
+  const waste9m = getLateralWaste({
+    barLength: 9,
+    requiredLength: tiesSteelLength,
+  });
+
+  const waste105m = getLateralWaste({
+    barLength: 10.5,
+    requiredLength: tiesSteelLength,
+  });
+
+  const waste12m = getLateralWaste({
+    barLength: 12,
+    requiredLength: tiesSteelLength,
+  });
+
+  const waste6mRemark = getWasteRemark(Number(waste6m));
+  const waste75mRemark = getWasteRemark(Number(waste75m));
+  const waste9mRemark = getWasteRemark(Number(waste9m));
+  const waste105mRemark = getWasteRemark(Number(waste105m));
+  const waste12mRemark = getWasteRemark(Number(waste12m));
+
+  const wireKgsPerCuM = getLateralWireKgsPerCuM(tieWiresOptionA, volume);
 
   const handleReset = () => {
     setInput(EMPTY_INPUT);
@@ -349,7 +395,7 @@ export default function Column() {
           {showResults && (
             <>
               <View style={styles.resultCard}>
-                <Text style={styles.resultTitle}>Results</Text>
+                <Text style={styles.resultTitle}>Lateral Ties</Text>
 
                 <Result label="Volume" value={`${volume} m³`} />
                 <Result label="lat ties diam Ø (mm)" value={latTiesDiameter} />
@@ -514,6 +560,66 @@ export default function Column() {
                     }) || '-'
                   }
                 />
+              </View>
+              <View style={[styles.resultCard, { marginTop: 20 }]}>
+                <Text style={styles.resultTitle}>
+                  Computed Quantity (b. main bars)
+                </Text>
+
+                <Result label="Cut Bar Size (m)" value={cutBarSize || '-'} />
+                <Result label="Total Cut Bars" value={totalCutBars || '-'} />
+
+                <Result
+                  label="Total Cut Bars (usable/# of bars needed)"
+                  value={totalCutBarsUsable || '-'}
+                />
+
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoText}>
+                    Height + FTG Thickness + Hook (16d) - 75mm
+                  </Text>
+                </View>
+
+                <Result
+                  label={`Total Pcs of Bars @ ${input.steelLength}m`}
+                  value={totalPcsOfBars || '-'}
+                />
+
+                <Result
+                  label="Steel Weight (total kgs)"
+                  value={steelWeightTotalKgs || '-'}
+                />
+              </View>
+              {/*  */}
+              <View style={[styles.resultCard, { marginTop: 20 }]}>
+                <Text style={styles.resultTitle}>
+                  Lateral Ties Wastage / Bar Length {'\n'}(option A)
+                </Text>
+                <Result
+                  label="6m Waste"
+                  value={waste6m ? `${waste6m} (${waste6mRemark})` : '-'}
+                />
+
+                <Result
+                  label="7.5m Waste"
+                  value={waste75m ? `${waste75m} (${waste75mRemark})` : '-'}
+                />
+
+                <Result
+                  label="9m Waste"
+                  value={waste9m ? `${waste9m} (${waste9mRemark})` : '-'}
+                />
+
+                <Result
+                  label="10.5m Waste"
+                  value={waste105m ? `${waste105m} (${waste105mRemark})` : '-'}
+                />
+
+                <Result
+                  label="12m Waste"
+                  value={waste12m ? `${waste12m} (${waste12mRemark})` : '-'}
+                />
+                <Result label="kgs/cu.m" value={wireKgsPerCuM || '-'} />
               </View>
             </>
           )}
