@@ -512,3 +512,93 @@ export const getLateralWireKgsPerCuM = (
 
   return (wireWeight / vol).toFixed(2);
 };
+
+export const getTiesCut = ({
+  columnWidth,
+  columnLength,
+  latTiesDiameter,
+}: {
+  columnWidth: string;
+  columnLength: string;
+  latTiesDiameter: string;
+}): string => {
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const latTies = Number(latTiesDiameter);
+
+  if (!width || !length || !latTies) {
+    return '';
+  }
+
+  return (2 * (width + length - 0.16) + 0.15 - 0.006 * latTies).toFixed(2);
+};
+export const getGIWireKgs = (tieWiresOptionA: string): string => {
+  const tieWires = Number(tieWiresOptionA);
+
+  if (!tieWires) {
+    return '';
+  }
+
+  return (Math.round(((tieWires * 0.3) / 53 + 0.1) * 100) / 100).toFixed(2);
+};
+export const getTotalPcsOfBarsOptionA = ({
+  mainBarDiameter,
+  columnWidth,
+  columnLength,
+  columnHeight,
+  numberOfColumns,
+  steelLength,
+}: {
+  mainBarDiameter: string;
+  columnWidth: string;
+  columnLength: string;
+  columnHeight: string;
+  numberOfColumns: string;
+  steelLength: string;
+}): string => {
+  const mainBar = Number(mainBarDiameter);
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const height = Number(columnHeight);
+  const columns = Number(numberOfColumns);
+  const steel = Number(steelLength);
+
+  if (!mainBar || !width || !length || !height || !columns || !steel) {
+    return '';
+  }
+
+  const c33 = mainBar <= 30 ? 10 : 12;
+
+  const k32 = 2 * (width + length - 0.16) + 0.15 - 0.006 * c33;
+
+  const tiesPerColumn = Math.round((height - 2.2) / 0.2 - 1 + 22);
+
+  const c35 =
+    Math.max(width, length) - 0.08 > 0.15
+      ? tiesPerColumn * columns * 2
+      : tiesPerColumn * columns;
+
+  return String(Math.round(c35 / (steel / k32) + 0.25));
+};
+
+export const getBarPcsOptionA = ({
+  latTiesDiameter,
+  tiesSteelLength,
+  totalPcsOfBars,
+}: {
+  latTiesDiameter: string;
+  tiesSteelLength: string;
+  totalPcsOfBars: string;
+}): string => {
+  const diameter = Number(latTiesDiameter);
+  const tiesLength = Number(tiesSteelLength);
+  const totalBars = Number(totalPcsOfBars);
+
+  if (!diameter || !tiesLength || !totalBars) {
+    return '';
+  }
+
+  const weightPerMeter = diameter === 10 ? 0.616 : 0.888;
+
+  return String((tiesLength * totalBars * weightPerMeter).toFixed(3));
+};

@@ -16,7 +16,9 @@ import {
 } from 'react-native-safe-area-context';
 import InputField from '../../../components/InputField';
 import {
+  getBarPcsOptionA,
   getCutBarSize,
+  getGIWireKgs,
   getKgsPerCuM,
   getL24,
   getL26,
@@ -29,6 +31,7 @@ import {
   getPcsLatTiesOptionBTwo,
   getRequiredSteelLength,
   getSteelWeightTotalKgs,
+  getTiesCut,
   getTiesSteelLength,
   getTieWiresOptionA,
   getTieWiresOptionBOne,
@@ -36,6 +39,7 @@ import {
   getTotalCutBars,
   getTotalCutBarsUsable,
   getTotalPcsOfBars,
+  getTotalPcsOfBarsOptionA,
   getWaste,
   getWasteRemark,
 } from '../../../utils/columnRebarCalculator';
@@ -284,6 +288,29 @@ export default function Column() {
   const waste12mRemark = getWasteRemark(Number(waste12m));
 
   const wireKgsPerCuM = getLateralWireKgsPerCuM(tieWiresOptionA, volume);
+
+  const tiesCut = getTiesCut({
+    columnWidth: input.columnWidth,
+    columnLength: input.columnLength,
+    latTiesDiameter,
+  });
+
+  const giWireKgs = getGIWireKgs(tieWiresOptionA);
+
+  const totalPcsOfBarsOptionA = getTotalPcsOfBarsOptionA({
+    mainBarDiameter: input.mainBarDiameter,
+    columnWidth: input.columnWidth,
+    columnLength: input.columnLength,
+    columnHeight: input.columnHeight,
+    numberOfColumns: input.numberOfColumns,
+    steelLength: input.tiesSteelLength,
+  });
+
+  const barPcsOptionA = getBarPcsOptionA({
+    latTiesDiameter,
+    tiesSteelLength: input.tiesSteelLength,
+    totalPcsOfBars: totalPcsOfBarsOptionA,
+  });
 
   const handleReset = () => {
     setInput(EMPTY_INPUT);
@@ -621,6 +648,70 @@ export default function Column() {
                 />
                 <Result label="kgs/cu.m" value={wireKgsPerCuM || '-'} />
               </View>
+              {/*  */}
+              <View style={[styles.resultCard, { marginTop: 20 }]}>
+                <Text style={styles.resultTitle}>Ties Computed Quantity</Text>
+
+                <Text style={styles.optionTitle}>Option A</Text>
+                <Text style={styles.noteTitle}>
+                  cut length formula = 2 (x+y) + 2(3d+75) – 12d
+                </Text>
+                <Result
+                  label="Lat Ties Cut Size (m)"
+                  value={`${tiesCut} @ ${input.tiesSteelLength}`}
+                />
+
+                <Result
+                  label="#16 G.I Wire (kg)"
+                  value={giWireKgs ? `${giWireKgs} kgs` : '-'}
+                />
+
+                <Result
+                  label="Total Pcs of Bars"
+                  value={`${totalPcsOfBarsOptionA} (${barPcsOptionA})`}
+                />
+
+                <View style={styles.noteContainer}>
+                  <Text style={styles.noteTitle}>
+                    Option A Ties Computation
+                  </Text>
+
+                  <Text style={styles.noteText}>
+                    {'{[height - 2(1.1)] / 0.2} + 22 pcs'}
+                  </Text>
+
+                  <Text style={styles.noteHighlight}>
+                    2 @ 50, 4 @ 100, 4 @ 150, rest @ 200
+                  </Text>
+
+                  <Text style={styles.noteHighlight}>
+                    Ties × 2 (Top & Bottom)
+                  </Text>
+                </View>
+
+                <View style={styles.noteContainer}>
+                  <Text style={styles.noteTitle}>
+                    Option B Ties Computation
+                  </Text>
+
+                  <Text style={styles.noteText}>
+                    Height / Minimum Size = Ties + 1
+                  </Text>
+
+                  <Text style={styles.noteHighlight}>
+                    Main Reinf × 16, Ties × 48, Column Size
+                  </Text>
+                </View>
+
+                <Text style={styles.noteBlue}>
+                  Note: Ties × 2 if main rebars spacing
+                  {' > '}150mm or provide links.
+                </Text>
+
+                <Text style={styles.noteText}>
+                  If main bars less than 30mmØ, ties @10mmØ else @12mmØ
+                </Text>
+              </View>
             </>
           )}
         </ScrollView>
@@ -740,5 +831,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  optionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    fontStyle: 'italic',
+    color: '#ef4444',
+    textAlign: 'center',
+  },
+
+  noteContainer: {
+    marginTop: 18,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#334155',
+  },
+
+  noteTitle: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+
+  noteText: {
+    color: '#cbd5e1',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+
+  noteHighlight: {
+    color: '#ef4444',
+    fontWeight: '700',
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+
+  noteBlue: {
+    color: '#38bdf8',
+    fontWeight: '700',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 18,
+    marginBottom: 10,
   },
 });
