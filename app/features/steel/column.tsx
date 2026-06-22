@@ -17,14 +17,19 @@ import {
 import InputField from '../../../components/InputField';
 import {
   getBarPcsOptionA,
+  getBarPcsOptionB,
   getCutBarSize,
   getGIWireKgs,
+  getGIWireKgsOptionB,
   getKgsPerCuM,
+  getKgsPerCuMOptionB,
   getL24,
   getL26,
   getL27,
   getLateralWaste,
+  getLateralWasteOptionB,
   getLateralWireKgsPerCuM,
+  getLatTiesCutSize,
   getLatTiesDiameter,
   getPcsLatTiesOptionA,
   getPcsLatTiesOptionBOne,
@@ -32,14 +37,17 @@ import {
   getRequiredSteelLength,
   getSteelWeightTotalKgs,
   getTiesCut,
+  getTiesCutSize,
   getTiesSteelLength,
   getTieWiresOptionA,
+  getTieWiresOptionB,
   getTieWiresOptionBOne,
   getTieWiresOptionBTwo,
   getTotalCutBars,
   getTotalCutBarsUsable,
   getTotalPcsOfBars,
   getTotalPcsOfBarsOptionA,
+  getTotalPcsOfBarsOptionB,
   getWaste,
   getWasteRemark,
 } from '../../../utils/columnRebarCalculator';
@@ -310,6 +318,68 @@ export default function Column() {
     latTiesDiameter,
     tiesSteelLength: input.tiesSteelLength,
     totalPcsOfBars: totalPcsOfBarsOptionA,
+  });
+  //
+  const tiesCutSize = getTiesCutSize({
+    columnWidth: input.columnWidth,
+    columnLength: input.columnLength,
+    latTiesDiameter,
+  });
+  const lateralWaste6m = getLateralWasteOptionB({
+    barLength: 6,
+    tiesCutSize,
+  });
+  const lateralWaste75m = getLateralWasteOptionB({
+    barLength: 7.5,
+    tiesCutSize,
+  });
+
+  const lateralWaste9m = getLateralWasteOptionB({
+    barLength: 9,
+    tiesCutSize,
+  });
+
+  const lateralWaste105m = getLateralWasteOptionB({
+    barLength: 10.5,
+    tiesCutSize,
+  });
+
+  const lateralWaste12m = getLateralWasteOptionB({
+    barLength: 12,
+    tiesCutSize,
+  });
+  const lateralWaste6mRemark = getWasteRemark(Number(lateralWaste6m));
+  const lateralWaste75mRemark = getWasteRemark(Number(lateralWaste75m));
+  const lateralWaste9mRemark = getWasteRemark(Number(lateralWaste9m));
+  const lateralWaste105mRemark = getWasteRemark(Number(lateralWaste105m));
+  const lateralWaste12mRemark = getWasteRemark(Number(lateralWaste12m));
+
+  //
+  const latTiesCutSize = getLatTiesCutSize({
+    columnWidth: input.columnWidth,
+    columnLength: input.columnLength,
+    latTiesDiameter,
+  });
+  //
+  const tieWiresOptionB = getTieWiresOptionB({
+    pcsLatTiesOptionBOne,
+    numberOfBarsA: input.numberOfBarsA,
+    numberOfBarsB: input.numberOfBarsB,
+  });
+  const giWireKgsOptionB = getGIWireKgsOptionB(tieWiresOptionB);
+  const totalPcsOfBarsOptionB = getTotalPcsOfBarsOptionB({
+    tiesSteelLength: input.tiesSteelLength,
+    pcsLatTiesOptionBOne,
+    latTiesCutSize,
+  });
+  const barPcsOptionB = getBarPcsOptionB({
+    latTiesDiameter,
+    tiesSteelLength: input.tiesSteelLength,
+    totalPcsOfBarsOptionB,
+  });
+  const kgsPerCuM = getKgsPerCuMOptionB({
+    giWireKgsOptionB,
+    volume,
   });
 
   const handleReset = () => {
@@ -711,6 +781,105 @@ export default function Column() {
                 <Text style={styles.noteText}>
                   If main bars less than 30mmØ, ties @10mmØ else @12mmØ
                 </Text>
+              </View>
+              {/*  */}
+              <View style={[styles.resultCard, { marginTop: 20 }]}>
+                <Text style={styles.resultTitle}>
+                  Lateral Ties Wastage / Bar Length {'\n'}(option B)
+                </Text>
+                <Result
+                  label="6m Waste"
+                  value={
+                    lateralWaste6m
+                      ? `${lateralWaste6m} (${lateralWaste6mRemark})`
+                      : '-'
+                  }
+                />
+
+                <Result
+                  label="7.5m Waste"
+                  value={
+                    lateralWaste75m
+                      ? `${lateralWaste75m} (${lateralWaste75mRemark})`
+                      : '-'
+                  }
+                />
+
+                <Result
+                  label="9m Waste"
+                  value={
+                    lateralWaste9m
+                      ? `${lateralWaste9m} (${lateralWaste9mRemark})`
+                      : '-'
+                  }
+                />
+
+                <Result
+                  label="10.5m Waste"
+                  value={
+                    lateralWaste105m
+                      ? `${lateralWaste105m} (${lateralWaste105mRemark})`
+                      : '-'
+                  }
+                />
+
+                <Result
+                  label="12m Waste"
+                  value={
+                    lateralWaste12m
+                      ? `${lateralWaste12m} (${lateralWaste12mRemark})`
+                      : '-'
+                  }
+                />
+                <Result
+                  label="kgs/cu.m"
+                  value={kgsPerCuM ? `${kgsPerCuM} kg/cu.m` : '-'}
+                />
+              </View>
+              {/*  */}
+              <View style={[styles.resultCard, { marginTop: 20 }]}>
+                <Text style={styles.resultTitle}>Ties Computed Quantity</Text>
+
+                <Text style={styles.optionTitle}>Option B</Text>
+                <Text style={styles.noteTitle}>
+                  cut length formula = 2 (x+y) + 2(3d+75) – 12d
+                </Text>
+                <Result
+                  label="Lat Ties Cut Size (m)"
+                  value={`${latTiesCutSize} @ ${input.tiesSteelLength}`}
+                />
+
+                <Result
+                  label="#16 G.I Wire (kg)"
+                  value={giWireKgsOptionB ? `${giWireKgsOptionB} kgs` : '-'}
+                />
+
+                <Result
+                  label="Total Pcs of Bars"
+                  value={`${totalPcsOfBarsOptionB} (${barPcsOptionB})`}
+                />
+
+                <Text style={styles.noteBlue}>
+                  2 main bars (a&b) of different Ø (option B)
+                </Text>
+
+                <Text style={styles.noteText}>
+                  cut length formula = 2 (x+y) + 2(3d+75) – 12d
+                </Text>
+                <Result
+                  label="Lat Ties Cut Size (m)"
+                  value={`${latTiesCutSize} @ ${input.tiesSteelLength}`}
+                />
+
+                <Result
+                  label="#16 G.I Wire (kg)"
+                  value={giWireKgsOptionB ? `${giWireKgsOptionB} kgs` : '-'}
+                />
+
+                <Result
+                  label="Total Pcs of Bars"
+                  value={`${totalPcsOfBarsOptionB} (${barPcsOptionB})`}
+                />
               </View>
             </>
           )}

@@ -602,3 +602,155 @@ export const getBarPcsOptionA = ({
 
   return String((tiesLength * totalBars * weightPerMeter).toFixed(3));
 };
+
+export const getLateralWasteOptionB = ({
+  barLength,
+  tiesCutSize,
+}: {
+  barLength: number;
+  tiesCutSize: string;
+}): string => {
+  const s32 = Number(tiesCutSize);
+
+  if (!s32) {
+    return '';
+  }
+
+  let waste = 0;
+
+  if (barLength / s32 < 1) {
+    waste = Math.trunc(s32 / barLength + 1) * barLength - s32 - 0.6;
+  } else {
+    waste = barLength - Math.trunc(barLength / s32) * s32;
+  }
+
+  return waste.toFixed(2);
+};
+
+export const getTiesCutSize = ({
+  columnWidth,
+  columnLength,
+  latTiesDiameter,
+}: {
+  columnWidth: string;
+  columnLength: string;
+  latTiesDiameter: string;
+}): string => {
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const diameter = Number(latTiesDiameter);
+
+  if (!width || !length || !diameter) {
+    return '';
+  }
+
+  return (2 * (width + length - 0.16) + 0.15 - 0.006 * diameter).toFixed(2);
+};
+
+export const getLatTiesCutSize = ({
+  columnWidth,
+  columnLength,
+  latTiesDiameter,
+}: {
+  columnWidth: string;
+  columnLength: string;
+  latTiesDiameter: string;
+}): string => {
+  const width = Number(columnWidth);
+  const length = Number(columnLength);
+  const diameter = Number(latTiesDiameter);
+
+  if (!width || !length || !diameter) {
+    return '';
+  }
+
+  return (2 * (width + length - 0.16) + 0.15 - 0.006 * diameter).toFixed(2);
+};
+
+export const getTieWiresOptionB = ({
+  pcsLatTiesOptionBOne,
+  numberOfBarsA,
+  numberOfBarsB,
+}: {
+  pcsLatTiesOptionBOne: string;
+  numberOfBarsA: string;
+  numberOfBarsB: string;
+}): string => {
+  const pcs = Number(pcsLatTiesOptionBOne);
+  const barsA = Number(numberOfBarsA);
+  const barsB = Number(numberOfBarsB);
+
+  if (!pcs) {
+    return '';
+  }
+
+  return String(pcs * (barsA + barsB));
+};
+export const getGIWireKgsOptionB = (tieWires: string): string => {
+  const wires = Number(tieWires);
+
+  if (!wires) {
+    return '';
+  }
+
+  return (Math.round(((wires * 0.3) / 53 + 0.1) * 100) / 100).toFixed(2);
+};
+
+export const getTotalPcsOfBarsOptionB = ({
+  tiesSteelLength,
+  pcsLatTiesOptionBOne,
+  latTiesCutSize,
+}: {
+  tiesSteelLength: string;
+  pcsLatTiesOptionBOne: string;
+  latTiesCutSize: string;
+}): string => {
+  const steel = Number(tiesSteelLength);
+  const pcs = Number(pcsLatTiesOptionBOne);
+  const cutSize = Number(latTiesCutSize);
+
+  if (!steel || !pcs || !cutSize) {
+    return '';
+  }
+
+  return String(Math.round(pcs / (steel / cutSize) + 0.25));
+};
+
+export const getBarPcsOptionB = ({
+  latTiesDiameter,
+  tiesSteelLength,
+  totalPcsOfBarsOptionB,
+}: {
+  latTiesDiameter: string;
+  tiesSteelLength: string;
+  totalPcsOfBarsOptionB: string;
+}): string => {
+  const diameter = Number(latTiesDiameter);
+  const steelLength = Number(tiesSteelLength);
+  const totalPcs = Number(totalPcsOfBarsOptionB);
+
+  if (!diameter || !steelLength || !totalPcs) {
+    return '';
+  }
+
+  const weightPerMeter = diameter === 10 ? 0.616 : 0.888;
+
+  return (steelLength * totalPcs * weightPerMeter).toFixed(2);
+};
+
+export const getKgsPerCuMOptionB = ({
+  giWireKgsOptionB,
+  volume,
+}: {
+  giWireKgsOptionB: string;
+  volume: string;
+}): string => {
+  const kgs = Number(giWireKgsOptionB);
+  const vol = Number(volume);
+
+  if (!kgs || !vol) {
+    return '';
+  }
+
+  return (kgs / vol).toFixed(2);
+};
