@@ -20,9 +20,9 @@ import {
   getBarPcsOptionB,
   getCutBarSize,
   getGIWireKgs,
+  getGIWireKgsOptionA,
   getGIWireKgsOptionB,
   getKgsPerCuM,
-  getKgsPerCuMOptionB,
   getL24,
   getL26,
   getL27,
@@ -40,7 +40,6 @@ import {
   getTiesCutSize,
   getTiesSteelLength,
   getTieWiresOptionA,
-  getTieWiresOptionB,
   getTieWiresOptionBOne,
   getTieWiresOptionBTwo,
   getTotalCutBars,
@@ -50,6 +49,8 @@ import {
   getTotalPcsOfBarsOptionB,
   getWaste,
   getWasteRemark,
+  getWireKgsPerCuMOptionA,
+  getWireKgsPerCuMOptionB,
 } from '../../../utils/columnRebarCalculator';
 
 export default function Column() {
@@ -361,12 +362,8 @@ export default function Column() {
     latTiesDiameter,
   });
   //
-  const tieWiresOptionB = getTieWiresOptionB({
-    pcsLatTiesOptionBOne,
-    numberOfBarsA: input.numberOfBarsA,
-    numberOfBarsB: input.numberOfBarsB,
-  });
-  const giWireKgsOptionB = getGIWireKgsOptionB(tieWiresOptionB);
+
+  const giWireKgsOptionB = getGIWireKgsOptionB(tieWiresOptionBTwo);
   const totalPcsOfBarsOptionB = getTotalPcsOfBarsOptionB({
     tiesSteelLength: input.tiesSteelLength,
     pcsLatTiesOptionBOne,
@@ -377,7 +374,14 @@ export default function Column() {
     tiesSteelLength: input.tiesSteelLength,
     totalPcsOfBarsOptionB,
   });
-  const kgsPerCuM = getKgsPerCuMOptionB({
+
+  const giWireKgsOptionA = getGIWireKgsOptionA(tieWiresOptionBOne);
+  const wireKgsPerCuMOptionA = getWireKgsPerCuMOptionA({
+    giWireKgsOptionA,
+    volume,
+  });
+
+  const wireKgsPerCuMOptionB = getWireKgsPerCuMOptionB({
     giWireKgsOptionB,
     volume,
   });
@@ -831,9 +835,19 @@ export default function Column() {
                       : '-'
                   }
                 />
-                <Result
+                {/* <Result
                   label="kgs/cu.m"
                   value={kgsPerCuM ? `${kgsPerCuM} kg/cu.m` : '-'}
+                />
+                <Result label="kgs/cu.m" value={'-'} /> */}
+                <Result
+                  label="wire kgs/cu.m"
+                  value={wireKgsPerCuMOptionA || '-'}
+                />
+
+                <Result
+                  label="wire kgs/cu.m"
+                  value={wireKgsPerCuMOptionB || '-'}
                 />
               </View>
               {/*  */}

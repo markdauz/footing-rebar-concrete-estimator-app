@@ -754,3 +754,47 @@ export const getKgsPerCuMOptionB = ({
 
   return (kgs / vol).toFixed(2);
 };
+
+export const getGIWireKgsOptionA = (tieWiresOptionBOne: string): string => {
+  const wires = Number(tieWiresOptionBOne);
+
+  if (!wires) {
+    return '';
+  }
+
+  return (Math.round(((wires * 0.3) / 53 + 0.1) * 100) / 100).toFixed(2);
+};
+
+export const getWireKgsPerCuMOptionA = ({
+  giWireKgsOptionA,
+  volume,
+}: {
+  giWireKgsOptionA: string;
+  volume: string;
+}): string => {
+  const s33 = Number(giWireKgsOptionA);
+  const c29 = Number(volume);
+
+  if (!s33 || !c29) {
+    return '';
+  }
+
+  return (s33 / c29).toFixed(2);
+};
+
+export const getWireKgsPerCuMOptionB = ({
+  giWireKgsOptionB,
+  volume,
+}: {
+  giWireKgsOptionB: string;
+  volume: string;
+}): string => {
+  const s38 = Number(giWireKgsOptionB);
+  const c29 = Number(volume);
+
+  if (!s38 || !c29) {
+    return '';
+  }
+
+  return (s38 / c29).toFixed(2);
+};
